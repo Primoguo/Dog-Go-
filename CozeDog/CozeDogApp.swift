@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct ZilvgouApp: App {
+struct CozeDogApp: App {
     @StateObject private var store = AppStore()
 
     var body: some Scene {
