@@ -10,7 +10,7 @@ struct DogWorldScene: View {
         GeometryReader { proxy in
             let width = proxy.size.width
             let height = proxy.size.height
-            let dogSize = min(width * 0.096, height * 0.142)
+            let dogSize = min(width * 0.11, height * 0.15)
             let dogPosition = dogMapPosition(width: width, height: height)
                 .applying(offset: wanderOffset)
 
@@ -60,7 +60,8 @@ struct DogWorldScene: View {
                         appearance: store.currentDogAppearance(),
                         dogState: store.state.dogState,
                         speech: store.speechText(),
-                        nextLevelNeed: store.nextLevelNeed()
+                        nextLevelNeed: store.nextLevelNeed(),
+                        onClose: { showsDogStatus = false }
                     )
                     .padding(10)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -85,14 +86,14 @@ struct DogWorldScene: View {
             .onTapGesture {
                 showsDogStatus = false
             }
-            .animation(.snappy(duration: 0.22), value: showsDogStatus)
+            .animation(.spring(response: 0.35, dampingFraction: 0.8), value: showsDogStatus)
             .animation(.easeInOut(duration: 1.2), value: wanderOffset)
             .animation(.easeInOut(duration: 0.35), value: activityIndex)
             .task(id: dogWorldTaskID) {
                 await runDogWorldLoop(width: width, height: height)
             }
         }
-        .aspectRatio(0.98, contentMode: .fit)
+        .aspectRatio(0.83, contentMode: .fit)
         .frame(maxWidth: .infinity)
     }
 
@@ -113,30 +114,30 @@ struct DogWorldScene: View {
     }
 
     private func dogMapPosition(width: CGFloat, height: CGFloat) -> CGPoint {
-        if isRecovery { return CGPoint(x: width * 0.30, y: height * 0.27) }
-        if isIdleCompleted { return CGPoint(x: width * 0.80, y: height * 0.31) }
+        if isRecovery { return CGPoint(x: width * 0.30, y: height * 0.25) }
+        if isIdleCompleted { return CGPoint(x: width * 0.78, y: height * 0.28) }
 
         switch activeGoalType {
         case .fitness:
-            return CGPoint(x: width * 0.28, y: height * 0.65)
+            return CGPoint(x: width * 0.28, y: height * 0.68)
         case .study:
-            return CGPoint(x: width * 0.66, y: height * 0.43)
+            return CGPoint(x: width * 0.66, y: height * 0.40)
         case .sleep:
-            return CGPoint(x: width * 0.68, y: height * 0.68)
+            return CGPoint(x: width * 0.68, y: height * 0.70)
         case .none:
-            return CGPoint(x: width * 0.55, y: height * 0.50)
+            return CGPoint(x: width * 0.50, y: height * 0.48)
         }
     }
 
     @MainActor
     private func runDogWorldLoop(width: CGFloat, height: CGFloat) async {
         while !Task.isCancelled {
-            let maxX = width * 0.045
-            let maxY = height * 0.035
-            activityIndex = Int.random(in: 0...1)
+            let maxX = width * 0.05
+            let maxY = height * 0.04
+            activityIndex = Int.random(in: 0...2)
 
             if isRecovery || isIdleCompleted {
-                wanderOffset = CGSize(width: CGFloat.random(in: -maxX * 0.35...maxX * 0.35), height: CGFloat.random(in: -maxY * 0.35...maxY * 0.35))
+                wanderOffset = CGSize(width: CGFloat.random(in: -maxX * 0.3...maxX * 0.3), height: CGFloat.random(in: -maxY * 0.3...maxY * 0.3))
             } else {
                 wanderOffset = CGSize(width: CGFloat.random(in: -maxX...maxX), height: CGFloat.random(in: -maxY...maxY))
             }
@@ -156,17 +157,17 @@ struct DogWorldScene: View {
     }
 
     private func propLabelPosition(width: CGFloat, height: CGFloat) -> CGPoint {
-        if isRecovery { return CGPoint(x: width * 0.28, y: height * 0.22) }
+        if isRecovery { return CGPoint(x: width * 0.28, y: height * 0.20) }
 
         switch activeGoalType {
         case .fitness:
-            return CGPoint(x: width * 0.22, y: height * 0.54)
+            return CGPoint(x: width * 0.22, y: height * 0.57)
         case .study:
-            return CGPoint(x: width * 0.66, y: height * 0.31)
+            return CGPoint(x: width * 0.66, y: height * 0.28)
         case .sleep:
-            return CGPoint(x: width * 0.78, y: height * 0.36)
+            return CGPoint(x: width * 0.78, y: height * 0.34)
         case .none:
-            return CGPoint(x: width * 0.20, y: height * 0.16)
+            return CGPoint(x: width * 0.20, y: height * 0.14)
         }
     }
 }
@@ -185,16 +186,16 @@ struct PixelYardMap: View {
                 PixelGridBackground()
 
                 PixelRect(color: Color(hex: 0x7FB46C))
-                    .frame(width: width * 0.86, height: height * 0.70)
-                    .position(x: width * 0.53, y: height * 0.52)
+                    .frame(width: width * 0.88, height: height * 0.74)
+                    .position(x: width * 0.52, y: height * 0.50)
 
                 PixelRect(color: Color(hex: 0xA9C98A))
-                    .frame(width: width * 0.76, height: height * 0.58)
-                    .position(x: width * 0.53, y: height * 0.53)
+                    .frame(width: width * 0.78, height: height * 0.62)
+                    .position(x: width * 0.52, y: height * 0.50)
 
                 PixelRect(color: Color(hex: 0x95BE77, alpha: 0.75))
-                    .frame(width: width * 0.26, height: height * 0.20)
-                    .position(x: width * 0.70, y: height * 0.59)
+                    .frame(width: width * 0.28, height: height * 0.22)
+                    .position(x: width * 0.70, y: height * 0.60)
 
                 PixelPath()
                     .stroke(Color(hex: 0xD8C7A4), style: StrokeStyle(lineWidth: max(10, width * 0.028), lineCap: .square, lineJoin: .miter))
@@ -208,12 +209,12 @@ struct PixelYardMap: View {
                     .padding(8)
 
                 PixelDogHouse()
-                    .frame(width: width * 0.105, height: height * 0.125)
-                    .position(x: width * 0.82, y: height * 0.25)
+                    .frame(width: width * 0.11, height: height * 0.13)
+                    .position(x: width * 0.83, y: height * 0.22)
 
                 PixelGate()
-                    .frame(width: width * 0.11, height: height * 0.075)
-                    .position(x: width * 0.21, y: height * 0.17)
+                    .frame(width: width * 0.11, height: height * 0.07)
+                    .position(x: width * 0.20, y: height * 0.14)
 
                 PixelProps(goalType: goalType, isRecovery: isRecovery, isDone: isDone)
                     .frame(width: width * 0.13, height: height * 0.13)
@@ -222,7 +223,7 @@ struct PixelYardMap: View {
                 if isRecovery {
                     PixelFootprints()
                         .frame(width: width * 0.13, height: height * 0.16)
-                        .position(x: width * 0.35, y: height * 0.34)
+                        .position(x: width * 0.35, y: height * 0.32)
                 }
             }
             .overlay {
@@ -236,17 +237,17 @@ struct PixelYardMap: View {
     }
 
     private func propPosition(width: CGFloat, height: CGFloat) -> CGPoint {
-        if isRecovery { return CGPoint(x: width * 0.28, y: height * 0.31) }
+        if isRecovery { return CGPoint(x: width * 0.28, y: height * 0.28) }
 
         switch goalType {
         case .fitness:
-            return CGPoint(x: width * 0.23, y: height * 0.64)
+            return CGPoint(x: width * 0.23, y: height * 0.67)
         case .study:
-            return CGPoint(x: width * 0.69, y: height * 0.42)
+            return CGPoint(x: width * 0.69, y: height * 0.39)
         case .sleep:
-            return CGPoint(x: width * 0.69, y: height * 0.67)
+            return CGPoint(x: width * 0.69, y: height * 0.69)
         case .none:
-            return CGPoint(x: width * 0.52, y: height * 0.55)
+            return CGPoint(x: width * 0.50, y: height * 0.52)
         }
     }
 }
@@ -444,19 +445,20 @@ struct PixelDogActivityCue: View {
     }
 
     private var symbolName: String {
-        if isRecovery { return activityIndex.isMultiple(of: 2) ? "leaf.fill" : "shoeprints.fill" }
-        if isDone { return activityIndex.isMultiple(of: 2) ? "heart.fill" : "zzz" }
+        let idx = activityIndex % 3
+        if isRecovery { return ["leaf.fill", "shoeprints.fill", "sunrise.fill"][idx] }
+        if isDone { return ["heart.fill", "zzz", "star.fill"][idx] }
 
         switch goalType {
-        case .fitness: return activityIndex.isMultiple(of: 2) ? "figure.run" : "dumbbell.fill"
-        case .study: return activityIndex.isMultiple(of: 2) ? "book.fill" : "pencil"
-        case .sleep: return activityIndex.isMultiple(of: 2) ? "moon.fill" : "play.rectangle.fill"
-        case .none: return "pawprint.fill"
+        case .fitness: return ["figure.run", "dumbbell.fill", "flame.fill"][idx]
+        case .study: return ["book.fill", "pencil", "lightbulb.fill"][idx]
+        case .sleep: return ["moon.fill", "play.rectangle.fill", "cloud.fill"][idx]
+        case .none: return ["pawprint.fill", "music.note", "leaf.fill"][idx]
         }
     }
 
     private var showsMotionMark: Bool {
-        isRunning && !isDone && !isRecovery && goalType == .fitness && activityIndex.isMultiple(of: 2)
+        isRunning && !isDone && !isRecovery && goalType == .fitness && activityIndex % 3 == 0
     }
 
     private var background: Color {
@@ -538,45 +540,77 @@ struct DogStatusTray: View {
     let dogState: DogState
     let speech: String
     let nextLevelNeed: Int
+    var onClose: (() -> Void)? = nil
 
     var body: some View {
-        HStack(spacing: 10) {
-            PixelDogSprite(breed: breed, appearance: appearance, size: 54, pose: dogState.pose)
-                .frame(width: 62, height: 56)
-                .background(Color(hex: 0xEAF1DA))
-                .overlay {
-                    Rectangle()
-                        .stroke(Color(hex: 0x7C9B64), lineWidth: 2)
-                }
+        VStack(spacing: 6) {
+            HStack(spacing: 8) {
+                PixelDogSprite(breed: breed, appearance: appearance, size: 44, pose: dogState.pose)
+                    .frame(width: 50, height: 46)
+                    .background(Color(hex: 0xEAF1DA))
+                    .overlay {
+                        Rectangle()
+                            .stroke(Color(hex: 0x7C9B64), lineWidth: 2)
+                    }
 
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 6) {
-                    Text("\(breed.name) · \(breed.breedName)")
-                        .font(.subheadline.weight(.heavy))
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 5) {
+                        Text("\(breed.name)")
+                            .font(.caption.weight(.heavy))
+                            .lineLimit(1)
+                        Text(moodLabel)
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(Color(hex: 0x356247))
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 2)
+                            .background(Color(hex: 0xDDEBCB))
+                        Text("Lv.\(dogState.level)")
+                            .font(.system(size: 10, weight: .heavy))
+                            .foregroundStyle(Color(hex: 0x5D6B55))
+                    }
+
+                    Text(speech)
+                        .font(.caption2.weight(.semibold))
                         .lineLimit(1)
-                    Text(moodLabel)
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(Color(hex: 0x356247))
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 3)
-                        .background(Color(hex: 0xDDEBCB))
+                        .foregroundStyle(.secondary)
                 }
 
-                Text(speech)
-                    .font(.caption.weight(.semibold))
-                    .lineLimit(1)
-                    .foregroundStyle(.secondary)
+                Spacer(minLength: 0)
 
-                Text("Lv.\(dogState.level)  亲密度 \(dogState.intimacy)/\(nextLevelNeed)")
-                    .font(.caption2.weight(.bold))
-                    .foregroundStyle(Color(hex: 0x5D6B55))
+                if let onClose {
+                    Button(action: onClose) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 10, weight: .heavy))
+                            .foregroundStyle(Color(hex: 0x7C9B64))
+                            .frame(width: 22, height: 22)
+                            .background(Color(hex: 0xEAF1DA))
+                            .overlay {
+                                Rectangle().stroke(Color(hex: 0x7C9B64), lineWidth: 1)
+                            }
+                    }
+                    .buttonStyle(.plain)
+                }
             }
 
-            Spacer(minLength: 0)
+            HStack(spacing: 6) {
+                PixelStatBar(icon: "fork.knife", label: "饱", value: dogState.fullness, max: 100, color: Color(hex: 0xC65B44))
+                PixelStatBar(icon: "drop.fill", label: "洁", value: dogState.cleanliness, max: 100, color: Color(hex: 0x4C7FA6))
+                PixelStatBar(icon: "bolt.fill", label: "力", value: dogState.energy, max: 100, color: Color(hex: 0xC69A3E))
+            }
+
+            HStack(spacing: 4) {
+                Text("亲密度")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundStyle(Color(hex: 0x5D6B55))
+                PixelProgressBar(value: dogState.intimacy, max: nextLevelNeed, height: 6, fillColor: Color(hex: 0x5D8B6A))
+                Text("\(dogState.intimacy)/\(nextLevelNeed)")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundStyle(Color(hex: 0x5D6B55))
+            }
         }
-        .padding(7)
+        .padding(8)
         .frame(maxWidth: .infinity)
-        .background(Color(hex: 0xFFF8E8, alpha: 0.94))
+        .background(Color(hex: 0xFFF8E8, alpha: 0.96))
         .overlay {
             Rectangle()
                 .stroke(Color(hex: 0x7C9B64), lineWidth: 2)
@@ -590,6 +624,48 @@ struct DogStatusTray: View {
         case "waiting": return "等待"
         case "recovering": return "恢复"
         default: return "期待"
+        }
+    }
+}
+
+struct PixelStatBar: View {
+    let icon: String
+    let label: String
+    let value: Int
+    let max: Int
+    let color: Color
+
+    var body: some View {
+        HStack(spacing: 3) {
+            Image(systemName: icon)
+                .font(.system(size: 8, weight: .heavy))
+                .foregroundStyle(color)
+            PixelProgressBar(value: value, max: max, height: 5, fillColor: color)
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+struct PixelProgressBar: View {
+    let value: Int
+    let max: Int
+    let height: CGFloat
+    let fillColor: Color
+
+    var body: some View {
+        let ratio = max > 0 ? min(CGFloat(value) / CGFloat(max), 1.0) : 0
+
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                PixelRect(color: Color(hex: 0xE8E0D0))
+                PixelRect(color: fillColor)
+                    .frame(width: geo.size.width * ratio)
+            }
+        }
+        .frame(height: height)
+        .overlay {
+            Rectangle()
+                .stroke(Color(hex: 0x7C9B64), lineWidth: 1)
         }
     }
 }
@@ -1195,12 +1271,16 @@ struct TodayActionPanel: View {
                 Spacer(minLength: 8)
 
                 VStack(alignment: .trailing, spacing: 4) {
-                    Text("Lv.\(dogLevel)")
-                        .font(.caption.weight(.heavy))
-                        .foregroundStyle(Color(hex: 0x356247))
-                    Text("\(intimacy)/\(nextLevelNeed)")
-                        .font(.caption2.weight(.bold))
-                        .foregroundStyle(.secondary)
+                    HStack(spacing: 4) {
+                        Image(systemName: "star.fill")
+                            .font(.system(size: 9, weight: .heavy))
+                            .foregroundStyle(Color(hex: 0xC69A3E))
+                        Text("Lv.\(dogLevel)")
+                            .font(.caption.weight(.heavy))
+                            .foregroundStyle(Color(hex: 0x356247))
+                    }
+                    PixelProgressBar(value: intimacy, max: nextLevelNeed, height: 5, fillColor: Color(hex: 0x5D8B6A))
+                        .frame(width: 60)
                 }
                 .padding(.horizontal, 8)
                 .padding(.vertical, 6)
@@ -1247,14 +1327,12 @@ struct TodayActionPanel: View {
             }
         case .choosingPlan:
             VStack(alignment: .leading, spacing: 8) {
-                Text("选择计划")
+                Text("选择今天的计划")
                     .eyebrowStyle()
                 HStack(spacing: 8) {
-                    ForEach(ActionPlan.allCases) { plan in
-                        PixelChoiceButton(title: plan.label, isSelected: actionSession.plan == plan) {
-                            selectPlanAction(plan)
-                        }
-                    }
+                    planChoiceButton(plan: .fitness, icon: "figure.run")
+                    planChoiceButton(plan: .study, icon: "book.fill")
+                    planChoiceButton(plan: .leisure, icon: "cup.and.saucer.fill")
                 }
                 PixelSecondaryButton(title: "取消") {
                     cancelSessionAction()
@@ -1264,11 +1342,9 @@ struct TodayActionPanel: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("\(actionSession.plan?.label ?? "计划")多久？")
                     .eyebrowStyle()
-                HStack(spacing: 8) {
+                HStack(spacing: 6) {
                     ForEach([5, 10, 20, 30], id: \.self) { minutes in
-                        PixelChoiceButton(title: "\(minutes)m", isSelected: false) {
-                            startTimerAction(minutes)
-                        }
+                        timeChoiceButton(minutes: minutes)
                     }
                 }
                 PixelSecondaryButton(title: "重选计划") {
@@ -1283,33 +1359,112 @@ struct TodayActionPanel: View {
                         Text(actionSession.plan?.activeLabel ?? "行动中")
                             .eyebrowStyle()
                         Text(formattedTime(actionSession.remainingSeconds))
-                            .font(.system(size: 34, weight: .heavy, design: .monospaced))
+                            .font(.system(size: 36, weight: .heavy, design: .monospaced))
                             .foregroundStyle(Color(hex: 0x26382B))
                     }
                     Spacer()
-                    Text(actionSession.plan?.dogLine ?? "狗狗也在行动")
-                        .font(.caption.weight(.heavy))
-                        .foregroundStyle(Color(hex: 0x356247))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 6)
-                        .background(Color(hex: 0xEAF1DA))
-                        .overlay {
-                            Rectangle()
-                                .stroke(Color(hex: 0x9BB985), lineWidth: 1)
-                        }
+                    runningDogCompanion
                 }
+                runningProgressBar
                 PixelSecondaryButton(title: "取消本次") {
                     cancelSessionAction()
                 }
             }
         case .finished:
             VStack(alignment: .leading, spacing: 8) {
-                Text("时间到了")
-                    .eyebrowStyle()
+                HStack(spacing: 6) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.caption.weight(.heavy))
+                        .foregroundStyle(Color(hex: 0x5D8B6A))
+                    Text("时间到了！")
+                        .eyebrowStyle()
+                }
                 PixelPrimaryButton(title: "Dog done!") {
                     completeAction()
                 }
             }
+        }
+    }
+
+    private func planChoiceButton(plan: ActionPlan, icon: String) -> some View {
+        Button {
+            selectPlanAction(plan)
+        } label: {
+            VStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 14, weight: .heavy))
+                    .foregroundStyle(actionSession.plan == plan ? Color(hex: 0x356247) : Color(hex: 0x7C9B64))
+                Text(plan.label)
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(actionSession.plan == plan ? Color(hex: 0x356247) : Color(hex: 0x5D6B55))
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+            .background(actionSession.plan == plan ? Color(hex: 0xDDEBCB) : Color(hex: 0xF4E6C6, alpha: 0.5))
+            .overlay {
+                Rectangle()
+                    .stroke(actionSession.plan == plan ? Color(hex: 0x356247) : Color(hex: 0x9BB985), lineWidth: actionSession.plan == plan ? 2 : 1)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func timeChoiceButton(minutes: Int) -> some View {
+        Button {
+            startTimerAction(minutes)
+        } label: {
+            VStack(spacing: 2) {
+                Text("\(minutes)")
+                    .font(.system(size: minutes >= 20 ? 18 : 15, weight: .heavy, design: .monospaced))
+                    .foregroundStyle(Color(hex: 0x356247))
+                Text("min")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+            .background(Color(hex: 0xFFF8E8))
+            .overlay {
+                Rectangle()
+                    .stroke(Color(hex: 0x7C9B64), lineWidth: 1)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var runningDogCompanion: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "pawprint.fill")
+                .font(.system(size: 10, weight: .heavy))
+                .foregroundStyle(Color(hex: 0x5D8B6A))
+            Text(actionSession.plan?.dogLine ?? "狗狗也在行动")
+                .font(.caption2.weight(.heavy))
+                .foregroundStyle(Color(hex: 0x356247))
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(Color(hex: 0xEAF1DA))
+        .overlay {
+            Rectangle()
+                .stroke(Color(hex: 0x9BB985), lineWidth: 1)
+        }
+    }
+
+    private var runningProgressBar: some View {
+        GeometryReader { geo in
+            let progress = actionSession.durationSeconds > 0
+                ? CGFloat(actionSession.durationSeconds - actionSession.remainingSeconds) / CGFloat(actionSession.durationSeconds)
+                : 0
+            ZStack(alignment: .leading) {
+                PixelRect(color: Color(hex: 0xE8E0D0))
+                PixelRect(color: Color(hex: 0x5D8B6A))
+                    .frame(width: geo.size.width * progress)
+            }
+        }
+        .frame(height: 8)
+        .overlay {
+            Rectangle()
+                .stroke(Color(hex: 0x7C9B64), lineWidth: 1)
         }
     }
 
