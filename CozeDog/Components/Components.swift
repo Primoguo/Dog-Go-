@@ -1537,23 +1537,24 @@ struct AppBottomBar: View {
     @EnvironmentObject private var store: AppStore
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 10) {
             BottomBarItem(title: "首页", systemImage: "house.fill", isSelected: store.state.screen == .home) {
                 store.go(.home)
             }
 
-            BottomBarItem(title: "狗狗", systemImage: "pawprint.fill", isSelected: false, isEnabled: false) {}
-
             BottomBarItem(title: "进度", systemImage: "chart.bar.fill", isSelected: store.state.screen == .progress) {
                 store.go(.progress)
             }
-
-            BottomBarItem(title: "设置", systemImage: "gearshape.fill", isSelected: false, isEnabled: false) {}
         }
-        .padding(.horizontal, 12)
+        .padding(.horizontal, 14)
         .padding(.top, 10)
-        .padding(.bottom, 8)
-        .background(Color(hex: 0xFFF8E8).opacity(0.96))
+        .padding(.bottom, 6)
+        .background {
+            ZStack {
+                Color(hex: 0xFFF8E8).opacity(0.97)
+                PixelTinyGrid(colorA: Color(hex: 0xEAF1DA, alpha: 0.4), colorB: Color.clear, tile: 10)
+            }
+        }
         .overlay(alignment: .top) {
             Rectangle()
                 .fill(Color(hex: 0x7C9B64))
@@ -1566,19 +1567,18 @@ struct BottomBarItem: View {
     let title: String
     let systemImage: String
     let isSelected: Bool
-    var isEnabled = true
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 4) {
+            VStack(spacing: 5) {
                 Image(systemName: systemImage)
-                    .font(.system(size: 17, weight: .heavy))
+                    .font(.system(size: 19, weight: .heavy))
                 Text(title)
                     .font(.caption2.weight(.heavy))
                     .lineLimit(1)
             }
-            .frame(maxWidth: .infinity, minHeight: 44)
+            .frame(maxWidth: .infinity, minHeight: 48)
             .foregroundStyle(foreground)
             .background {
                 ZStack {
@@ -1593,8 +1593,6 @@ struct BottomBarItem: View {
             .shadow(color: isSelected ? Color(hex: 0x1E3D2C, alpha: 0.22) : Color.clear, radius: 0, x: 2, y: 2)
         }
         .buttonStyle(.plain)
-        .disabled(!isEnabled)
-        .opacity(isEnabled ? 1 : 0.48)
     }
 
     private var foreground: Color {
