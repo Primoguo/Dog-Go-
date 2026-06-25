@@ -2413,54 +2413,65 @@ struct DogChoiceCard: View {
     let dog: DogBreed
     let isSelected: Bool
 
+    /// 为每个品种生成固定的预览外观（使用品种名作为 seed，保证一致性）
+    private var previewAppearance: DogAppearance {
+        DogAppearance.generated(for: dog, seed: dog.rawValue + "_preview")
+    }
+
+    private var accentColor: Color {
+        switch dog {
+        case .shiba: return Color(hex: 0xF5A623)
+        case .golden: return Color(hex: 0xE8C76A)
+        case .borderCollie: return Color(hex: 0x6B5B4F)
+        case .native: return Color(hex: 0xC8A878)
+        case .bulldog: return Color(hex: 0xD4C5B8)
+        case .teddy: return Color(hex: 0x8B6F5E)
+        }
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(dog.initial)
-                .font(.title.weight(.heavy))
-                .foregroundStyle(faceForeground)
-                .frame(width: 54, height: 54)
-                .background(faceBackground)
-                .clipShape(Circle())
+        VStack(spacing: 6) {
+            // 像素狗狗预览
+            ZStack {
+                Circle()
+                    .fill(accentColor.opacity(0.15))
+                    .frame(width: 60, height: 60)
 
+                PixelDogSprite(breed: dog, appearance: previewAppearance, size: 48, pose: .idle)
+            }
+            .frame(height: 64)
+
+            // 品种名
             Text(dog.breedName)
-                .font(.headline)
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(Color(hex: 0x2C2C2C))
 
-            FlowTags(tags: dog.tags)
+            // 标签（紧凑显示）
+            HStack(spacing: 3) {
+                ForEach(dog.tags.prefix(3), id: \.self) { tag in
+                    Text(tag)
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundStyle(Color(hex: 0x6B6B6B))
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 1.5)
+                        .background(Color(hex: 0xF5F0E8))
+                        .clipShape(Capsule())
+                }
+            }
+            .lineLimit(1)
         }
-        .frame(maxWidth: .infinity, minHeight: 132, alignment: .topLeading)
-        .padding(12)
-        .background(Color.white.opacity(0.72))
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 10)
+        .padding(.horizontal, 6)
+        .background(Color.white.opacity(0.85))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .stroke(isSelected ? Color(hex: 0x356247) : Color(hex: 0xECE0D0), lineWidth: isSelected ? 2 : 1)
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(isSelected ? Color(hex: 0x356247) : Color(hex: 0xECE0D0), lineWidth: isSelected ? 2.5 : 1)
         }
-    }
-
-    private var faceBackground: LinearGradient {
-        switch dog {
-        case .shiba:
-            return LinearGradient(colors: [Color(hex: 0xF4D29D), Color(hex: 0xD98945)], startPoint: .topLeading, endPoint: .bottomTrailing)
-        case .golden:
-            return LinearGradient(colors: [Color(hex: 0xFFE0A4), Color(hex: 0xF1B84E)], startPoint: .topLeading, endPoint: .bottomTrailing)
-        case .borderCollie:
-            return LinearGradient(colors: [Color.white, Color(hex: 0x202321)], startPoint: .topLeading, endPoint: .bottomTrailing)
-        case .native:
-            return LinearGradient(colors: [Color(hex: 0xD7B181), Color(hex: 0x835C36)], startPoint: .topLeading, endPoint: .bottomTrailing)
-        case .bulldog:
-            return LinearGradient(colors: [Color(hex: 0xF5EDE5), Color(hex: 0xC8B8A8)], startPoint: .topLeading, endPoint: .bottomTrailing)
-        case .teddy:
-            return LinearGradient(colors: [Color(hex: 0xD2B48C), Color(hex: 0x8B4513)], startPoint: .topLeading, endPoint: .bottomTrailing)
-        }
-    }
-
-    private var faceForeground: Color {
-        switch dog {
-        case .borderCollie, .native, .teddy:
-            return .white
-        case .shiba, .golden, .bulldog:
-            return Color(hex: 0x3C2715)
-        }
+        .scaleEffect(isSelected ? 1.02 : 1.0)
+        .shadow(color: isSelected ? Color(hex: 0x356247).opacity(0.15) : .clear, radius: 6, y: 2)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
     }
 }
 

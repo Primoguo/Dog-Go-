@@ -93,69 +93,84 @@ struct AdoptDogView: View {
 
     var body: some View {
         ScreenScaffold {
-            VStack(alignment: .leading, spacing: 18) {
-                Header(eyebrow: "自律狗 iOS MVP", title: "选一只陪你自律的小狗", subtitle: "先选喜欢的品种，随机生成它的外貌。不满意可以换一个，直到遇到你的那只。")
-
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                    ForEach(DogBreed.allCases) { dog in
-                        Button {
-                            store.selectDog(dog)
-                        } label: {
-                            DogChoiceCard(dog: dog, isSelected: store.state.selectedDog == dog)
-                        }
-                        .buttonStyle(.plain)
-                    }
+            VStack(spacing: 0) {
+                // 顶部标题区（固定）
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("选一只陪你自律的小狗")
+                        .font(.title2.weight(.bold))
+                        .foregroundStyle(Color(hex: 0x2C2C2C))
+                    Text("先选品种，随机生成外貌。不满意可以换，直到遇到你的那只。")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.bottom, 12)
 
-                if let appearance = store.state.dogAppearance {
-                    Panel {
-                        VStack(spacing: 12) {
-                            HStack {
-                                Text("你的\(store.state.selectedDog.breedName)")
-                                    .eyebrowStyle()
-                                Spacer()
-                                Text(store.state.selectedDog.name)
-                                    .font(.subheadline.weight(.bold))
-                                    .foregroundStyle(Color(hex: 0x356247))
-                            }
-
-                            PixelDogSprite(breed: store.state.selectedDog, appearance: appearance, size: 140, pose: .idle)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 8)
-
-                            Text(store.state.selectedDog.preview)
-                                .font(.title3.weight(.bold))
-                                .multilineTextAlignment(.center)
-
-                            Text("\(store.state.selectedDog.breedName)只影响语气和形象，所有目标都能陪你完成。")
-                                .foregroundStyle(.secondary)
-                                .font(.subheadline)
-                                .multilineTextAlignment(.center)
-
-                            Button {
-                                store.randomizeAppearance()
-                            } label: {
-                                HStack(spacing: 6) {
-                                    Text("🎲")
-                                    Text("换一个")
-                                        .fontWeight(.semibold)
+                // 可滚动内容区
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 16) {
+                        // 品种选择网格
+                        LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
+                            ForEach(DogBreed.allCases) { dog in
+                                Button {
+                                    store.selectDog(dog)
+                                } label: {
+                                    DogChoiceCard(dog: dog, isSelected: store.state.selectedDog == dog)
                                 }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 10)
-                                .background(Color(hex: 0xF2E8D9))
-                                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
+                        }
+
+                        // 选中狗狗的预览面板
+                        if let appearance = store.state.dogAppearance {
+                            Panel {
+                                VStack(spacing: 10) {
+                                    HStack {
+                                        Text("你的\(store.state.selectedDog.breedName)")
+                                            .eyebrowStyle()
+                                        Spacer()
+                                        Text(store.state.selectedDog.name)
+                                            .font(.subheadline.weight(.bold))
+                                            .foregroundStyle(Color(hex: 0x356247))
+                                    }
+
+                                    PixelDogSprite(breed: store.state.selectedDog, appearance: appearance, size: 100, pose: .idle)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 4)
+
+                                    Text(store.state.selectedDog.preview)
+                                        .font(.subheadline.weight(.semibold))
+                                        .multilineTextAlignment(.center)
+                                        .foregroundStyle(Color(hex: 0x4A4A4A))
+
+                                    Button {
+                                        store.randomizeAppearance()
+                                    } label: {
+                                        HStack(spacing: 6) {
+                                            Text("🎲")
+                                            Text("换一个").fontWeight(.semibold)
+                                        }
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 8)
+                                        .background(Color(hex: 0xF2E8D9))
+                                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .transition(.opacity.combined(with: .move(edge: .bottom)))
                         }
                     }
+                    .padding(.bottom, 16)
                 }
 
-                Spacer()
-
+                // 底部按钮（固定）
                 PrimaryButton(title: "确认领养") {
                     store.prepareGoalCreation()
                 }
+                .padding(.top, 8)
             }
+            .animation(.easeInOut(duration: 0.2), value: store.state.dogAppearance)
         }
     }
 }
