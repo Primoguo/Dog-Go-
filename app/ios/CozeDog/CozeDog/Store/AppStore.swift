@@ -10,15 +10,20 @@ final class AppStore: ObservableObject {
     private let key = "zilvgou.appState.v1"
 
     init() {
-        if let data = UserDefaults.standard.data(forKey: key),
-           let decoded = try? JSONDecoder().decode(AppState.self, from: data) {
-            state = decoded
-            if state.goal == nil, state.screen != .adopt {
-                state.screen = .createGoal
-            }
-            if state.dogAppearance == nil {
-                state.dogAppearance = DogAppearance.generated(for: state.selectedDog)
-                save()
+        if let data = UserDefaults.standard.data(forKey: key) {
+            do {
+                let decoded = try JSONDecoder().decode(AppState.self, from: data)
+                state = decoded
+                if state.goal == nil, state.screen != .adopt {
+                    state.screen = .createGoal
+                }
+                if state.dogAppearance == nil {
+                    state.dogAppearance = DogAppearance.generated(for: state.selectedDog)
+                    save()
+                }
+            } catch {
+                print("⚠️ 解码 AppState 失败: \(error)")
+                state = .initial
             }
         } else {
             state = .initial
@@ -643,8 +648,11 @@ final class AppStore: ObservableObject {
     }
 
     private func save() {
-        if let data = try? JSONEncoder().encode(state) {
+        do {
+            let data = try JSONEncoder().encode(state)
             UserDefaults.standard.set(data, forKey: key)
+        } catch {
+            print("⚠️ 编码 AppState 失败: \(error)")
         }
     }
 }
