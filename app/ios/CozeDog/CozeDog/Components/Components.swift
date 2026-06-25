@@ -228,6 +228,9 @@ struct DogWorldScene: View {
         let moodModifiers = mood.movementModifiers
         let placedItems = store.state.sceneSettings.placedItems
 
+        // 圆形移动的当前角度
+        var circularAngle: Double = 0
+
         while !Task.isCancelled {
             // 拖动时暂停漫游
             guard !isDragging else {
@@ -250,6 +253,7 @@ struct DogWorldScene: View {
             let shouldApproachItem = !placedItems.isEmpty && mood != .sad && Double.random(in: 0...1) < 0.3
 
             if isRecovery || isIdleCompleted {
+                // 恢复/空闲状态：小范围随机移动
                 wanderOffset = CGSize(
                     width: CGFloat.random(in: -maxX * 0.3...maxX * 0.3),
                     height: CGFloat.random(in: -maxY * 0.3...maxY * 0.3)
@@ -259,24 +263,50 @@ struct DogWorldScene: View {
                 let dogBasePos = dogMapPosition(width: width, height: height)
                 let dx = targetItem.position.x - dogBasePos.x
                 let dy = targetItem.position.y - dogBasePos.y
-                // 移动到元素附近（保留一点距离）
                 wanderOffset = CGSize(
                     width: dx * 0.6,
                     height: dy * 0.6
                 )
-            } else if shouldJump {
-                // 跳跃式移动：更大的偏移
-                wanderOffset = CGSize(
-                    width: CGFloat.random(in: -maxX * 1.5...maxX * 1.5),
-                    height: CGFloat.random(in: -maxY * 1.5...maxY * 1.5)
-                )
             } else {
-                // 正常移动：速度变化（慢走 → 快跑 → 停下）
-                let speedVariation = Double.random(in: 0.5...1.5)
-                wanderOffset = CGSize(
-                    width: CGFloat.random(in: -maxX * speedVariation...maxX * speedVariation),
-                    height: CGFloat.random(in: -maxY * speedVariation...maxY * speedVariation)
-                )
+                // 根据移动模式执行不同的移动逻辑
+                switch config.pattern {
+                case .random:
+                    // 随机漫游：随机方向，速度变化
+                    let speedVariation = Double.random(in: 0.5...1.5)
+                    wanderOffset = CGSize(
+                        width: CGFloat.random(in: -maxX * speedVariation...maxX * speedVariation),
+                        height: CGFloat.random(in: -maxY * speedVariation...maxY * speedVariation)
+                    )
+
+                case .circular:
+                    // 圆形绕圈：沿圆形轨迹移动
+                    circularAngle += Double.random(in: 0.3...0.8) * moodModifiers.speedMultiplier
+                    let radius = min(maxX, maxY) * (shouldJump ? 1.3 : 1.0)
+                    wanderOffset = CGSize(
+                        width: CGFloat(cos(circularAngle)) * radius,
+                        height: CGFloat(sin(circularAngle)) * radius * 0.6 // 椭圆形
+                    )
+
+                case .linear:
+                    // 线性来回：沿水平方向来回移动
+                    let direction: CGFloat = Bool.random() ? 1 : -1
+                    let distance = maxX * CGFloat.random(in: 0.5...1.2) * (shouldJump ? 1.5 : 1.0)
+                    wanderOffset = CGSize(
+                        width: direction * distance,
+                        height: CGFloat.random(in: -maxY * 0.3...maxY * 0.3)
+                    )
+
+                case .zoneBased:
+                    // 区域切换：在几个预设区域间跳跃
+                    let zones: [CGSize] = [
+                        CGSize(width: -maxX * 0.8, height: -maxY * 0.5),
+                        CGSize(width: maxX * 0.8, height: -maxY * 0.3),
+                        CGSize(width: -maxX * 0.5, height: maxY * 0.6),
+                        CGSize(width: maxX * 0.6, height: maxY * 0.7),
+                        CGSize(width: 0, height: 0)
+                    ]
+                    wanderOffset = zones.randomElement() ?? .zero
+                }
             }
 
             // 使用配置的停顿时间范围，应用心情影响
