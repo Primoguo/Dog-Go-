@@ -94,8 +94,8 @@ struct ParticleEffect: View {
                     .position(particle.position)
                     .opacity(isAnimating ? particle.targetOpacity : particle.opacity)
                     .offset(
-                        x: isAnimating ? particle.targetOffset.x : 0,
-                        y: isAnimating ? particle.targetOffset.y : 0
+                        x: isAnimating ? particle.targetOffset.width : 0,
+                        y: isAnimating ? particle.targetOffset.height : 0
                     )
             }
         }
