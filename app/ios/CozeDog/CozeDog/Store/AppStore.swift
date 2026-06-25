@@ -136,7 +136,7 @@ final class AppStore: ObservableObject {
 
     func selectActionPlan(_ plan: ActionPlan) {
         state.actionSession = ActionSession(phase: .choosingTime, plan: plan, durationSeconds: 0, remainingSeconds: 0)
-        state.dogState.mood = "focused"
+        state.dogState.mood = .neutral
         state.dogState.pose = .idle
         save()
     }
@@ -145,7 +145,7 @@ final class AppStore: ObservableObject {
         let plan = state.actionSession.plan ?? .study
         let seconds = max(60, minutes * 60)
         state.actionSession = ActionSession(phase: .running, plan: plan, durationSeconds: seconds, remainingSeconds: seconds)
-        state.dogState.mood = "focused"
+        state.dogState.mood = .neutral
         state.dogState.pose = .focused  // 专注姿态
         speechMode = "pending"
 
@@ -175,7 +175,7 @@ final class AppStore: ObservableObject {
 
         if remaining == 0 {
             state.actionSession.phase = .finished
-            state.dogState.mood = "happy"
+            state.dogState.mood = .happy
             state.dogState.pose = .happy
             speechMode = "done"
 
@@ -194,7 +194,7 @@ final class AppStore: ObservableObject {
         }
 
         state.actionSession = .idle
-        state.dogState.mood = "expecting"
+        state.dogState.mood = .neutral
         state.dogState.pose = .idle
         speechMode = "pending"
         save()
@@ -253,8 +253,8 @@ final class AppStore: ObservableObject {
         goal.updatedAt = Date()
         state.goal = goal
         state.rhythmState = .initial
-        state.dogState.mood = "expecting"
-        state.dogState.pose = "idle"
+        state.dogState.mood = .happy
+        state.dogState.pose = .idle
         save()
     }
 
@@ -986,8 +986,8 @@ final class AppStore: ObservableObject {
         state.lastTaskRecommendationDate = Date()
 
         // 自动填充 Dog Go 表单
-        state.goalDraftType = task.goalType
-        state.goalDraftTitle = task.title
+        goalDraftType = task.goalType
+        goalDraftTitle = task.title
 
         // 打开 Dog Go
         openDogGo()
