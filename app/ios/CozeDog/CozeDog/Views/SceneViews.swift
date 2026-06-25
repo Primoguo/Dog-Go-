@@ -151,7 +151,7 @@ struct ParkSceneView: View {
                     .offset(y: proxy.size.height * 0.3)
 
                 // 小路
-                PixelPath(color: "#D2B48C", width: proxy.size.width * 0.8)
+                ScenePathStrip(color: "#D2B48C", width: proxy.size.width * 0.8)
                     .offset(y: proxy.size.height * 0.6)
 
                 // 树木
@@ -254,7 +254,7 @@ struct BeachSceneView: View {
                     .offset(y: proxy.size.height * 0.5)
 
                 // 海浪
-                WaveView(offset: waveOffset)
+                WaveShape(offset: waveOffset)
                     .fill(Color(hex: "#4682B4").opacity(0.6))
                     .frame(height: proxy.size.height * 0.3)
                     .offset(y: proxy.size.height * 0.45)
@@ -287,20 +287,21 @@ struct BeachSceneView: View {
     }
 }
 
-struct WaveView: View {
+struct WaveShape: Shape {
     let offset: CGFloat
 
-    var body: some View {
-        Path { path in
-            path.move(to: CGPoint(x: 0, y: 50))
-            for x in stride(from: 0, through: UIScreen.main.bounds.width, by: 10) {
-                let y = 50 + sin((x + offset) / 30) * 10
-                path.addLine(to: CGPoint(x: x, y: y))
-            }
-            path.addLine(to: CGPoint(x: UIScreen.main.bounds.width, y: 200))
-            path.addLine(to: CGPoint(x: 0, y: 200))
-            path.closeSubpath()
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let width = rect.width
+        path.move(to: CGPoint(x: 0, y: rect.midY))
+        for x in stride(from: 0, through: width, by: 10) {
+            let y = rect.midY + sin((x + offset) / 30) * 10
+            path.addLine(to: CGPoint(x: x, y: y))
         }
+        path.addLine(to: CGPoint(x: width, y: rect.maxY))
+        path.addLine(to: CGPoint(x: 0, y: rect.maxY))
+        path.closeSubpath()
+        return path
     }
 }
 
@@ -520,22 +521,26 @@ struct CloudView: View {
 
 struct RainView: View {
     @State private var rainDrops: [RainDrop] = (0..<50).map { _ in RainDrop() }
+    @State private var isAnimating = false
 
     var body: some View {
         GeometryReader { proxy in
             ZStack {
                 ForEach(rainDrops) { drop in
                     PixelRect(color: Color(hex: "#4682B4")).frame(width: 2, height: 15)
-                        .position(drop.position)
+                        .position(
+                            x: drop.position.x,
+                            y: isAnimating ? proxy.size.height + 20 : drop.position.y
+                        )
                         .opacity(0.6)
-                        .onAppear {
-                            withAnimation(
-                                .linear(duration: drop.duration)
-                                .repeatForever(autoreverses: false)
-                            ) {
-                                drop.position.y = proxy.size.height + 20
-                            }
-                        }
+                }
+            }
+            .onAppear {
+                withAnimation(
+                    .linear(duration: 1.5)
+                    .repeatForever(autoreverses: false)
+                ) {
+                    isAnimating = true
                 }
             }
         }
@@ -558,6 +563,7 @@ struct RainDrop: Identifiable {
 
 struct SnowView: View {
     @State private var snowFlakes: [SnowFlake] = (0..<40).map { _ in SnowFlake() }
+    @State private var isAnimating = false
 
     var body: some View {
         GeometryReader { proxy in
@@ -566,17 +572,19 @@ struct SnowView: View {
                     Circle()
                         .fill(Color.white)
                         .frame(width: flake.size, height: flake.size)
-                        .position(flake.position)
+                        .position(
+                            x: flake.position.x + (isAnimating ? flake.driftX : 0),
+                            y: isAnimating ? proxy.size.height + 20 : flake.position.y
+                        )
                         .opacity(0.8)
-                        .onAppear {
-                            withAnimation(
-                                .easeInOut(duration: flake.duration)
-                                .repeatForever(autoreverses: false)
-                            ) {
-                                flake.position.y = proxy.size.height + 20
-                                flake.position.x += CGFloat.random(in: -30...30)
-                            }
-                        }
+                }
+            }
+            .onAppear {
+                withAnimation(
+                    .easeInOut(duration: 4)
+                    .repeatForever(autoreverses: false)
+                ) {
+                    isAnimating = true
                 }
             }
         }
@@ -588,6 +596,7 @@ struct SnowFlake: Identifiable {
     var position: CGPoint
     var size: CGFloat
     var duration: Double
+    var driftX: CGFloat
 
     init() {
         self.position = CGPoint(
@@ -596,6 +605,7 @@ struct SnowFlake: Identifiable {
         )
         self.size = CGFloat.random(in: 3...8)
         self.duration = Double.random(in: 3...6)
+        self.driftX = CGFloat.random(in: -30...30)
     }
 }
 
@@ -623,7 +633,7 @@ struct Triangle: Shape {
     }
 }
 
-struct PixelPath: View {
+struct ScenePathStrip: View {
     let color: String
     let width: CGFloat
 
