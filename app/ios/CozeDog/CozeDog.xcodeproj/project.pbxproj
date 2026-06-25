@@ -14,7 +14,6 @@
 		4A1111111111111111111115 /* AppViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2222222222222222222226 /* AppViews.swift */; };
 		4A1111111111111111111116 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2222222222222222222227 /* Components.swift */; };
 		4A1111111111111111111117 /* Style.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2222222222222222222228 /* Style.swift */; };
-		4A1111111111111111111118 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4A2222222222222222222229 /* LaunchScreen.storyboard */; };
 		4A1111111111111111111120 /* EvolutionViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2222222222222222222230 /* EvolutionViews.swift */; };
 		4A1111111111111111111121 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2222222222222222222231 /* OnboardingView.swift */; };
 		4A1111111111111111111122 /* HabitCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2222222222222222222232 /* HabitCalendarView.swift */; };
@@ -31,7 +30,6 @@
 		4A2222222222222222222226 /* AppViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppViews.swift; sourceTree = "<group>"; };
 		4A2222222222222222222227 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		4A2222222222222222222228 /* Style.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Style.swift; sourceTree = "<group>"; };
-		4A2222222222222222222229 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		4A2222222222222222222230 /* EvolutionViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionViews.swift; sourceTree = "<group>"; };
 		4A2222222222222222222231 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		4A2222222222222222222232 /* HabitCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitCalendarView.swift; sourceTree = "<group>"; };
@@ -68,7 +66,6 @@
 				4A4444444444444444444447 /* Components */,
 				4A4444444444444444444448 /* Shared */,
 				4A2222222222222222222223 /* Assets.xcassets */,
-				4A2222222222222222222229 /* LaunchScreen.storyboard */,
 			);
 			path = CozeDog;
 			sourceTree = "<group>";
@@ -186,7 +183,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A1111111111111111111112 /* Assets.xcassets in Resources */,
-				4A1111111111111111111118 /* LaunchScreen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -341,7 +337,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 0.1.0;
@@ -367,7 +363,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 0.1.0;
