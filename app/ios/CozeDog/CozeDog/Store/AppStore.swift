@@ -765,7 +765,7 @@ final class AppStore: ObservableObject {
             cleanliness: state.dogState.cleanliness,
             energy: state.dogState.energy
         )
-        state.dogState.mood = state.dogMood.rawValue
+        state.dogState.mood = state.dogMood
     }
 
     /// 获取最近 N 天的完成次数
