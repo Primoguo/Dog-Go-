@@ -32,7 +32,7 @@ struct RootView: View {
                 .zIndex(100)
             }
         }
-        .onChange(of: store.state.dogEvolution) { newEvolution in
+        .onChange(of: store.state.dogEvolution) { _, newEvolution in
             if newEvolution != previousEvolution {
                 showEvolutionPopup = true
             }
@@ -937,7 +937,7 @@ struct FocusModeView: View {
                 checkRestReminder()
             }
         }
-        .onChange(of: store.state.lastEncouragementProgress) { newProgress in
+        .onChange(of: store.state.lastEncouragementProgress) { _, newProgress in
             if newProgress > 0 {
                 showEncouragementMessage()
             }
