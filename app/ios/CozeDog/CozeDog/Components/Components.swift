@@ -6,6 +6,8 @@ struct DogWorldScene: View {
     @State private var activityIndex = 0
     @State private var wanderOffset = CGSize.zero
     @State private var showsSceneSelector = false
+    @State private var dragOffset: CGSize = .zero
+    @State private var isDragging: Bool = false
 
     var body: some View {
         GeometryReader { proxy in
@@ -14,6 +16,7 @@ struct DogWorldScene: View {
             let dogSize = min(width * 0.11, height * 0.15)
             let dogPosition = dogMapPosition(width: width, height: height)
                 .applying(offset: wanderOffset)
+                .applying(offset: dragOffset)
 
             ZStack {
                 // 场景背景
@@ -89,6 +92,25 @@ struct DogWorldScene: View {
                 }
                 .buttonStyle(.plain)
                 .position(dogPosition)
+                .gesture(
+                    DragGesture()
+                        .onChanged { value in
+                            isDragging = true
+                            showsDogStatus = false
+                            withAnimation(.interactiveSpring(response: 0.3, dampingFraction: 0.7)) {
+                                dragOffset = value.translation
+                            }
+                        }
+                        .onEnded { value in
+                            isDragging = false
+                            // 松手后狗狗跑回原位
+                            withAnimation(.spring(response: 0.6, dampingFraction: 0.5)) {
+                                dragOffset = .zero
+                            }
+                            // 跑回去后说句话
+                            store.speechMode = "happy"
+                        }
+                )
 
                 if showsDogStatus {
                     DogStatusTray(
@@ -136,6 +158,7 @@ struct DogWorldScene: View {
             .animation(.spring(response: 0.35, dampingFraction: 0.8), value: showsDogStatus)
             .animation(.easeInOut(duration: 1.2), value: wanderOffset)
             .animation(.easeInOut(duration: 0.35), value: activityIndex)
+            .animation(.spring(response: 0.6, dampingFraction: 0.5), value: dragOffset)
             .task(id: dogWorldTaskID) {
                 await runDogWorldLoop(width: width, height: height)
             }
@@ -178,18 +201,34 @@ struct DogWorldScene: View {
 
     @MainActor
     private func runDogWorldLoop(width: CGFloat, height: CGFloat) async {
+        let config = store.state.sceneSettings.currentScene.movementConfig
+
         while !Task.isCancelled {
-            let maxX = width * 0.05
-            let maxY = height * 0.04
+            // 拖动时暂停漫游
+            guard !isDragging else {
+                try? await Task.sleep(nanoseconds: 100_000_000)
+                continue
+            }
+
+            let maxX = width * config.wanderRange.width
+            let maxY = height * config.wanderRange.height
             activityIndex = Int.random(in: 0...2)
 
             if isRecovery || isIdleCompleted {
-                wanderOffset = CGSize(width: CGFloat.random(in: -maxX * 0.3...maxX * 0.3), height: CGFloat.random(in: -maxY * 0.3...maxY * 0.3))
+                wanderOffset = CGSize(
+                    width: CGFloat.random(in: -maxX * 0.3...maxX * 0.3),
+                    height: CGFloat.random(in: -maxY * 0.3...maxY * 0.3)
+                )
             } else {
-                wanderOffset = CGSize(width: CGFloat.random(in: -maxX...maxX), height: CGFloat.random(in: -maxY...maxY))
+                wanderOffset = CGSize(
+                    width: CGFloat.random(in: -maxX...maxX),
+                    height: CGFloat.random(in: -maxY...maxY)
+                )
             }
 
-            try? await Task.sleep(nanoseconds: 3_200_000_000)
+            // 使用配置的停顿时间范围
+            let pauseDuration = Double.random(in: config.pauseRange)
+            try? await Task.sleep(nanoseconds: UInt64(pauseDuration * 1_000_000_000))
         }
     }
 

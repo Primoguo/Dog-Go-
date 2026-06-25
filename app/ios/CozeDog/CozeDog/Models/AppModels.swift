@@ -50,6 +50,70 @@ enum SceneType: String, Codable, CaseIterable {
     }
 }
 
+// MARK: - Movement System
+
+enum MovementPattern: String, Codable {
+    case random          // 随机漫游
+    case circular        // 圆形绕圈
+    case linear          // 线性来回
+    case zoneBased       // 在多个区域间切换
+}
+
+struct SceneMovementConfig {
+    let pattern: MovementPattern
+    let activityZone: CGRect  // 相对坐标（0-1），可活动区域
+    let speedMultiplier: Double
+    let pauseRange: ClosedRange<Double>  // 停顿时间范围（秒）
+    let wanderRange: CGSize  // 漫游范围（相对于 activityZone 的百分比）
+
+    static let `default` = SceneMovementConfig(
+        pattern: .random,
+        activityZone: CGRect(x: 0.2, y: 0.3, width: 0.6, height: 0.5),
+        speedMultiplier: 1.0,
+        pauseRange: 2.5...4.0,
+        wanderRange: CGSize(width: 0.05, height: 0.04)
+    )
+}
+
+extension SceneType {
+    var movementConfig: SceneMovementConfig {
+        switch self {
+        case .yard:
+            return SceneMovementConfig(
+                pattern: .random,
+                activityZone: CGRect(x: 0.15, y: 0.35, width: 0.7, height: 0.5),
+                speedMultiplier: 1.0,
+                pauseRange: 2.8...3.6,
+                wanderRange: CGSize(width: 0.05, height: 0.04)
+            )
+        case .park:
+            return SceneMovementConfig(
+                pattern: .linear,
+                activityZone: CGRect(x: 0.1, y: 0.5, width: 0.8, height: 0.3),
+                speedMultiplier: 1.2,
+                pauseRange: 2.0...3.2,
+                wanderRange: CGSize(width: 0.08, height: 0.03)
+            )
+        case .beach:
+            return SceneMovementConfig(
+                pattern: .circular,
+                activityZone: CGRect(x: 0.1, y: 0.5, width: 0.8, height: 0.35),
+                speedMultiplier: 1.1,
+                pauseRange: 2.5...3.5,
+                wanderRange: CGSize(width: 0.06, height: 0.04)
+            )
+        case .forest:
+            return SceneMovementConfig(
+                pattern: .zoneBased,
+                activityZone: CGRect(x: 0.1, y: 0.3, width: 0.8, height: 0.5),
+                speedMultiplier: 0.9,
+                pauseRange: 3.0...4.5,
+                wanderRange: CGSize(width: 0.07, height: 0.05)
+            )
+        }
+    }
+}
+
 enum TimeOfDay: String, Codable {
     case morning    // 早晨 6-10
     case daytime    // 白天 10-17
