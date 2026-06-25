@@ -2,12 +2,25 @@ import SwiftUI
 
 struct RootView: View {
     @EnvironmentObject private var store: AppStore
+    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
 
     var body: some View {
         ZStack {
             LinearGradient(colors: [Color(hex: 0xF2F7EE), Color(hex: 0xFFF7EC), Color(hex: 0xEDF5FB)], startPoint: .topLeading, endPoint: .bottomTrailing)
                 .ignoresSafeArea()
 
+            if !hasSeenOnboarding {
+                // 首次启动：显示引导页
+                OnboardingView()
+            } else {
+                // 已看过引导：正常流程
+                mainContent
+            }
+        }
+    }
+
+    private var mainContent: some View {
+        Group {
             switch store.state.screen {
             case .adopt:
                 AdoptDogView()

@@ -1,0 +1,185 @@
+<svg width="1170" height="2532" viewBox="0 0 1170 2532" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景渐变 -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFB347;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF8C42;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="1170" height="2532" fill="url(#bgGradient)"/>
+
+  <!-- App 名称 -->
+  <text x="585" y="500" font-family="Arial, sans-serif" font-size="140" font-weight="bold" fill="#FFFFFF" text-anchor="middle">
+    自律狗
+  </text>
+  <text x="585" y="620" font-family="Arial, sans-serif" font-size="70" fill="#FFFFFF" text-anchor="middle" opacity="0.9">
+    Dog Go
+  </text>
+
+  <!-- ============ 背景道具元素 ============ -->
+
+  <!-- 左上：哑铃（健身） -->
+  <g transform="translate(200, 800)">
+    <!-- 左 weights -->
+    <rect x="0" y="20" width="30" height="60" fill="#4A4A4A"/>
+    <rect x="30" y="30" width="20" height="40" fill="#6A6A6A"/>
+    <!-- 杆 -->
+    <rect x="50" y="40" width="80" height="20" fill="#8A8A8A"/>
+    <!-- 右 weights -->
+    <rect x="130" y="30" width="20" height="40" fill="#6A6A6A"/>
+    <rect x="150" y="20" width="30" height="60" fill="#4A4A4A"/>
+  </g>
+
+  <!-- 右上：足球（运动） -->
+  <g transform="translate(850, 850)">
+    <!-- 球体 -->
+    <circle cx="50" cy="50" r="50" fill="#FFFFFF"/>
+    <!-- 黑色五边形图案 -->
+    <polygon points="50,20 65,35 60,55 40,55 35,35" fill="#2A241F"/>
+    <polygon points="25,45 35,35 40,55 30,65 20,55" fill="#2A241F"/>
+    <polygon points="75,45 65,35 60,55 70,65 80,55" fill="#2A241F"/>
+    <polygon points="50,80 40,55 60,55" fill="#2A241F"/>
+  </g>
+
+  <!-- 左中：书籍（学习） -->
+  <g transform="translate(150, 1200)">
+    <!-- 书1 -->
+    <rect x="0" y="0" width="80" height="100" fill="#E74C3C" rx="3"/>
+    <rect x="5" y="5" width="70" height="90" fill="#FFFFFF"/>
+    <rect x="15" y="20" width="50" height="5" fill="#CCCCCC"/>
+    <rect x="15" y="35" width="50" height="5" fill="#CCCCCC"/>
+    <rect x="15" y="50" width="50" height="5" fill="#CCCCCC"/>
+    <!-- 书2（叠在上面） -->
+    <rect x="20" y="15" width="80" height="100" fill="#3498DB" rx="3" transform="rotate(-15 60 65)"/>
+  </g>
+
+  <!-- 右中：奖杯/奖牌（成就收集） -->
+  <g transform="translate(880, 1250)">
+    <!-- 奖杯主体 -->
+    <rect x="30" y="0" width="60" height="70" fill="#FFD700" rx="5"/>
+    <rect x="20" y="70" width="80" height="15" fill="#FFD700"/>
+    <rect x="40" y="85" width="40" height="30" fill="#FFA500"/>
+    <rect x="30" y="115" width="60" height="10" fill="#FFD700"/>
+    <!-- 把手 -->
+    <rect x="0" y="20" width="30" height="40" fill="none" stroke="#FFD700" stroke-width="8" rx="15"/>
+    <rect x="90" y="20" width="30" height="40" fill="none" stroke="#FFD700" stroke-width="8" rx="15"/>
+    <!-- 星星装饰 -->
+    <polygon points="60,25 65,35 75,35 67,42 70,52 60,46 50,52 53,42 45,35 55,35" fill="#FFFFFF"/>
+  </g>
+
+  <!-- 左下：铅笔（计划/目标） -->
+  <g transform="translate(250, 1700)">
+    <!-- 笔身 -->
+    <rect x="0" y="20" width="120" height="25" fill="#F4D03F" transform="rotate(-30 60 32)"/>
+    <!-- 笔尖 -->
+    <polygon points="120,20 140,32 120,45" fill="#E89B4F" transform="rotate(-30 60 32)"/>
+    <polygon points="130,26 140,32 130,38" fill="#2A241F" transform="rotate(-30 60 32)"/>
+    <!-- 橡皮 -->
+    <rect x="-20" y="20" width="20" height="25" fill="#FFB6C1" transform="rotate(-30 60 32)"/>
+    <!-- 金属环 -->
+    <rect x="0" y="20" width="10" height="25" fill="#C0C0C0" transform="rotate(-30 60 32)"/>
+  </g>
+
+  <!-- 右下：笔记本/计划本 -->
+  <g transform="translate(800, 1750)">
+    <!-- 本子 -->
+    <rect x="0" y="0" width="100" height="130" fill="#2ECC71" rx="5"/>
+    <rect x="10" y="10" width="80" height="110" fill="#FFFFFF"/>
+    <!-- 横线 -->
+    <line x1="15" y1="30" x2="85" y2="30" stroke="#CCCCCC" stroke-width="2"/>
+    <line x1="15" y1="50" x2="85" y2="50" stroke="#CCCCCC" stroke-width="2"/>
+    <line x1="15" y1="70" x2="85" y2="70" stroke="#CCCCCC" stroke-width="2"/>
+    <line x1="15" y1="90" x2="85" y2="90" stroke="#CCCCCC" stroke-width="2"/>
+    <!-- 对勾（完成的任务） -->
+    <polyline points="20,25 30,35 45,20" stroke="#2ECC71" stroke-width="4" fill="none"/>
+    <polyline points="20,45 30,55 45,40" stroke="#2ECC71" stroke-width="4" fill="none"/>
+    <!-- 螺旋装订 -->
+    <circle cx="5" cy="20" r="3" fill="#888888"/>
+    <circle cx="5" cy="40" r="3" fill="#888888"/>
+    <circle cx="5" cy="60" r="3" fill="#888888"/>
+    <circle cx="5" cy="80" r="3" fill="#888888"/>
+    <circle cx="5" cy="100" r="3" fill="#888888"/>
+  </g>
+
+  <!-- 小星星装饰（散落） -->
+  <g transform="translate(400, 900)" opacity="0.8">
+    <rect x="0" y="10" width="10" height="10" fill="#FFD700"/>
+    <rect x="10" y="0" width="10" height="30" fill="#FFD700"/>
+    <rect x="20" y="10" width="10" height="10" fill="#FFD700"/>
+  </g>
+
+  <g transform="translate(750, 1050)" opacity="0.7">
+    <rect x="0" y="8" width="8" height="8" fill="#FFD700"/>
+    <rect x="8" y="0" width="8" height="24" fill="#FFD700"/>
+    <rect x="16" y="8" width="8" height="8" fill="#FFD700"/>
+  </g>
+
+  <g transform="translate(350, 1550)" opacity="0.6">
+    <rect x="0" y="6" width="6" height="6" fill="#FFD700"/>
+    <rect x="6" y="0" width="6" height="18" fill="#FFD700"/>
+    <rect x="12" y="6" width="6" height="6" fill="#FFD700"/>
+  </g>
+
+  <!-- ============ 中心：像素狗（坐姿） ============ -->
+
+  <!-- 身体主体（奶油色） -->
+  <rect x="485" y="1200" width="200" height="280" fill="#F5DEB3"/>
+  <rect x="445" y="1280" width="40" height="200" fill="#F5DEB3"/>
+  <rect x="685" y="1280" width="40" height="200" fill="#F5DEB3"/>
+
+  <!-- 头部（奶油色） -->
+  <rect x="445" y="1000" width="280" height="240" fill="#F5DEB3"/>
+  <rect x="405" y="1040" width="40" height="160" fill="#F5DEB3"/>
+  <rect x="725" y="1040" width="40" height="160" fill="#F5DEB3"/>
+  <rect x="485" y="960" width="200" height="40" fill="#F5DEB3"/>
+
+  <!-- 耳朵（橙色） -->
+  <rect x="405" y="960" width="60" height="100" fill="#E89B4F"/>
+  <rect x="365" y="1000" width="40" height="60" fill="#E89B4F"/>
+  <rect x="705" y="960" width="60" height="100" fill="#E89B4F"/>
+  <rect x="765" y="1000" width="40" height="60" fill="#E89B4F"/>
+
+  <!-- 眼睛（微笑弯月形） -->
+  <rect x="485" y="1100" width="60" height="30" fill="#2A241F"/>
+  <rect x="485" y="1130" width="30" height="15" fill="#2A241F"/>
+  <rect x="545" y="1130" width="30" height="15" fill="#2A241F"/>
+
+  <rect x="625" y="1100" width="60" height="30" fill="#2A241F"/>
+  <rect x="625" y="1130" width="30" height="15" fill="#2A241F"/>
+  <rect x="685" y="1130" width="30" height="15" fill="#2A241F"/>
+
+  <!-- 鼻子 -->
+  <rect x="565" y="1160" width="40" height="35" fill="#2A241F"/>
+
+  <!-- 嘴巴（微笑） -->
+  <rect x="525" y="1195" width="30" height="15" fill="#2A241F"/>
+  <rect x="615" y="1195" width="30" height="15" fill="#2A241F"/>
+  <rect x="555" y="1210" width="60" height="15" fill="#2A241F"/>
+
+  <!-- 舌头 -->
+  <rect x="570" y="1225" width="30" height="25" fill="#FFB6C1"/>
+
+  <!-- 脸颊红晕 -->
+  <circle cx="465" cy="1160" r="20" fill="#FFB6C1" opacity="0.6"/>
+  <circle cx="705" cy="1160" r="20" fill="#FFB6C1" opacity="0.6"/>
+
+  <!-- 前腿（坐姿） -->
+  <rect x="465" y="1440" width="60" height="120" fill="#F5DEB3"/>
+  <rect x="645" y="1440" width="60" height="120" fill="#F5DEB3"/>
+
+  <!-- 爪子 -->
+  <rect x="455" y="1540" width="80" height="30" fill="#E89B4F"/>
+  <rect x="635" y="1540" width="80" height="30" fill="#E89B4F"/>
+
+  <!-- 尾巴（橙色，向上翘） -->
+  <rect x="685" y="1300" width="40" height="80" fill="#E89B4F"/>
+  <rect x="725" y="1260" width="40" height="60" fill="#E89B4F"/>
+  <rect x="765" y="1240" width="30" height="40" fill="#E89B4F"/>
+
+  <!-- 底部标语 -->
+  <text x="585" y="2300" font-family="Arial, sans-serif" font-size="45" fill="#FFFFFF" text-anchor="middle" opacity="0.8">
+    陪你一起自律
+  </text>
+</svg>
