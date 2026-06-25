@@ -59,9 +59,8 @@ final class AppStore: ObservableObject {
             state.dogCollection.dogs.append(collectedDog)
         }
 
-        goalDraftType = .fitness
-        goalDraftTitle = GoalType.fitness.templates[0].title
-        state.screen = .createGoal
+        // 领养后直接进入主界面（跳过 CreateGoalView）
+        state.screen = .home
         save()
     }
 

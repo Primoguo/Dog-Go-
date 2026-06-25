@@ -12,6 +12,8 @@ struct DogWorldScene: View {
     @State private var isDragging: Bool = false
     @State private var isJumping: Bool = false
     @State private var isWaggingTail: Bool = false
+    @State private var companionWanderOffset = CGSize.zero
+    @State private var companionPose: DogPose = .idle
 
     var body: some View {
         GeometryReader { proxy in
@@ -89,20 +91,6 @@ struct DogWorldScene: View {
                         .offset(y: isJumping ? -dogSize * 0.3 : 0)
                         .scaleEffect(x: isJumping ? 0.95 : 1.0, y: isJumping ? 1.1 : 1.0)
 
-                        // Companion dog
-                        if let companionId = store.state.activeCompanionId,
-                           let companion = store.state.dogCollection.dog(with: companionId) {
-                            PixelDogSprite(
-                                breed: companion.breed,
-                                appearance: companion.appearance,
-                                size: dogSize * 0.85,
-                                pose: store.state.dogState.pose,
-                                evolution: store.state.dogEvolution,
-                                mood: store.state.dogMood
-                            )
-                            .offset(x: dogSize * 0.9, y: dogSize * 0.1)
-                        }
-
                         PixelDogActivityCue(
                             goalType: activeGoalType,
                             isRecovery: isRecovery,
@@ -137,6 +125,38 @@ struct DogWorldScene: View {
                             store.speechMode = "happy"
                         }
                 )
+
+                // 陪伴狗狗（独立位置和动画）
+                if let companionId = store.state.activeCompanionId,
+                   let companion = store.state.dogCollection.dog(with: companionId) {
+                    let companionSize = dogSize * 0.85
+                    let companionPosition = dogMapPosition(width: width, height: height)
+                        .applying(offset: companionWanderOffset)
+                        .applying(CGSize(width: dogSize * 1.2, height: dogSize * 0.3))
+
+                    PixelDogSprite(
+                        breed: companion.breed,
+                        appearance: companion.appearance,
+                        size: companionSize,
+                        pose: companionPose,
+                        evolution: .adult,
+                        mood: store.state.dogMood
+                    )
+                    .position(companionPosition)
+                    .onAppear {
+                        // 陪伴狗狗独立漫游动画
+                        withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
+                            companionWanderOffset = CGSize(width: 30, height: 20)
+                        }
+                        // 独立 pose 切换
+                        Timer.scheduledTimer(withTimeInterval: 2.5, repeats: true) { _ in
+                            let poses: [DogPose] = [.idle, .happy, .waiting]
+                            withAnimation(.easeInOut(duration: 0.5)) {
+                                companionPose = poses.randomElement() ?? .idle
+                            }
+                        }
+                    }
+                }
 
                 if showsDogStatus {
                     DogStatusTray(
@@ -2129,11 +2149,13 @@ struct AppBottomBar: View {
         .padding(.horizontal, 10)
         .padding(.top, 10)
         .padding(.bottom, 6)
+        .frame(maxWidth: .infinity)
         .background {
             ZStack {
                 Color(hex: 0xFFF8E8).opacity(0.97)
                 PixelTinyGrid(colorA: Color(hex: 0xEAF1DA, alpha: 0.4), colorB: Color.clear, tile: 10)
             }
+            .ignoresSafeArea(edges: .bottom)
         }
         .overlay(alignment: .top) {
             Rectangle()
