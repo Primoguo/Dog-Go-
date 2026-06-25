@@ -87,7 +87,7 @@ struct DogWorldScene: View {
                             mood: store.state.dogMood
                         )
                         .offset(y: isJumping ? -dogSize * 0.3 : 0)
-                        .scaleEffect(y: isJumping ? 1.1 : 1.0, x: isJumping ? 0.95 : 1.0)
+                        .scaleEffect(x: isJumping ? 0.95 : 1.0, y: isJumping ? 1.1 : 1.0)
 
                         // Companion dog
                         if let companionId = store.state.activeCompanionId,
@@ -836,11 +836,11 @@ struct DogStatusTray: View {
 
     private var moodLabel: String {
         switch dogState.mood {
-        case "happy": return "开心"
-        case "focused": return "专注"
-        case "waiting": return "等待"
-        case "recovering": return "恢复"
-        default: return "期待"
+        case .happy: return "开心"
+        case .excited: return "兴奋"
+        case .ecstatic: return "狂喜"
+        case .sad: return "难过"
+        case .neutral: return "平静"
         }
     }
 }
@@ -1264,17 +1264,19 @@ struct PixelDogSprite: View {
             }
 
             // Tail with wagging animation
-            if breed == .shiba {
-                PixelRect(color: Color(hex: appearance.tailColorHex))
-                    .frame(width: size * 0.20, height: size * 0.20)
-                    .offset(x: size * tailX, y: size * -0.02)
-                PixelRect(color: Color(hex: appearance.secondaryFurHex))
-                    .frame(width: size * 0.10, height: size * 0.10)
-                    .offset(x: size * tailX, y: size * -0.02)
-            } else {
-                PixelRect(color: Color(hex: appearance.tailColorHex))
-                    .frame(width: size * tailWidth, height: size * tailHeight)
-                    .offset(x: size * tailX, y: size * tailY)
+            Group {
+                if breed == .shiba {
+                    PixelRect(color: Color(hex: appearance.tailColorHex))
+                        .frame(width: size * 0.20, height: size * 0.20)
+                        .offset(x: size * tailX, y: size * -0.02)
+                    PixelRect(color: Color(hex: appearance.secondaryFurHex))
+                        .frame(width: size * 0.10, height: size * 0.10)
+                        .offset(x: size * tailX, y: size * -0.02)
+                } else {
+                    PixelRect(color: Color(hex: appearance.tailColorHex))
+                        .frame(width: size * tailWidth, height: size * tailHeight)
+                        .offset(x: size * tailX, y: size * tailY)
+                }
             }
             .rotationEffect(.degrees(tailWag ? mood.tailWagAngle : -mood.tailWagAngle), anchor: .bottom)
             .animation(.easeInOut(duration: mood.tailWagDuration).repeatForever(autoreverses: true), value: tailWag)
