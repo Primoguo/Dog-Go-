@@ -15,6 +15,11 @@
 		4A1111111111111111111116 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2222222222222222222227 /* Components.swift */; };
 		4A1111111111111111111117 /* Style.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2222222222222222222228 /* Style.swift */; };
 		4A1111111111111111111118 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4A2222222222222222222229 /* LaunchScreen.storyboard */; };
+		4A1111111111111111111120 /* EvolutionViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2222222222222222222230 /* EvolutionViews.swift */; };
+		4A1111111111111111111121 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2222222222222222222231 /* OnboardingView.swift */; };
+		4A1111111111111111111122 /* HabitCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2222222222222222222232 /* HabitCalendarView.swift */; };
+		4A1111111111111111111123 /* InteractiveViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2222222222222222222233 /* InteractiveViews.swift */; };
+		4A1111111111111111111124 /* SceneViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2222222222222222222234 /* SceneViews.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +32,11 @@
 		4A2222222222222222222227 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		4A2222222222222222222228 /* Style.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Style.swift; sourceTree = "<group>"; };
 		4A2222222222222222222229 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		4A2222222222222222222230 /* EvolutionViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvolutionViews.swift; sourceTree = "<group>"; };
+		4A2222222222222222222231 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		4A2222222222222222222232 /* HabitCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitCalendarView.swift; sourceTree = "<group>"; };
+		4A2222222222222222222233 /* InteractiveViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractiveViews.swift; sourceTree = "<group>"; };
+		4A2222222222222222222234 /* SceneViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneViews.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,6 +101,11 @@
 			isa = PBXGroup;
 			children = (
 				4A2222222222222222222226 /* AppViews.swift */,
+				4A2222222222222222222230 /* EvolutionViews.swift */,
+				4A2222222222222222222231 /* OnboardingView.swift */,
+				4A2222222222222222222232 /* HabitCalendarView.swift */,
+				4A2222222222222222222233 /* InteractiveViews.swift */,
+				4A2222222222222222222234 /* SceneViews.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -188,6 +203,11 @@
 				4A1111111111111111111115 /* AppViews.swift in Sources */,
 				4A1111111111111111111116 /* Components.swift in Sources */,
 				4A1111111111111111111117 /* Style.swift in Sources */,
+				4A1111111111111111111120 /* EvolutionViews.swift in Sources */,
+				4A1111111111111111111121 /* OnboardingView.swift in Sources */,
+				4A1111111111111111111122 /* HabitCalendarView.swift in Sources */,
+				4A1111111111111111111123 /* InteractiveViews.swift in Sources */,
+				4A1111111111111111111124 /* SceneViews.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
