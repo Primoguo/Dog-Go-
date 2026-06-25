@@ -127,7 +127,7 @@ struct Particle: Identifiable {
         self.duration = Double.random(in: 2...4)
     }
 
-    func animate() {
+    mutating func animate() {
         let angle = Double.random(in: 0..<360)
         let radius = Double.random(in: 50..<80)
         position = CGPoint(
