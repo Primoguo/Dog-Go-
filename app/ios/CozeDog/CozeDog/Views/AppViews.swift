@@ -881,9 +881,16 @@ struct DogDogView: View {
 
 struct DogHomeView: View {
     @EnvironmentObject private var store: AppStore
-    @State private var selectedScene = "小院子"
 
-    let scenes = ["小院子", "海边", "森林", "城市阳台"]
+    private var currentScene: SceneType {
+        store.state.sceneSettings.currentScene
+    }
+
+    private var isSceneUnlocked: (SceneType) -> Bool {
+        { scene in
+            store.state.dogEvolution.rawValue >= scene.requiredEvolution.rawValue
+        }
+    }
 
     var body: some View {
         ScreenScaffold {
@@ -895,25 +902,23 @@ struct DogHomeView: View {
                         Text("当前场景")
                             .eyebrowStyle()
 
-                        Text(selectedScene)
+                        Text(currentScene.displayName)
                             .font(.title2.weight(.bold))
                             .foregroundStyle(Color(hex: 0x356247))
 
                         ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 10) {
-                                ForEach(scenes, id: \.self) { scene in
-                                    Button {
-                                        selectedScene = scene
-                                    } label: {
-                                        Text(scene)
-                                            .font(.caption.weight(.semibold))
-                                            .padding(.horizontal, 12)
-                                            .padding(.vertical, 8)
-                                            .background(selectedScene == scene ? Color(hex: 0x356247) : Color(hex: 0xEAF1DA))
-                                            .foregroundStyle(selectedScene == scene ? .white : Color(hex: 0x356247))
-                                            .clipShape(Capsule())
+                            HStack(spacing: 8) {
+                                ForEach(SceneType.allCases, id: \.self) { scene in
+                                    SceneThumbnailView(
+                                        scene: scene,
+                                        isSelected: currentScene == scene,
+                                        isLocked: !isSceneUnlocked(scene)
+                                    )
+                                    .onTapGesture {
+                                        if isSceneUnlocked(scene) {
+                                            store.setScene(scene)
+                                        }
                                     }
-                                    .buttonStyle(.plain)
                                 }
                             }
                         }

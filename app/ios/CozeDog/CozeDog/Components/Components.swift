@@ -132,7 +132,7 @@ struct DogWorldScene: View {
                     let companionSize = dogSize * 0.85
                     let companionPosition = dogMapPosition(width: width, height: height)
                         .applying(offset: companionWanderOffset)
-                        .applying(CGSize(width: dogSize * 1.2, height: dogSize * 0.3))
+                        .applying(offset: CGSize(width: dogSize * 1.2, height: dogSize * 0.3))
 
                     PixelDogSprite(
                         breed: companion.breed,

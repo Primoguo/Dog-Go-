@@ -19,6 +19,8 @@
 		4A1111111111111111111122 /* HabitCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2222222222222222222232 /* HabitCalendarView.swift */; };
 		4A1111111111111111111123 /* InteractiveViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2222222222222222222233 /* InteractiveViews.swift */; };
 		4A1111111111111111111124 /* SceneViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2222222222222222222234 /* SceneViews.swift */; };
+		4A1111111111111111111125 /* IsometricHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2222222222222222222235 /* IsometricHelpers.swift */; };
+		4A1111111111111111111126 /* SceneProps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2222222222222222222236 /* SceneProps.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +37,8 @@
 		4A2222222222222222222232 /* HabitCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitCalendarView.swift; sourceTree = "<group>"; };
 		4A2222222222222222222233 /* InteractiveViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractiveViews.swift; sourceTree = "<group>"; };
 		4A2222222222222222222234 /* SceneViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneViews.swift; sourceTree = "<group>"; };
+		4A2222222222222222222235 /* IsometricHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IsometricHelpers.swift; sourceTree = "<group>"; };
+		4A2222222222222222222236 /* SceneProps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneProps.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,6 +107,8 @@
 				4A2222222222222222222232 /* HabitCalendarView.swift */,
 				4A2222222222222222222233 /* InteractiveViews.swift */,
 				4A2222222222222222222234 /* SceneViews.swift */,
+				4A2222222222222222222235 /* IsometricHelpers.swift */,
+				4A2222222222222222222236 /* SceneProps.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -204,6 +210,8 @@
 				4A1111111111111111111122 /* HabitCalendarView.swift in Sources */,
 				4A1111111111111111111123 /* InteractiveViews.swift in Sources */,
 				4A1111111111111111111124 /* SceneViews.swift in Sources */,
+				4A1111111111111111111125 /* IsometricHelpers.swift in Sources */,
+				4A1111111111111111111126 /* SceneProps.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

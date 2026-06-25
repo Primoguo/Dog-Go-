@@ -1,6 +1,6 @@
 import SwiftUI
 
-// MARK: - 场景背景（鸟瞰视角）
+// MARK: - 场景背景（2.5D 等距视角）
 
 struct SceneBackgroundView: View {
     let scene: SceneType
@@ -10,8 +10,8 @@ struct SceneBackgroundView: View {
 
     var body: some View {
         ZStack {
-            // 地面填充整个画面（鸟瞰无天空）
-            groundBackground
+            // 天空 + 地面（等距视角能看到天空）
+            skyAndGround
 
             // 场景特定元素
             switch scene {
@@ -30,25 +30,54 @@ struct SceneBackgroundView: View {
         }
     }
 
-    private var groundBackground: some View {
-        // 鸟瞰视角：地面颜色根据时间和场景微调
-        let baseColor: Color
-        switch scene {
-        case .yard: baseColor = Color(hex: "#7CCD7C")
-        case .park: baseColor = Color(hex: "#6BBF6B")
-        case .beach: baseColor = Color(hex: "#F4D03F")
-        case .forest: baseColor = Color(hex: "#3D6B3D")
-        }
+    private var skyAndGround: some View {
+        GeometryReader { proxy in
+            let skyHeight = proxy.size.height * 0.3
+            let groundTop = skyHeight
 
-        // 昼夜亮度调整
-        let brightness = timeOfDay.ambientLight
-        return baseColor
-            .opacity(brightness)
+            ZStack(alignment: .topLeading) {
+                // 天空渐变
+                LinearGradient(
+                    colors: skyColors,
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: skyHeight + 20) // 稍微延伸到地面以下避免缝隙
+
+                // 地面（从 30% 高度开始）
+                groundColor
+                    .opacity(timeOfDay.ambientLight)
+                    .frame(height: proxy.size.height - groundTop)
+                    .offset(y: groundTop)
+            }
             .ignoresSafeArea()
+        }
+    }
+
+    private var skyColors: [Color] {
+        switch timeOfDay {
+        case .morning:
+            return [Color(hex: "#FFB347"), Color(hex: "#87CEEB")]
+        case .afternoon:
+            return [Color(hex: "#87CEEB"), Color(hex: "#B0E0E6")]
+        case .evening:
+            return [Color(hex: "#FF6B6B"), Color(hex: "#FFB347")]
+        case .night:
+            return [Color(hex: "#1A1A2E"), Color(hex: "#16213E")]
+        }
+    }
+
+    private var groundColor: Color {
+        switch scene {
+        case .yard: return Color(hex: "#7CCD7C")
+        case .park: return Color(hex: "#6BBF6B")
+        case .beach: return Color(hex: "#F4D03F")
+        case .forest: return Color(hex: "#3D6B3D")
+        }
     }
 }
 
-// MARK: - 温馨小院场景（鸟瞰）
+// MARK: - 温馨小院场景（2.5D 等距）
 
 struct YardSceneView: View {
     let timeOfDay: TimeOfDay
@@ -57,103 +86,177 @@ struct YardSceneView: View {
 
     var body: some View {
         GeometryReader { proxy in
-            ZStack {
-                // 草地纹理（鸟瞰：整个画面都是草地）
-                Rectangle()
-                    .fill(Color(hex: "#7CCD7C"))
-                    .ignoresSafeArea()
+            let w = proxy.size.width
+            let h = proxy.size.height
+            let groundTop = h * 0.3
 
-                // 栅栏（鸟瞰：小矩形排列）
-                ForEach(0..<10) { index in
-                    PixelRect(color: Color(hex: "#8B4513"))
-                        .frame(width: 6, height: 3)
-                    .position(
-                        x: CGFloat(index) * proxy.size.width / 9 + 15,
-                        y: 20
-                    )
+            ZStack {
+                // 栅栏（等距：可见正面和侧面）
+                ForEach(0..<12) { index in
+                    let xPos = CGFloat(index) * w / 11
+                    ZStack(alignment: .topLeading) {
+                        // 栅栏柱正面
+                        PixelRect(color: Color(hex: "#8B4513"))
+                            .frame(width: 5, height: 18)
+                        // 栅栏柱侧面
+                        PixelRect(color: Color(hex: "#6B3510"))
+                            .frame(width: 3, height: 18)
+                            .offset(x: 5, y: 0)
+                        // 栅栏柱顶面
+                        PixelRect(color: Color(hex: "#A0522D"))
+                            .frame(width: 8, height: 3)
+                            .offset(x: 0, y: -3)
+                    }
+                    .position(x: xPos, y: groundTop + 8)
                 }
 
-                // 小屋（鸟瞰：矩形屋顶）
+                // 栅栏横杆
+                PixelRect(color: Color(hex: "#A0522D"))
+                    .frame(width: w * 0.9, height: 3)
+                    .position(x: w * 0.5, y: groundTop + 4)
+
+                // 小屋（等距建筑）
                 YardHouseView()
-                    .position(x: proxy.size.width * 0.2, y: proxy.size.height * 0.3)
+                    .position(x: w * 0.18, y: groundTop + h * 0.12)
 
-                // 树木（鸟瞰：圆形树冠，无树干）
+                // 树木（等距：可见树干 + 矩形树冠）
                 YardTreeView(season: season)
-                    .position(x: proxy.size.width * 0.75, y: proxy.size.height * 0.25)
+                    .position(x: w * 0.72, y: groundTop + h * 0.08)
                 YardTreeView(season: season)
-                    .position(x: proxy.size.width * 0.85, y: proxy.size.height * 0.4)
+                    .position(x: w * 0.85, y: groundTop + h * 0.18)
 
-                // 花朵（鸟瞰：小圆点）
+                // 狗窝（等距道具）
+                DogHouseView(size: min(w, h) * 0.12)
+                    .position(x: w * 0.45, y: groundTop + h * 0.2)
+
+                // 沙发（等距道具）
+                SofaView(size: min(w, h) * 0.11)
+                    .position(x: w * 0.7, y: groundTop + h * 0.35)
+
+                // 花朵（等距：可见花茎）
                 if season != .winter {
-                    ForEach(0..<6) { index in
+                    ForEach(0..<5) { index in
                         PixelFlowerView(color: "#FF69B4")
                             .position(
-                                x: CGFloat.random(in: 30...proxy.size.width - 30),
-                                y: CGFloat.random(in: proxy.size.height * 0.5...proxy.size.height - 30)
+                                x: w * (0.15 + CGFloat(index) * 0.15),
+                                y: groundTop + h * (0.4 + CGFloat(index % 2) * 0.1)
                             )
                     }
                 }
 
-                // 小径
-                Rectangle()
-                    .fill(Color(hex: "#D2B48C"))
-                    .frame(width: proxy.size.width * 0.6, height: 8)
-                    .position(x: proxy.size.width * 0.5, y: proxy.size.height * 0.7)
+                // 小径（等距：有宽度的斜向路径）
+                IsometricBox(
+                    width: w * 0.5,
+                    height: 6,
+                    depth: 12,
+                    topColor: Color(hex: "#D2B48C"),
+                    frontColor: Color(hex: "#C4A882"),
+                    sideColor: Color(hex: "#B89B72")
+                )
+                .position(x: w * 0.4, y: groundTop + h * 0.42)
             }
         }
     }
 }
 
+/// 等距小屋：墙体（正面+侧面）+ 屋顶 + 门窗
 struct YardHouseView: View {
     var body: some View {
-        ZStack {
-            // 屋顶（鸟瞰：矩形）
-            PixelRect(color: Color(hex: "#8B0000"))
-                .frame(width: 50, height: 40)
+        let wallW: CGFloat = 55
+        let wallH: CGFloat = 40
+        let wallD: CGFloat = 20
 
-            // 屋顶纹理
-            PixelRect(color: Color(hex: "#A52A2A"))
-                .frame(width: 40, height: 4)
-                .offset(y: -10)
-            PixelRect(color: Color(hex: "#A52A2A"))
-                .frame(width: 40, height: 4)
-                .offset(y: 0)
-            PixelRect(color: Color(hex: "#A52A2A"))
-                .frame(width: 40, height: 4)
-                .offset(y: 10)
+        ZStack(alignment: .bottom) {
+            // 墙体正面
+            PixelRect(color: Color(hex: "#DEB887"))
+                .frame(width: wallW, height: wallH)
+                .offset(x: 0, y: wallD)
+
+            // 墙体侧面
+            PixelRect(color: Color(hex: "#C4A06A"))
+                .frame(width: wallD, height: wallH)
+                .offset(x: wallW, y: wallD)
+
+            // 门（正面）
+            PixelRect(color: Color(hex: "#8B4513"))
+                .frame(width: 14, height: 22)
+                .offset(x: wallW * 0.15, y: wallD + wallH - 22)
+
+            // 窗户（正面）
+            PixelRect(color: Color(hex: "#87CEEB"))
+                .frame(width: 12, height: 10)
+                .offset(x: wallW * 0.6, y: wallD + wallH * 0.35)
+
+            // 窗框
+            PixelRect(color: Color(hex: "#654321"))
+                .frame(width: 14, height: 2)
+                .offset(x: wallW * 0.6, y: wallD + wallH * 0.35 - 5)
+            PixelRect(color: Color(hex: "#654321"))
+                .frame(width: 14, height: 2)
+                .offset(x: wallW * 0.6, y: wallD + wallH * 0.35 + 5)
+
+            // 窗户（侧面）
+            PixelRect(color: Color(hex: "#6BB8D6"))
+                .frame(width: 8, height: 10)
+                .offset(x: wallW + wallD * 0.4, y: wallD + wallH * 0.35)
+
+            // 屋顶（等距盒体）
+            IsometricBox(
+                width: wallW + 8,
+                height: 8,
+                depth: wallD + 8,
+                topColor: Color(hex: "#8B0000"),
+                frontColor: Color(hex: "#A52A2A"),
+                sideColor: Color(hex: "#6B0000")
+            )
+            .offset(y: -(wallH))
 
             // 烟囱
-            PixelRect(color: Color(hex: "#654321"))
-                .frame(width: 8, height: 8)
-                .offset(x: 15, y: -12)
+            IsometricBoxSimple(
+                width: 8,
+                height: 14,
+                depth: 6,
+                baseColor: Color(hex: "#654321")
+            )
+            .offset(x: wallW * 0.6, y: -(wallH + 14))
         }
+        .frame(width: wallW + wallD + 8, height: wallH + wallD + 30)
     }
 }
 
+/// 等距树木：可见树干 + 多层矩形树冠
 struct YardTreeView: View {
     let season: Season
 
     var body: some View {
-        ZStack {
-            // 树冠（鸟瞰：圆形，无树干）
-            Circle()
-                .fill(Color(hex: season.leafColor))
-                .frame(width: 45, height: 45)
+        let trunkW: CGFloat = 8
+        let trunkH: CGFloat = 25
+        let trunkD: CGFloat = 4
 
-            // 树冠中心深色
-            Circle()
-                .fill(Color(hex: season.leafColor).opacity(0.7))
-                .frame(width: 20, height: 20)
+        ZStack(alignment: .bottom) {
+            // 树干
+            IsometricTrunk(
+                width: trunkW,
+                height: trunkH,
+                depth: trunkD,
+                color: Color(hex: "#8B4513")
+            )
 
-            // 树干顶部（鸟瞰：小圆点）
-            Circle()
-                .fill(Color(hex: "#8B4513"))
-                .frame(width: 8, height: 8)
+            // 树冠（多层递缩矩形）
+            IsometricCanopy(
+                baseWidth: 38,
+                layers: 3,
+                layerHeight: 12,
+                depth: 10,
+                baseColor: Color(hex: season.leafColor)
+            )
+            .offset(y: -trunkH)
         }
+        .frame(width: 48, height: trunkH + 46)
     }
 }
 
-// MARK: - 阳光公园场景（鸟瞰）
+// MARK: - 阳光公园场景（2.5D 等距）
 
 struct ParkSceneView: View {
     let timeOfDay: TimeOfDay
@@ -162,116 +265,171 @@ struct ParkSceneView: View {
 
     var body: some View {
         GeometryReader { proxy in
+            let w = proxy.size.width
+            let h = proxy.size.height
+            let groundTop = h * 0.3
+
             ZStack {
-                // 草地（鸟瞰：整个画面）
-                Rectangle()
-                    .fill(Color(hex: "#6BBF6B"))
-                    .ignoresSafeArea()
+                // 小路（等距路径）
+                IsometricBox(
+                    width: w * 0.8,
+                    height: 8,
+                    depth: 14,
+                    topColor: Color(hex: "#D2B48C"),
+                    frontColor: Color(hex: "#C4A882"),
+                    sideColor: Color(hex: "#B89B72")
+                )
+                .position(x: w * 0.5, y: groundTop + h * 0.25)
 
-                // 小路（鸟瞰：弯曲条带）
-                ScenePathStrip(color: "#D2B48C", width: proxy.size.width * 0.9)
-                    .frame(height: 12)
-                    .position(x: proxy.size.width * 0.5, y: proxy.size.height * 0.5)
-
-                // 树木（鸟瞰：不同大小的圆形）
-                ParkTreeView(season: season, size: 55)
-                    .position(x: proxy.size.width * 0.2, y: proxy.size.height * 0.25)
-                ParkTreeView(season: season, size: 65)
-                    .position(x: proxy.size.width * 0.5, y: proxy.size.height * 0.2)
+                // 树木
                 ParkTreeView(season: season, size: 50)
-                    .position(x: proxy.size.width * 0.8, y: proxy.size.height * 0.3)
+                    .position(x: w * 0.15, y: groundTop + h * 0.08)
                 ParkTreeView(season: season, size: 60)
-                    .position(x: proxy.size.width * 0.3, y: proxy.size.height * 0.7)
+                    .position(x: w * 0.45, y: groundTop + h * 0.05)
+                ParkTreeView(season: season, size: 45)
+                    .position(x: w * 0.8, y: groundTop + h * 0.12)
+                ParkTreeView(season: season, size: 55)
+                    .position(x: w * 0.25, y: groundTop + h * 0.38)
 
-                // 长椅（鸟瞰：小矩形）
+                // 长椅（等距）
                 ParkBenchView()
-                    .position(x: proxy.size.width * 0.7, y: proxy.size.height * 0.6)
+                    .position(x: w * 0.6, y: groundTop + h * 0.32)
 
-                // 花坛
+                // 花坛（等距）
                 FlowerBedView()
-                    .position(x: proxy.size.width * 0.15, y: proxy.size.height * 0.65)
+                    .position(x: w * 0.12, y: groundTop + h * 0.35)
+
+                // 跑步机（等距道具）
+                TreadmillView(size: min(w, h) * 0.1)
+                    .position(x: w * 0.75, y: groundTop + h * 0.22)
             }
         }
     }
 }
 
+/// 等距公园树木
 struct ParkTreeView: View {
     let season: Season
     var size: CGFloat = 60
 
     var body: some View {
-        ZStack {
-            // 树冠（鸟瞰：圆形）
-            Circle()
-                .fill(Color(hex: season.leafColor))
-                .frame(width: size, height: size)
+        let trunkW = size * 0.12
+        let trunkH = size * 0.4
+        let trunkD = size * 0.06
 
-            // 树冠纹理
-            Circle()
-                .fill(Color(hex: season.leafColor).opacity(0.6))
-                .frame(width: size * 0.5, height: size * 0.5)
+        ZStack(alignment: .bottom) {
+            // 树干
+            IsometricTrunk(
+                width: trunkW,
+                height: trunkH,
+                depth: trunkD,
+                color: Color(hex: "#8B4513")
+            )
 
-            // 树干顶部
-            Circle()
-                .fill(Color(hex: "#8B4513"))
-                .frame(width: 10, height: 10)
+            // 树冠
+            IsometricCanopy(
+                baseWidth: size * 0.7,
+                layers: 2,
+                layerHeight: size * 0.22,
+                depth: size * 0.15,
+                baseColor: Color(hex: season.leafColor)
+            )
+            .offset(y: -trunkH)
         }
+        .frame(width: size * 0.85, height: trunkH + size * 0.55)
     }
 }
 
+/// 等距长椅
 struct ParkBenchView: View {
     var body: some View {
-        ZStack {
-            // 座位（鸟瞰：矩形）
-            PixelRect(color: Color(hex: "#8B4513"))
-                .frame(width: 30, height: 12)
+        let seatW: CGFloat = 35
+        let seatH: CGFloat = 5
+        let seatD: CGFloat = 12
+        let backH: CGFloat = 14
+        let legH: CGFloat = 10
 
-            // 靠背（鸟瞰：细条）
+        ZStack(alignment: .bottom) {
+            // 椅腿
             PixelRect(color: Color(hex: "#654321"))
-                .frame(width: 30, height: 3)
-                .offset(y: -5)
+                .frame(width: 3, height: legH)
+                .offset(x: 2, y: 0)
+            PixelRect(color: Color(hex: "#654321"))
+                .frame(width: 3, height: legH)
+                .offset(x: seatW - 5, y: 0)
+            PixelRect(color: Color(hex: "#553818"))
+                .frame(width: 3, height: legH)
+                .offset(x: seatW + seatD - 5, y: -seatD * 0.2)
 
-            // 腿（鸟瞰：小点）
-            Circle()
-                .fill(Color(hex: "#654321"))
-                .frame(width: 4, height: 4)
-                .offset(x: -12, y: 4)
-            Circle()
-                .fill(Color(hex: "#654321"))
-                .frame(width: 4, height: 4)
-                .offset(x: 12, y: 4)
+            // 座面
+            IsometricBox(
+                width: seatW,
+                height: seatH,
+                depth: seatD,
+                topColor: Color(hex: "#A0522D"),
+                frontColor: Color(hex: "#8B4513"),
+                sideColor: Color(hex: "#6B3510")
+            )
+            .offset(y: -legH)
+
+            // 靠背
+            IsometricBox(
+                width: seatW,
+                height: backH,
+                depth: 3,
+                topColor: Color(hex: "#A0522D"),
+                frontColor: Color(hex: "#8B4513"),
+                sideColor: Color(hex: "#6B3510")
+            )
+            .offset(y: -(legH + seatH + seatD + backH * 0.3))
         }
+        .frame(width: seatW + seatD, height: legH + seatH + seatD + backH + 5)
     }
 }
 
+/// 等距花坛
 struct FlowerBedView: View {
     var body: some View {
-        ZStack {
-            // 花坛边缘
-            Circle()
-                .fill(Color(hex: "#8B4513"))
-                .frame(width: 35, height: 35)
+        let bedW: CGFloat = 30
+        let bedH: CGFloat = 8
+        let bedD: CGFloat = 12
 
-            // 花朵
+        ZStack(alignment: .bottom) {
+            // 花坛边框（等距盒体）
+            IsometricBox(
+                width: bedW,
+                height: bedH,
+                depth: bedD,
+                topColor: Color(hex: "#A0522D"),
+                frontColor: Color(hex: "#8B4513"),
+                sideColor: Color(hex: "#6B3510")
+            )
+
+            // 泥土顶面
+            PixelRect(color: Color(hex: "#5C4033"))
+                .frame(width: bedW - 4, height: bedD - 4)
+                .offset(x: 2, y: 2)
+
+            // 花朵（等距：花茎可见）
+            let flowerColors = ["#FF69B4", "#FFD700", "#FF6347", "#9370DB", "#FFA500"]
             ForEach(0..<5) { index in
-                Circle()
-                    .fill(Color(hex: ["#FF69B4", "#FFD700", "#FF6347", "#9370DB", "#FFA500"][index]))
-                    .frame(width: 6, height: 6)
-                    .offset(
-                        x: cos(Double(index) * .pi * 2 / 5) * 10,
-                        y: sin(Double(index) * .pi * 2 / 5) * 10
-                    )
+                let fx = CGFloat(index % 3) * 8 + 4
+                let fy = CGFloat(index / 3) * 6 - 4
+                // 花茎
+                PixelRect(color: Color(hex: "#228B22"))
+                    .frame(width: 2, height: 8)
+                    .offset(x: fx, y: -(bedH + bedD + 4))
+                // 花朵
+                PixelRect(color: Color(hex: flowerColors[index]))
+                    .frame(width: 5, height: 5)
+                    .offset(x: fx - 1.5, y: -(bedH + bedD + 12))
             }
-
-            // 中心
-            Circle()
-                .fill(Color(hex: "#FFD700"))
-                .frame(width: 8, height: 8)
         }
+        .frame(width: bedW + bedD, height: bedH + bedD + 16)
     }
 }
 
-// MARK: - 海边沙滩场景（鸟瞰）
+// MARK: - 海边沙滩场景（2.5D 等距）
 
 struct BeachSceneView: View {
     let timeOfDay: TimeOfDay
@@ -282,42 +440,50 @@ struct BeachSceneView: View {
 
     var body: some View {
         GeometryReader { proxy in
+            let w = proxy.size.width
+            let h = proxy.size.height
+            let groundTop = h * 0.3
+
             ZStack {
-                // 沙滩（鸟瞰：整个画面）
-                Rectangle()
-                    .fill(Color(hex: "#F4D03F"))
-                    .ignoresSafeArea()
+                // 海浪（等距：海水在远处，可见波浪面）
+                IsometricBox(
+                    width: w,
+                    height: 15,
+                    depth: 20,
+                    topColor: Color(hex: "#4682B4").opacity(0.6),
+                    frontColor: Color(hex: "#3A6E9E").opacity(0.7),
+                    sideColor: Color(hex: "#2E5A82").opacity(0.5)
+                )
+                .position(x: w * 0.5, y: groundTop + 5)
 
-                // 海浪（鸟瞰：顶部蓝色条带）
-                Rectangle()
-                    .fill(Color(hex: "#4682B4").opacity(0.7))
-                    .frame(height: proxy.size.height * 0.25)
-                    .position(x: proxy.size.width * 0.5, y: proxy.size.height * 0.12)
-
-                // 海浪边缘
+                // 海浪边缘动画
                 WaveShape(offset: waveOffset)
                     .fill(Color(hex: "#87CEEB").opacity(0.5))
-                    .frame(height: 20)
-                    .position(x: proxy.size.width * 0.5, y: proxy.size.height * 0.25)
+                    .frame(height: 12)
+                    .position(x: w * 0.5, y: groundTop + 22)
 
-                // 贝壳（鸟瞰：小形状）
-                ForEach(0..<5) { index in
+                // 棕榈树（等距：弯曲树干可见）
+                PalmTreeView()
+                    .position(x: w * 0.18, y: groundTop + h * 0.12)
+                PalmTreeView()
+                    .position(x: w * 0.82, y: groundTop + h * 0.18)
+
+                // 遮阳伞（等距：伞柄可见）
+                BeachUmbrellaView()
+                    .position(x: w * 0.5, y: groundTop + h * 0.3)
+
+                // 贝壳
+                ForEach(0..<4) { index in
                     PixelShellView()
                         .position(
-                            x: CGFloat.random(in: 30...proxy.size.width - 30),
-                            y: CGFloat.random(in: proxy.size.height * 0.4...proxy.size.height - 30)
+                            x: w * (0.2 + CGFloat(index) * 0.18),
+                            y: groundTop + h * (0.35 + CGFloat(index % 2) * 0.08)
                         )
                 }
 
-                // 棕榈树（鸟瞰：圆形 + 放射叶子）
-                PalmTreeView()
-                    .position(x: proxy.size.width * 0.2, y: proxy.size.height * 0.5)
-                PalmTreeView()
-                    .position(x: proxy.size.width * 0.8, y: proxy.size.height * 0.6)
-
-                // 遮阳伞（鸟瞰：圆形）
-                BeachUmbrellaView()
-                    .position(x: proxy.size.width * 0.5, y: proxy.size.height * 0.7)
+                // 工作台（等距道具）
+                WorkDeskView(size: min(w, h) * 0.1)
+                    .position(x: w * 0.3, y: groundTop + h * 0.15)
             }
             .onAppear {
                 withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
@@ -328,56 +494,91 @@ struct BeachSceneView: View {
     }
 }
 
+/// 等距棕榈树：弯曲树干可见 + 放射叶子
 struct PalmTreeView: View {
     var body: some View {
-        ZStack {
-            // 树冠（鸟瞰：圆形）
-            Circle()
-                .fill(Color(hex: "#228B22"))
-                .frame(width: 40, height: 40)
+        let trunkW: CGFloat = 8
+        let trunkH: CGFloat = 45
+        let trunkD: CGFloat = 5
 
-            // 叶子（鸟瞰：放射状）
-            ForEach(0..<6) { index in
-                Ellipse()
-                    .fill(Color(hex: "#2E8B2E"))
-                    .frame(width: 25, height: 8)
-                    .rotationEffect(.degrees(Double(index) * 60))
-                    .offset(y: -15)
+        ZStack(alignment: .bottom) {
+            // 树干（等距，稍微倾斜用 offset 模拟）
+            IsometricTrunk(
+                width: trunkW,
+                height: trunkH,
+                depth: trunkD,
+                color: Color(hex: "#8B6914")
+            )
+
+            // 树干纹理（横向条纹）
+            ForEach(0..<4) { i in
+                PixelRect(color: Color(hex: "#7A5A10").opacity(0.5))
+                    .frame(width: trunkW, height: 2)
+                    .offset(x: 0, y: -CGFloat(i) * 10 - 5)
             }
 
-            // 树干顶部
-            Circle()
-                .fill(Color(hex: "#8B4513"))
-                .frame(width: 10, height: 10)
+            // 棕榈叶（放射状，等距）
+            ForEach(0..<6) { index in
+                let angle = Double(index) * 60
+                Ellipse()
+                    .fill(Color(hex: "#228B22"))
+                    .frame(width: 28, height: 8)
+                    .rotationEffect(.degrees(angle))
+                    .offset(
+                        x: cos(angle * .pi / 180) * 8,
+                        y: -trunkH - trunkD + sin(angle * .pi / 180) * 8 - 5
+                    )
+            }
+
+            // 椰子
+            PixelRect(color: Color(hex: "#8B4513"))
+                .frame(width: 5, height: 5)
+                .offset(x: 2, y: -trunkH - trunkD + 2)
         }
+        .frame(width: trunkW + trunkD + 30, height: trunkH + trunkD + 30)
     }
 }
 
+/// 等距沙滩伞：伞柄可见 + 伞面
 struct BeachUmbrellaView: View {
     var body: some View {
-        ZStack {
-            // 伞面（鸟瞰：圆形）
-            Circle()
-                .fill(Color(hex: "#FF6347"))
-                .frame(width: 35, height: 35)
+        let poleH: CGFloat = 40
+        let poleW: CGFloat = 3
+        let umbrellaR: CGFloat = 22
+
+        ZStack(alignment: .bottom) {
+            // 伞柄
+            PixelRect(color: Color(hex: "#8B4513"))
+                .frame(width: poleW, height: poleH)
+
+            // 伞面（用等距盒体模拟扁平圆盘）
+            IsometricBox(
+                width: umbrellaR * 2,
+                height: 4,
+                depth: 10,
+                topColor: Color(hex: "#FF6347"),
+                frontColor: Color(hex: "#E5553A"),
+                sideColor: Color(hex: "#CC4830")
+            )
+            .offset(y: -poleH)
 
             // 伞面条纹
-            ForEach(0..<4) { index in
-                Rectangle()
-                    .fill(Color.white.opacity(0.3))
-                    .frame(width: 35, height: 4)
-                    .rotationEffect(.degrees(Double(index) * 45))
+            ForEach(0..<3) { index in
+                PixelRect(color: Color.white.opacity(0.3))
+                    .frame(width: umbrellaR * 2 - 4, height: 2)
+                    .offset(x: 2, y: -poleH + CGFloat(index) * 2 + 1)
             }
 
-            // 伞柄顶部
-            Circle()
-                .fill(Color(hex: "#8B4513"))
-                .frame(width: 6, height: 6)
+            // 伞尖
+            PixelRect(color: Color(hex: "#FFD700"))
+                .frame(width: 4, height: 4)
+                .offset(y: -poleH - 6)
         }
+        .frame(width: umbrellaR * 2 + 10, height: poleH + 12)
     }
 }
 
-// MARK: - 神秘森林场景（鸟瞰）
+// MARK: - 神秘森林场景（2.5D 等距）
 
 struct ForestSceneView: View {
     let timeOfDay: TimeOfDay
@@ -393,40 +594,43 @@ struct ForestSceneView: View {
 
     var body: some View {
         GeometryReader { proxy in
+            let w = proxy.size.width
+            let h = proxy.size.height
+            let groundTop = h * 0.3
+
             ZStack {
-                // 森林地面（鸟瞰：深绿色）
-                Rectangle()
-                    .fill(Color(hex: "#3D6B3D"))
-                    .ignoresSafeArea()
-
-                // 树木（鸟瞰：不同大小的圆形，密集）
-                ForestTreeView(size: 50)
-                    .position(x: proxy.size.width * 0.15, y: proxy.size.height * 0.2)
-                ForestTreeView(size: 60)
-                    .position(x: proxy.size.width * 0.4, y: proxy.size.height * 0.15)
-                ForestTreeView(size: 55)
-                    .position(x: proxy.size.width * 0.7, y: proxy.size.height * 0.25)
-                ForestTreeView(size: 65)
-                    .position(x: proxy.size.width * 0.9, y: proxy.size.height * 0.35)
+                // 树木（等距：高大树木，可见树干）
                 ForestTreeView(size: 45)
-                    .position(x: proxy.size.width * 0.25, y: proxy.size.height * 0.5)
-                ForestTreeView(size: 70)
-                    .position(x: proxy.size.width * 0.6, y: proxy.size.height * 0.55)
-                ForestTreeView(size: 50)
-                    .position(x: proxy.size.width * 0.85, y: proxy.size.height * 0.65)
+                    .position(x: w * 0.12, y: groundTop + h * 0.02)
                 ForestTreeView(size: 55)
-                    .position(x: proxy.size.width * 0.1, y: proxy.size.height * 0.75)
+                    .position(x: w * 0.35, y: groundTop - h * 0.02)
+                ForestTreeView(size: 50)
+                    .position(x: w * 0.65, y: groundTop + h * 0.05)
                 ForestTreeView(size: 60)
-                    .position(x: proxy.size.width * 0.5, y: proxy.size.height * 0.8)
+                    .position(x: w * 0.88, y: groundTop + h * 0.08)
+                ForestTreeView(size: 40)
+                    .position(x: w * 0.22, y: groundTop + h * 0.25)
+                ForestTreeView(size: 65)
+                    .position(x: w * 0.55, y: groundTop + h * 0.22)
+                ForestTreeView(size: 45)
+                    .position(x: w * 0.82, y: groundTop + h * 0.32)
+                ForestTreeView(size: 50)
+                    .position(x: w * 0.08, y: groundTop + h * 0.4)
+                ForestTreeView(size: 55)
+                    .position(x: w * 0.45, y: groundTop + h * 0.42)
 
-                // 蘑菇（鸟瞰：小圆形）
+                // 蘑菇（等距：菌柄可见）
                 ForEach(0..<4) { index in
                     MushroomView()
                         .position(
-                            x: CGFloat.random(in: 40...proxy.size.width - 40),
-                            y: CGFloat.random(in: proxy.size.height * 0.4...proxy.size.height - 40)
+                            x: w * (0.2 + CGFloat(index) * 0.2),
+                            y: groundTop + h * (0.3 + CGFloat(index % 2) * 0.1)
                         )
                 }
+
+                // 学习桌（等距道具）
+                StudyDeskView(size: min(w, h) * 0.1)
+                    .position(x: w * 0.72, y: groundTop + h * 0.15)
 
                 // 魔法粒子
                 if timeOfDay == .night || timeOfDay == .evening {
@@ -438,36 +642,400 @@ struct ForestSceneView: View {
                 }
 
                 // 小径
-                ScenePathStrip(color: "#5D4E37", width: proxy.size.width * 0.7)
-                    .frame(height: 10)
-                    .position(x: proxy.size.width * 0.5, y: proxy.size.height * 0.45)
+                IsometricBox(
+                    width: w * 0.6,
+                    height: 6,
+                    depth: 10,
+                    topColor: Color(hex: "#5D4E37"),
+                    frontColor: Color(hex: "#4E4030"),
+                    sideColor: Color(hex: "#3F3328")
+                )
+                .position(x: w * 0.45, y: groundTop + h * 0.2)
             }
         }
     }
 }
 
+/// 等距森林树木：高大，多层树冠
 struct ForestTreeView: View {
     var size: CGFloat = 60
 
     var body: some View {
+        let trunkW = size * 0.14
+        let trunkH = size * 0.55
+        let trunkD = size * 0.08
+
+        ZStack(alignment: .bottom) {
+            // 树干（更长）
+            IsometricTrunk(
+                width: trunkW,
+                height: trunkH,
+                depth: trunkD,
+                color: Color(hex: "#654321")
+            )
+
+            // 树冠（3 层，更大）
+            IsometricCanopy(
+                baseWidth: size * 0.75,
+                layers: 3,
+                layerHeight: size * 0.2,
+                depth: size * 0.18,
+                baseColor: Color(hex: "#006400")
+            )
+            .offset(y: -trunkH)
+        }
+        .frame(width: size * 0.93, height: trunkH + size * 0.7)
+    }
+}
+
+// MARK: - 场景缩略图（Dog Home 用）
+
+/// 迷你等距场景缩略图，约 80x56
+struct SceneThumbnailView: View {
+    let scene: SceneType
+    let isSelected: Bool
+    let isLocked: Bool
+
+    var body: some View {
         ZStack {
-            // 树冠（鸟瞰：圆形，多层）
-            Circle()
-                .fill(Color(hex: "#006400"))
-                .frame(width: size, height: size)
+            // 背景
+            RoundedRectangle(cornerRadius: 6)
+                .fill(baseColor)
+                .frame(width: 80, height: 56)
 
-            Circle()
-                .fill(Color(hex: "#228B22"))
-                .frame(width: size * 0.7, height: size * 0.7)
+            // 场景内容
+            thumbnailContent
+                .frame(width: 80, height: 56)
+                .clipped()
 
-            Circle()
-                .fill(Color(hex: "#2E8B2E"))
-                .frame(width: size * 0.4, height: size * 0.4)
+            // 锁定遮罩
+            if isLocked {
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(Color.black.opacity(0.45))
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(.white.opacity(0.8))
+            }
 
-            // 树干顶部
-            Circle()
-                .fill(Color(hex: "#654321"))
-                .frame(width: 12, height: 12)
+            // 选中边框
+            RoundedRectangle(cornerRadius: 6)
+                .strokeBorder(isSelected ? Color(hex: 0x356247) : Color.clear, lineWidth: 2)
+        }
+        .frame(width: 80, height: 56)
+    }
+
+    private var baseColor: Color {
+        switch scene {
+        case .yard: return Color(hex: "#7EC850")
+        case .park: return Color(hex: "#A8D86E")
+        case .beach: return Color(hex: "#F0D878")
+        case .forest: return Color(hex: "#3A7D44")
+        }
+    }
+
+    @ViewBuilder
+    private var thumbnailContent: some View {
+        switch scene {
+        case .yard:
+            yardThumbnail
+        case .park:
+            parkThumbnail
+        case .beach:
+            beachThumbnail
+        case .forest:
+            forestThumbnail
+        }
+    }
+
+    // MARK: 温馨小院缩略图
+    private var yardThumbnail: some View {
+        ZStack {
+            // 地面纹理线
+            PixelRect(color: Color(hex: "#6AB840"))
+                .frame(width: 80, height: 1)
+                .offset(y: 12)
+            PixelRect(color: Color(hex: "#6AB840"))
+                .frame(width: 80, height: 1)
+                .offset(y: 24)
+
+            // 小狗窝（等距盒体）
+            ZStack(alignment: .topLeading) {
+                PixelRect(color: Color(hex: "#A0782C"))
+                    .frame(width: 18, height: 12)
+                    .offset(x: 0, y: 6)
+                PixelRect(color: Color(hex: "#8B6914"))
+                    .frame(width: 4, height: 12)
+                    .offset(x: 18, y: 6)
+                PixelRect(color: Color(hex: "#C49A3C"))
+                    .frame(width: 22, height: 4)
+                    .offset(x: 0, y: 2)
+                // 门洞
+                PixelRect(color: Color(hex: "#4A3000"))
+                    .frame(width: 6, height: 7)
+                    .offset(x: 6, y: 11)
+            }
+            .offset(x: -22, y: -2)
+
+            // 小树（等距）
+            ZStack(alignment: .bottom) {
+                PixelRect(color: Color(hex: "#6B4226"))
+                    .frame(width: 3, height: 10)
+                IsometricBoxSimple(
+                    width: 14, height: 8, depth: 3,
+                    baseColor: Color(hex: "#2D8B2D")
+                )
+                .offset(y: -10)
+                IsometricBoxSimple(
+                    width: 10, height: 6, depth: 2,
+                    baseColor: Color(hex: "#3AA63A")
+                )
+                .offset(y: -18)
+            }
+            .offset(x: 18, y: -4)
+
+            // 小沙发
+            ZStack(alignment: .topLeading) {
+                PixelRect(color: Color(hex: "#4A6FA5"))
+                    .frame(width: 14, height: 6)
+                    .offset(x: 0, y: 3)
+                PixelRect(color: Color(hex: "#3A5F95"))
+                    .frame(width: 3, height: 6)
+                    .offset(x: 14, y: 3)
+                PixelRect(color: Color(hex: "#5A7FB5"))
+                    .frame(width: 17, height: 3)
+                    .offset(x: 0, y: 0)
+                // 靠背
+                PixelRect(color: Color(hex: "#3A5F95"))
+                    .frame(width: 14, height: 3)
+                    .offset(x: 0, y: -3)
+            }
+            .offset(x: -8, y: 12)
+        }
+    }
+
+    // MARK: 阳光公园缩略图
+    private var parkThumbnail: some View {
+        ZStack {
+            // 地面纹理
+            PixelRect(color: Color(hex: "#98C85E"))
+                .frame(width: 80, height: 1)
+                .offset(y: 14)
+            PixelRect(color: Color(hex: "#98C85E"))
+                .frame(width: 80, height: 1)
+                .offset(y: 28)
+
+            // 小路
+            PixelRect(color: Color(hex: "#D4C49A"))
+                .frame(width: 12, height: 56)
+                .offset(x: 0)
+
+            // 跑步机（等距盒体）
+            ZStack(alignment: .topLeading) {
+                PixelRect(color: Color(hex: "#808080"))
+                    .frame(width: 16, height: 8)
+                    .offset(x: 0, y: 4)
+                PixelRect(color: Color(hex: "#606060"))
+                    .frame(width: 3, height: 8)
+                    .offset(x: 16, y: 4)
+                PixelRect(color: Color(hex: "#A0A0A0"))
+                    .frame(width: 19, height: 4)
+                    .offset(x: 0, y: 0)
+                // 扶手
+                PixelRect(color: Color(hex: "#505050"))
+                    .frame(width: 2, height: 8)
+                    .offset(x: 16, y: -4)
+                // 跑带纹理
+                PixelRect(color: Color(hex: "#404040"))
+                    .frame(width: 12, height: 1)
+                    .offset(x: 2, y: 7)
+            }
+            .offset(x: -28, y: -4)
+
+            // 等距长椅
+            ZStack(alignment: .topLeading) {
+                PixelRect(color: Color(hex: "#8B6914"))
+                    .frame(width: 14, height: 5)
+                    .offset(x: 0, y: 3)
+                PixelRect(color: Color(hex: "#6B4226"))
+                    .frame(width: 3, height: 5)
+                    .offset(x: 14, y: 3)
+                PixelRect(color: Color(hex: "#A0782C"))
+                    .frame(width: 17, height: 3)
+                    .offset(x: 0, y: 0)
+                // 靠背
+                PixelRect(color: Color(hex: "#6B4226"))
+                    .frame(width: 14, height: 4)
+                    .offset(x: 0, y: -4)
+            }
+            .offset(x: 14, y: 6)
+
+            // 小花
+            PixelRect(color: Color(hex: "#FF6B8A"))
+                .frame(width: 4, height: 4)
+                .offset(x: -10, y: 16)
+            PixelRect(color: Color(hex: "#FFD700"))
+                .frame(width: 3, height: 3)
+                .offset(x: 26, y: 18)
+        }
+    }
+
+    // MARK: 海边沙滩缩略图
+    private var beachThumbnail: some View {
+        ZStack {
+            // 海水条
+            PixelRect(color: Color(hex: "#4AAFE0"))
+                .frame(width: 80, height: 10)
+                .offset(y: -23)
+            // 海浪边
+            PixelRect(color: Color(hex: "#6BC5F0"))
+                .frame(width: 80, height: 3)
+                .offset(y: -16)
+
+            // 沙滩纹理
+            PixelRect(color: Color(hex: "#E0C868"))
+                .frame(width: 80, height: 1)
+                .offset(y: 4)
+            PixelRect(color: Color(hex: "#E0C868"))
+                .frame(width: 80, height: 1)
+                .offset(y: 16)
+
+            // 棕榈树
+            ZStack(alignment: .bottom) {
+                // 弯曲树干
+                PixelRect(color: Color(hex: "#8B6914"))
+                    .frame(width: 3, height: 18)
+                    .offset(x: 1, y: 0)
+                PixelRect(color: Color(hex: "#8B6914"))
+                    .frame(width: 3, height: 6)
+                    .offset(x: -1, y: -16)
+                // 棕榈叶
+                PixelRect(color: Color(hex: "#2D8B2D"))
+                    .frame(width: 16, height: 4)
+                    .offset(x: -4, y: -22)
+                PixelRect(color: Color(hex: "#3AA63A"))
+                    .frame(width: 12, height: 3)
+                    .offset(x: 2, y: -20)
+                PixelRect(color: Color(hex: "#228B22"))
+                    .frame(width: 10, height: 3)
+                    .offset(x: -6, y: -19)
+            }
+            .offset(x: -20, y: 2)
+
+            // 工作台（小等距盒体）
+            ZStack(alignment: .topLeading) {
+                PixelRect(color: Color(hex: "#5C4033"))
+                    .frame(width: 14, height: 7)
+                    .offset(x: 0, y: 3)
+                PixelRect(color: Color(hex: "#4A3020"))
+                    .frame(width: 3, height: 7)
+                    .offset(x: 14, y: 3)
+                PixelRect(color: Color(hex: "#7A5A43"))
+                    .frame(width: 17, height: 3)
+                    .offset(x: 0, y: 0)
+            }
+            .offset(x: 12, y: 2)
+
+            // 沙滩伞
+            ZStack {
+                PixelRect(color: Color(hex: "#8B6914"))
+                    .frame(width: 2, height: 12)
+                PixelRect(color: Color(hex: "#FF4444"))
+                    .frame(width: 12, height: 3)
+                    .offset(y: -6)
+                PixelRect(color: Color(hex: "#FFFFFF"))
+                    .frame(width: 4, height: 3)
+                    .offset(x: -2, y: -6)
+                PixelRect(color: Color(hex: "#FFFFFF"))
+                    .frame(width: 4, height: 3)
+                    .offset(x: 4, y: -6)
+            }
+            .offset(x: 24, y: -4)
+
+            // 贝壳
+            PixelRect(color: Color(hex: "#FFB6C1"))
+                .frame(width: 3, height: 2)
+                .offset(x: -6, y: 18)
+        }
+    }
+
+    // MARK: 神秘森林缩略图
+    private var forestThumbnail: some View {
+        ZStack {
+            // 地面纹理
+            PixelRect(color: Color(hex: "#2D6B34"))
+                .frame(width: 80, height: 1)
+                .offset(y: 10)
+            PixelRect(color: Color(hex: "#2D6B34"))
+                .frame(width: 80, height: 1)
+                .offset(y: 22)
+
+            // 大树（等距，多层树冠）
+            ZStack(alignment: .bottom) {
+                PixelRect(color: Color(hex: "#4A3020"))
+                    .frame(width: 5, height: 16)
+                IsometricBoxSimple(
+                    width: 22, height: 10, depth: 5,
+                    baseColor: Color(hex: "#006400")
+                )
+                .offset(y: -14)
+                IsometricBoxSimple(
+                    width: 16, height: 8, depth: 4,
+                    baseColor: Color(hex: "#228B22")
+                )
+                .offset(y: -24)
+                IsometricBoxSimple(
+                    width: 10, height: 6, depth: 3,
+                    baseColor: Color(hex: "#006400")
+                )
+                .offset(y: -32)
+            }
+            .offset(x: -16, y: 4)
+
+            // 小树
+            ZStack(alignment: .bottom) {
+                PixelRect(color: Color(hex: "#4A3020"))
+                    .frame(width: 3, height: 8)
+                IsometricBoxSimple(
+                    width: 10, height: 6, depth: 3,
+                    baseColor: Color(hex: "#2D8B2D")
+                )
+                .offset(y: -8)
+            }
+            .offset(x: 22, y: 8)
+
+            // 学习桌
+            ZStack(alignment: .topLeading) {
+                PixelRect(color: Color(hex: "#6B4226"))
+                    .frame(width: 12, height: 6)
+                    .offset(x: 0, y: 3)
+                PixelRect(color: Color(hex: "#5A3216"))
+                    .frame(width: 3, height: 6)
+                    .offset(x: 12, y: 3)
+                PixelRect(color: Color(hex: "#8B5A3C"))
+                    .frame(width: 15, height: 3)
+                    .offset(x: 0, y: 0)
+                // 小书架
+                PixelRect(color: Color(hex: "#4A3020"))
+                    .frame(width: 5, height: 5)
+                    .offset(x: 2, y: -5)
+                PixelRect(color: Color(hex: "#FF6B6B"))
+                    .frame(width: 3, height: 3)
+                    .offset(x: 3, y: -4)
+            }
+            .offset(x: 6, y: 6)
+
+            // 蘑菇
+            ZStack {
+                PixelRect(color: Color(hex: "#D4A574"))
+                    .frame(width: 2, height: 4)
+                PixelRect(color: Color(hex: "#FF4444"))
+                    .frame(width: 6, height: 3)
+                    .offset(y: -3)
+                PixelRect(color: Color(hex: "#FFFFFF"))
+                    .frame(width: 2, height: 1)
+                    .offset(x: -1, y: -3)
+            }
+            .offset(x: 28, y: 16)
         }
     }
 }
@@ -501,7 +1069,7 @@ struct CloudsView: View {
                     CloudView()
                         .position(
                             x: cloudOffset + CGFloat(index) * 150,
-                            y: CGFloat.random(in: 50...150)
+                            y: CGFloat.random(in: 30...100)
                         )
                         .opacity(0.5)
                 }
@@ -658,27 +1226,34 @@ struct ScenePathStrip: View {
     }
 }
 
+/// 等距花朵：可见花茎
 struct PixelFlowerView: View {
     let color: String
 
     var body: some View {
-        ZStack {
-            // 花瓣（鸟瞰：圆形排列）
+        ZStack(alignment: .bottom) {
+            // 花茎
+            PixelRect(color: Color(hex: "#228B22"))
+                .frame(width: 2, height: 10)
+
+            // 花瓣
             ForEach(0..<5) { index in
                 Circle()
                     .fill(Color(hex: color))
-                    .frame(width: 6, height: 6)
+                    .frame(width: 5, height: 5)
                     .offset(
-                        x: cos(Double(index) * .pi * 2 / 5) * 5,
-                        y: sin(Double(index) * .pi * 2 / 5) * 5
+                        x: cos(Double(index) * .pi * 2 / 5) * 4,
+                        y: sin(Double(index) * .pi * 2 / 5) * 4 - 12
                     )
             }
 
             // 花心
             Circle()
                 .fill(Color.yellow)
-                .frame(width: 4, height: 4)
+                .frame(width: 3, height: 3)
+                .offset(y: -12)
         }
+        .frame(width: 14, height: 22)
     }
 }
 
@@ -720,29 +1295,44 @@ struct MagicSparkleView: View {
     }
 }
 
+/// 等距蘑菇：菌柄可见
 struct MushroomView: View {
     var body: some View {
-        ZStack {
-            // 菌盖（鸟瞰：圆形）
-            Circle()
-                .fill(Color(hex: "#FF0000"))
-                .frame(width: 16, height: 16)
+        let capW: CGFloat = 16
+        let capH: CGFloat = 6
+        let capD: CGFloat = 6
+        let stemH: CGFloat = 10
+        let stemW: CGFloat = 5
+
+        ZStack(alignment: .bottom) {
+            // 菌柄
+            IsometricTrunk(
+                width: stemW,
+                height: stemH,
+                depth: 3,
+                color: Color(hex: "#F5F5DC")
+            )
+
+            // 菌盖
+            IsometricBox(
+                width: capW,
+                height: capH,
+                depth: capD,
+                topColor: Color(hex: "#FF0000"),
+                frontColor: Color(hex: "#CC0000"),
+                sideColor: Color(hex: "#990000")
+            )
+            .offset(y: -stemH)
 
             // 白点
-            Circle()
-                .fill(Color.white)
+            PixelRect(color: Color.white)
                 .frame(width: 3, height: 3)
-                .offset(x: -4, y: -4)
-            Circle()
-                .fill(Color.white)
+                .offset(x: 3, y: -(stemH + capH + capD - 2))
+            PixelRect(color: Color.white)
                 .frame(width: 3, height: 3)
-                .offset(x: 4, y: 2)
-
-            // 菌柄（鸟瞰：小圆点）
-            Circle()
-                .fill(Color(hex: "#F5F5DC"))
-                .frame(width: 6, height: 6)
+                .offset(x: 9, y: -(stemH + capH + capD - 4))
         }
+        .frame(width: capW + capD, height: stemH + capH + capD + 3)
     }
 }
 
