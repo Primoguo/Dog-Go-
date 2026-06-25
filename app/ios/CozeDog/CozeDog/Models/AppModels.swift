@@ -924,7 +924,7 @@ enum CheckInType: String, Codable {
 struct DogState: Codable {
     var intimacy: Int
     var level: Int
-    var mood: String
+    var mood: DogMood
     var moodScore: Int
     var fullness: Int
     var cleanliness: Int
@@ -949,7 +949,7 @@ struct DogState: Codable {
     init(
         intimacy: Int,
         level: Int,
-        mood: String,
+        mood: DogMood,
         moodScore: Int,
         fullness: Int,
         cleanliness: Int,
@@ -974,7 +974,9 @@ struct DogState: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         intimacy = try container.decode(Int.self, forKey: .intimacy)
         level = try container.decode(Int.self, forKey: .level)
-        mood = try container.decode(String.self, forKey: .mood)
+        // 向后兼容：旧数据 mood 是 String，可能包含 "expecting" 等无效值
+        let rawMood = try container.decode(String.self, forKey: .mood)
+        mood = DogMood(rawValue: rawMood) ?? .neutral
         moodScore = try container.decodeIfPresent(Int.self, forKey: .moodScore) ?? 0
         fullness = try container.decode(Int.self, forKey: .fullness)
         cleanliness = try container.decode(Int.self, forKey: .cleanliness)
@@ -987,7 +989,7 @@ struct DogState: Codable {
     static let initial = DogState(
         intimacy: 0,
         level: 1,
-        mood: "expecting",
+        mood: .neutral,
         moodScore: 0,
         fullness: 60,
         cleanliness: 60,
