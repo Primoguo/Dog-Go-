@@ -1,0 +1,65 @@
+{
+  "images" : [
+    {
+      "filename" : "launch-screen-iPhoneSE-750x1334.png",
+      "idiom" : "iphone",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "launch-screen-iPhone11-828x1792.png",
+      "idiom" : "iphone",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "launch-screen-iPhoneX_XS-1125x2436.png",
+      "idiom" : "iphone",
+      "scale" : "3x"
+    },
+    {
+      "filename" : "launch-screen-iPhone13Mini-1080x2340.png",
+      "idiom" : "iphone",
+      "subtype" : "mini",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "launch-screen-iPhone14-1080x2340.png",
+      "idiom" : "iphone",
+      "subtype" : "standard",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "launch-screen-iPhone15-1170x2532.png",
+      "idiom" : "iphone",
+      "subtype" : "standard",
+      "scale" : "3x"
+    },
+    {
+      "filename" : "launch-screen-iPhone13Pro-1170x2532.png",
+      "idiom" : "iphone",
+      "subtype" : "pro",
+      "scale" : "3x"
+    },
+    {
+      "filename" : "launch-screen-iPhone13ProMax-1284x2778.png",
+      "idiom" : "iphone",
+      "subtype" : "pro-max",
+      "scale" : "3x"
+    },
+    {
+      "filename" : "launch-screen-iPhone15Pro-1179x2556.png",
+      "idiom" : "iphone",
+      "subtype" : "pro",
+      "scale" : "3x"
+    },
+    {
+      "filename" : "launch-screen-iPhone15ProMax-1290x2796.png",
+      "idiom" : "iphone",
+      "subtype" : "pro-max",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
