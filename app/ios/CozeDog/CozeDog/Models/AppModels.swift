@@ -1,5 +1,370 @@
 import Foundation
 
+// MARK: - Scene System
+
+enum SceneType: String, Codable, CaseIterable {
+    case yard       // 温馨小院（幼犬）
+    case park       // 阳光公园（成犬）
+    case beach      // 海边沙滩（完全体）
+    case forest     // 神秘森林（传奇体）
+
+    var displayName: String {
+        switch self {
+        case .yard: return "温馨小院"
+        case .park: return "阳光公园"
+        case .beach: return "海边沙滩"
+        case .forest: return "神秘森林"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .yard: return "house.fill"
+        case .park: return "tree.fill"
+        case .beach: return "beach.umbrella.fill"
+        case .forest: return "leaf.fill"
+        }
+    }
+
+    var requiredEvolution: DogEvolution {
+        switch self {
+        case .yard: return .puppy
+        case .park: return .adult
+        case .beach: return .complete
+        case .forest: return .legendary
+        }
+    }
+
+    var isUnlocked: Bool {
+        // 这里会根据当前进化阶段判断是否解锁
+        return true
+    }
+
+    var description: String {
+        switch self {
+        case .yard: return "温馨的小院子，狗狗的起点"
+        case .park: return "阳光明媚的公园，更大的活动空间"
+        case .beach: return "美丽的海边沙滩，听着海浪声"
+        case .forest: return "神秘的森林，充满魔法气息"
+        }
+    }
+}
+
+enum TimeOfDay: String, Codable {
+    case morning    // 早晨 6-10
+    case daytime    // 白天 10-17
+    case evening    // 黄昏 17-19
+    case night      // 夜晚 19-6
+
+    static var current: TimeOfDay {
+        let hour = Calendar.current.component(.hour, from: Date())
+        switch hour {
+        case 6..<10: return .morning
+        case 10..<17: return .daytime
+        case 17..<19: return .evening
+        default: return .night
+        }
+    }
+
+    var displayName: String {
+        switch self {
+        case .morning: return "清晨"
+        case .daytime: return "白天"
+        case .evening: return "黄昏"
+        case .night: return "夜晚"
+        }
+    }
+
+    var skyColor: String {
+        switch self {
+        case .morning: return "#FFE5B4"
+        case .daytime: return "#87CEEB"
+        case .evening: return "#FF6B6B"
+        case .night: return "#191970"
+        }
+    }
+
+    var ambientLight: Double {
+        switch self {
+        case .morning: return 0.9
+        case .daytime: return 1.0
+        case .evening: return 0.7
+        case .night: return 0.4
+        }
+    }
+}
+
+enum Weather: String, Codable {
+    case sunny      // 晴天
+    case cloudy     // 多云
+    case rainy      // 雨天
+    case snowy      // 雪天
+
+    static var current: Weather {
+        // 简单实现：基于日期生成，实际可以接入天气 API
+        let dayOfYear = Calendar.current.ordinality(of: .day, in: .year, for: Date()) ?? 1
+        let season = Season.current
+
+        switch season {
+        case .spring:
+            return dayOfYear % 5 == 0 ? .rainy : .sunny
+        case .summer:
+            return .sunny
+        case .autumn:
+            return dayOfYear % 4 == 0 ? .cloudy : .sunny
+        case .winter:
+            return dayOfYear % 3 == 0 ? .snowy : .cloudy
+        }
+    }
+
+    var displayName: String {
+        switch self {
+        case .sunny: return "晴天"
+        case .cloudy: return "多云"
+        case .rainy: return "雨天"
+        case .snowy: return "雪天"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .sunny: return "sun.max.fill"
+        case .cloudy: return "cloud.fill"
+        case .rainy: return "cloud.rain.fill"
+        case .snowy: return "cloud.snow.fill"
+        }
+    }
+}
+
+enum Season: String, Codable {
+    case spring     // 春
+    case summer     // 夏
+    case autumn     // 秋
+    case winter     // 冬
+
+    static var current: Season {
+        let month = Calendar.current.component(.month, from: Date())
+        switch month {
+        case 3...5: return .spring
+        case 6...8: return .summer
+        case 9...11: return .autumn
+        default: return .winter
+        }
+    }
+
+    var displayName: String {
+        switch self {
+        case .spring: return "春天"
+        case .summer: return "夏天"
+        case .autumn: return "秋天"
+        case .winter: return "冬天"
+        }
+    }
+
+    var leafColor: String {
+        switch self {
+        case .spring: return "#90EE90"
+        case .summer: return "#228B22"
+        case .autumn: return "#FF8C00"
+        case .winter: return "#FFFFFF"
+        }
+    }
+}
+
+struct SceneSettings: Codable {
+    var currentScene: SceneType = .yard
+    var timeOfDay: TimeOfDay = .daytime
+    var weather: Weather = .sunny
+    var season: Season = .spring
+
+    // 互动元素状态
+    var placedItems: [PlacedItem] = []
+    var discoveredEasterEggs: Set<String> = []
+
+    static let `default` = SceneSettings()
+}
+
+struct PlacedItem: Codable, Identifiable {
+    let id: UUID
+    let itemType: ItemType
+    let position: CGPoint
+
+    init(id: UUID = UUID(), itemType: ItemType, position: CGPoint) {
+        self.id = id
+        self.itemType = itemType
+        self.position = position
+    }
+}
+
+enum ItemType: String, Codable, CaseIterable {
+    case ball       // 玩具球
+    case foodBowl   // 食盆
+    case toy        // 玩具
+    case cushion    // 垫子
+    case flower     // 花朵
+
+    var displayName: String {
+        switch self {
+        case .ball: return "玩具球"
+        case .foodBowl: return "食盆"
+        case .toy: return "玩具"
+        case .cushion: return "垫子"
+        case .flower: return "花朵"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .ball: return "circle.fill"
+        case .foodBowl: return "bowl.fill"
+        case .toy: return "star.fill"
+        case .cushion: return "square.fill"
+        case .flower: return "camera.macro"
+        }
+    }
+
+    var color: String {
+        switch self {
+        case .ball: return "#FF6B6B"
+        case .foodBowl: return "#FFA500"
+        case .toy: return "#FFD700"
+        case .cushion: return "#9370DB"
+        case .flower: return "#FF69B4"
+        }
+    }
+}
+
+// MARK: - Dog Evolution System
+
+enum DogEvolution: String, Codable, CaseIterable {
+    case puppy      // 幼犬 (0-9 次)
+    case adult      // 成犬 (10-49 次)
+    case complete   // 完全体 (50-99 次)
+    case legendary  // 传奇体 (100+ 次)
+
+    var displayName: String {
+        switch self {
+        case .puppy: return "幼犬"
+        case .adult: return "成犬"
+        case .complete: return "完全体"
+        case .legendary: return "传奇体"
+        }
+    }
+
+    var scale: CGFloat {
+        switch self {
+        case .puppy: return 0.8
+        case .adult: return 1.0
+        case .complete: return 1.2
+        case .legendary: return 1.2
+        }
+    }
+
+    var requiredCheckIns: Int {
+        switch self {
+        case .puppy: return 0
+        case .adult: return 10
+        case .complete: return 50
+        case .legendary: return 100
+        }
+    }
+
+    var nextStage: DogEvolution? {
+        switch self {
+        case .puppy: return .adult
+        case .adult: return .complete
+        case .complete: return .legendary
+        case .legendary: return nil
+        }
+    }
+
+    var nextStageRequiredCheckIns: Int? {
+        nextStage?.requiredCheckIns
+    }
+
+    static func from(totalCheckIns: Int) -> DogEvolution {
+        switch totalCheckIns {
+        case 0..<10: return .puppy
+        case 10..<50: return .adult
+        case 50..<100: return .complete
+        default: return .legendary
+        }
+    }
+
+    func progress(toNext totalCheckIns: Int) -> Double {
+        guard let next = nextStage else { return 1.0 }
+        let current = requiredCheckIns
+        let target = next.requiredCheckIns
+        let progress = Double(totalCheckIns - current) / Double(target - current)
+        return min(max(progress, 0), 1.0)
+    }
+}
+
+enum DogMood: String, Codable, CaseIterable {
+    case sad        // 😢 失落
+    case neutral    // 😐 平淡
+    case happy      // 😊 开心
+    case excited    // 😄 兴奋
+    case ecstatic   // 🥳 超开心
+
+    var emoji: String {
+        switch self {
+        case .sad: return "😢"
+        case .neutral: return "😐"
+        case .happy: return "😊"
+        case .excited: return "😄"
+        case .ecstatic: return "🥳"
+        }
+    }
+
+    var displayName: String {
+        switch self {
+        case .sad: return "失落"
+        case .neutral: return "平淡"
+        case .happy: return "开心"
+        case .excited: return "兴奋"
+        case .ecstatic: return "超开心"
+        }
+    }
+
+    static func from(recentCheckIns: Int, streak: Int) -> DogMood {
+        // 基于最近 7 天完成数和连续打卡天数计算心情
+        if streak >= 7 { return .ecstatic }
+        if streak >= 3 || recentCheckIns >= 5 { return .excited }
+        if recentCheckIns >= 3 { return .happy }
+        if recentCheckIns >= 1 { return .neutral }
+        return .sad
+    }
+}
+
+struct DogDiaryEntry: Codable, Identifiable {
+    let id: UUID
+    let date: Date
+    let content: String
+    let mood: DogMood
+    let completions: Int
+    let focusMinutes: Int
+    let streakDays: Int
+
+    init(
+        id: UUID = UUID(),
+        date: Date = Date(),
+        content: String,
+        mood: DogMood,
+        completions: Int,
+        focusMinutes: Int,
+        streakDays: Int
+    ) {
+        self.id = id
+        self.date = date
+        self.content = content
+        self.mood = mood
+        self.completions = completions
+        self.focusMinutes = focusMinutes
+        self.streakDays = streakDays
+    }
+}
+
 enum AppScreen: String, Codable {
     case adopt
     case adoption
@@ -575,6 +940,15 @@ struct AppState: Codable {
     var isResting: Bool
     var restStartTime: Date?
 
+    // 狗狗成长进化系统
+    var dogEvolution: DogEvolution
+    var dogMood: DogMood
+    var diaryEntries: [DogDiaryEntry]
+    var lastDiaryDate: Date?
+
+    // 场景系统
+    var sceneSettings: SceneSettings
+
     enum CodingKeys: String, CodingKey {
         case screen
         case selectedDog
@@ -598,6 +972,11 @@ struct AppState: Codable {
         case focusStartTime
         case isResting
         case restStartTime
+        case dogEvolution
+        case dogMood
+        case diaryEntries
+        case lastDiaryDate
+        case sceneSettings
     }
 
     init(
@@ -622,7 +1001,12 @@ struct AppState: Codable {
         lastEncouragementProgress: Int = 0,
         focusStartTime: Date? = nil,
         isResting: Bool = false,
-        restStartTime: Date? = nil
+        restStartTime: Date? = nil,
+        dogEvolution: DogEvolution = .puppy,
+        dogMood: DogMood = .neutral,
+        diaryEntries: [DogDiaryEntry] = [],
+        lastDiaryDate: Date? = nil,
+        sceneSettings: SceneSettings = .default
     ) {
         self.screen = screen
         self.selectedDog = selectedDog
@@ -646,6 +1030,11 @@ struct AppState: Codable {
         self.focusStartTime = focusStartTime
         self.isResting = isResting
         self.restStartTime = restStartTime
+        self.dogEvolution = dogEvolution
+        self.dogMood = dogMood
+        self.diaryEntries = diaryEntries
+        self.lastDiaryDate = lastDiaryDate
+        self.sceneSettings = sceneSettings
     }
 
     init(from decoder: Decoder) throws {
@@ -674,6 +1063,15 @@ struct AppState: Codable {
         focusStartTime = try container.decodeIfPresent(Date.self, forKey: .focusStartTime)
         isResting = try container.decodeIfPresent(Bool.self, forKey: .isResting) ?? false
         restStartTime = try container.decodeIfPresent(Date.self, forKey: .restStartTime)
+
+        // 狗狗成长进化系统字段（向后兼容）
+        dogEvolution = try container.decodeIfPresent(DogEvolution.self, forKey: .dogEvolution) ?? .puppy
+        dogMood = try container.decodeIfPresent(DogMood.self, forKey: .dogMood) ?? .neutral
+        diaryEntries = try container.decodeIfPresent([DogDiaryEntry].self, forKey: .diaryEntries) ?? []
+        lastDiaryDate = try container.decodeIfPresent(Date.self, forKey: .lastDiaryDate)
+
+        // 场景系统字段（向后兼容）
+        sceneSettings = try container.decodeIfPresent(SceneSettings.self, forKey: .sceneSettings) ?? .default
     }
 
     static let initial = AppState(

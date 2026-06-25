@@ -5,6 +5,7 @@ struct DogWorldScene: View {
     @State private var showsDogStatus = false
     @State private var activityIndex = 0
     @State private var wanderOffset = CGSize.zero
+    @State private var showsSceneSelector = false
 
     var body: some View {
         GeometryReader { proxy in
@@ -15,7 +16,21 @@ struct DogWorldScene: View {
                 .applying(offset: wanderOffset)
 
             ZStack {
-                PixelYardMap(goalType: activeGoalType, isRecovery: isRecovery, isDone: isIdleCompleted)
+                // 场景背景
+                SceneBackgroundView(
+                    scene: store.state.sceneSettings.currentScene,
+                    timeOfDay: .current,
+                    weather: .current,
+                    season: .current
+                )
+
+                // 互动元素
+                ForEach(store.state.sceneSettings.placedItems) { item in
+                    InteractiveItemView(item: item) {
+                        handleItemTap(item)
+                    }
+                    .position(item.position)
+                }
 
                 PixelMapLabel(text: propLabel)
                     .position(propLabelPosition(width: width, height: height))
@@ -31,11 +46,19 @@ struct DogWorldScene: View {
                                 .offset(y: dogSize * 0.35)
                         }
 
+                        // 进化特效
+                        EvolutionEffectsView(
+                            evolution: store.state.dogEvolution,
+                            mood: store.state.dogMood
+                        )
+                        .frame(width: dogSize * 1.5, height: dogSize * 1.5)
+
                         PixelDogSprite(
                             breed: store.state.selectedDog,
                             appearance: store.currentDogAppearance(),
                             size: dogSize,
-                            pose: store.state.dogState.pose
+                            pose: store.state.dogState.pose,
+                            evolution: store.state.dogEvolution
                         )
 
                         // Companion dog
@@ -45,7 +68,8 @@ struct DogWorldScene: View {
                                 breed: companion.breed,
                                 appearance: companion.appearance,
                                 size: dogSize * 0.85,
-                                pose: store.state.dogState.pose
+                                pose: store.state.dogState.pose,
+                                evolution: store.state.dogEvolution
                             )
                             .offset(x: dogSize * 0.9, y: dogSize * 0.1)
                         }
@@ -86,6 +110,17 @@ struct DogWorldScene: View {
                         remainingSeconds: store.state.actionSession.remainingSeconds
                     )
                     .position(x: width * 0.73, y: height * 0.15)
+                }
+
+                // 场景切换按钮
+                SceneSwitchButton(isPresented: $showsSceneSelector)
+                    .position(x: width * 0.9, y: height * 0.1)
+
+                // 场景选择器
+                if showsSceneSelector {
+                    SceneSelectorView(isPresented: $showsSceneSelector)
+                        .transition(.opacity)
+                        .zIndex(100)
                 }
             }
             .background(Color(hex: 0xDCEBCB))
@@ -180,6 +215,26 @@ struct DogWorldScene: View {
             return CGPoint(x: width * 0.78, y: height * 0.34)
         case .none:
             return CGPoint(x: width * 0.20, y: height * 0.14)
+        }
+    }
+
+    private func handleItemTap(_ item: PlacedItem) {
+        switch item.itemType {
+        case .ball:
+            // 点击球：增加狗狗心情
+            store.speechMode = "play"
+        case .foodBowl:
+            // 点击食盆：喂食
+            store.speechMode = "feed"
+        case .toy:
+            // 点击玩具：玩耍
+            store.speechMode = "play"
+        case .cushion:
+            // 点击垫子：休息
+            store.speechMode = "rest"
+        case .flower:
+            // 点击花朵：发现彩蛋
+            store.speechMode = "happy"
         }
     }
 }
@@ -917,6 +972,7 @@ struct PixelDogSprite: View {
     let appearance: DogAppearance
     let size: CGFloat
     let pose: String
+    var evolution: DogEvolution = .adult
 
     var body: some View {
         ZStack {
@@ -1077,8 +1133,12 @@ struct PixelDogSprite: View {
             }
         }
         .frame(width: size, height: size)
-        .scaleEffect(pose == "happy" ? 1.04 : (pose == "focused" ? 0.98 : (pose == "resting" ? 0.95 : 1)))
+        .scaleEffect(
+            (pose == "happy" ? 1.04 : (pose == "focused" ? 0.98 : (pose == "resting" ? 0.95 : 1)))
+            * evolution.scale
+        )
         .offset(y: pose == "focused" ? size * 0.03 : (pose == "resting" ? size * 0.05 : 0))
+    }
 
     private var bodyWidth: CGFloat {
         switch breed {

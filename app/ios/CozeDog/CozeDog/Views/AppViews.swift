@@ -3,6 +3,8 @@ import SwiftUI
 struct RootView: View {
     @EnvironmentObject private var store: AppStore
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
+    @State private var showEvolutionPopup = false
+    @State private var previousEvolution: DogEvolution = .puppy
 
     var body: some View {
         ZStack {
@@ -16,6 +18,27 @@ struct RootView: View {
                 // 已看过引导：正常流程
                 mainContent
             }
+
+            // 进化弹窗
+            if showEvolutionPopup {
+                EvolutionPopupView(
+                    oldEvolution: previousEvolution,
+                    newEvolution: store.state.dogEvolution,
+                    onDismiss: {
+                        showEvolutionPopup = false
+                    }
+                )
+                .transition(.opacity)
+                .zIndex(100)
+            }
+        }
+        .onChange(of: store.state.dogEvolution) { newEvolution in
+            if newEvolution != previousEvolution {
+                showEvolutionPopup = true
+            }
+        }
+        .onAppear {
+            previousEvolution = store.state.dogEvolution
         }
     }
 
@@ -422,11 +445,30 @@ struct FeedbackView: View {
 
 struct ProgressScreen: View {
     @EnvironmentObject private var store: AppStore
+    @State private var showDiary = false
 
     var body: some View {
         ScreenScaffold {
             VStack(alignment: .leading, spacing: 18) {
                 Header(eyebrow: "我和\(store.state.selectedDog.breedName)的进度", title: "这段节奏正在累积", subtitle: nil)
+
+                // 进化进度条
+                Panel {
+                    EvolutionProgressBar(
+                        currentEvolution: store.state.dogEvolution,
+                        totalCheckIns: store.state.totalMainCheckIns
+                    )
+                }
+
+                // 心情显示
+                Panel {
+                    HStack {
+                        Text("当前心情")
+                            .font(.headline)
+                        Spacer()
+                        MoodDisplayView(mood: store.state.dogMood)
+                    }
+                }
 
                 Panel {
                     VStack(alignment: .leading, spacing: 18) {
@@ -450,10 +492,10 @@ struct ProgressScreen: View {
                         }
 
                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                            MetricCard(label: "心情", value: "\(store.state.dogState.moodScore)/10")
                             MetricCard(label: "饱腹", value: "\(store.state.dogState.fullness)")
                             MetricCard(label: "清洁", value: "\(store.state.dogState.cleanliness)")
                             MetricCard(label: "精力", value: "\(store.state.dogState.energy)")
+                            MetricCard(label: "连续打卡", value: "\(store.state.rhythmState.currentStreak)天")
                         }
 
                         // Focus stats button
@@ -479,6 +521,30 @@ struct ProgressScreen: View {
                             }
                         }
                         .buttonStyle(.plain)
+
+                        // Diary button
+                        Button {
+                            showDiary = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "book.fill")
+                                    .font(.caption.weight(.heavy))
+                                Text("狗狗日记")
+                                    .font(.subheadline.weight(.bold))
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.caption.weight(.bold))
+                            }
+                            .foregroundStyle(Color(hex: 0x356247))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 10)
+                            .background(Color(hex: 0xE8F0E0))
+                            .overlay {
+                                Rectangle()
+                                    .stroke(Color(hex: 0x9BB985), lineWidth: 1)
+                            }
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
 
@@ -487,6 +553,10 @@ struct ProgressScreen: View {
                 PrimaryButton(title: "回首页") {
                     store.go(.home)
                 }
+            }
+            .sheet(isPresented: $showDiary) {
+                DiaryViewerView()
+                    .environmentObject(store)
             }
         }
     }

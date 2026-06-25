@@ -294,13 +294,21 @@ final class AppStore: ObservableObject {
         let checkIn = CheckIn(id: UUID(), goalId: goal.id, type: type, completedAt: Date(), assignedDate: assignedDate(), completedPlanTitle: completedPlanTitle)
         state.checkIns.append(checkIn)
 
-        // Track main goal completions for adoption triggers
+        // Track main goal completions for adoption triggers and evolution
         if type == .main {
             state.totalMainCheckIns += 1
             if state.totalMainCheckIns % 10 == 0 {
                 state.availableAdoptions += 1
             }
+            // 检测进化
+            checkEvolution()
         }
+
+        // 更新心情
+        updateDogMood()
+
+        // 生成日记（如果今天还没有）
+        generateDailyDiaryIfNeeded()
 
         var leveledUp = false
         var rewardItem: PixelRewardItem?
@@ -654,5 +662,179 @@ final class AppStore: ObservableObject {
         } catch {
             print("⚠️ 编码 AppState 失败: \(error)")
         }
+    }
+
+    // MARK: - 狗狗成长进化系统
+
+    /// 检测并触发进化
+    func checkEvolution() {
+        let newEvolution = DogEvolution.from(totalCheckIns: state.totalMainCheckIns)
+        let oldEvolution = state.dogEvolution
+
+        if newEvolution != oldEvolution {
+            state.dogEvolution = newEvolution
+            // 进化提示会在 UI 层通过观察 dogEvolution 变化来显示
+            print("🎉 狗狗进化了！\(oldEvolution.displayName) → \(newEvolution.displayName)")
+        }
+    }
+
+    // MARK: - 场景系统
+
+    /// 设置当前场景
+    func setScene(_ scene: SceneType) {
+        state.sceneSettings.currentScene = scene
+        save()
+    }
+
+    /// 放置互动元素
+    func placeItem(_ itemType: ItemType, at position: CGPoint) {
+        let item = PlacedItem(itemType: itemType, position: position)
+        state.sceneSettings.placedItems.append(item)
+        save()
+    }
+
+    /// 移除互动元素
+    func removeItem(_ itemId: UUID) {
+        state.sceneSettings.placedItems.removeAll { $0.id == itemId }
+        save()
+    }
+
+    /// 发现彩蛋
+    func discoverEasterEgg(_ eggId: String) {
+        state.sceneSettings.discoveredEasterEggs.insert(eggId)
+        save()
+    }
+
+    /// 更新狗狗心情
+    func updateDogMood() {
+        let recentCheckIns = getRecentCheckInsCount(days: 7)
+        let streak = state.rhythmState.currentStreak
+        state.dogMood = DogMood.from(recentCheckIns: recentCheckIns, streak: streak)
+    }
+
+    /// 获取最近 N 天的完成次数
+    func getRecentCheckInsCount(days: Int) -> Int {
+        let calendar = Calendar.current
+        let today = Date()
+
+        var count = 0
+        for offset in 0..<days {
+            guard let date = calendar.date(byAdding: .day, value: -offset, to: today) else { continue }
+            let dateStr = assignedDate(for: date)
+            if state.checkIns.contains(where: { $0.assignedDate == dateStr && $0.type == .main }) {
+                count += 1
+            }
+        }
+        return count
+    }
+
+    /// 生成每日日记（如果今天还没有）
+    func generateDailyDiaryIfNeeded() {
+        let today = assignedDate()
+
+        // 检查今天是否已经生成过日记
+        if let lastDate = state.lastDiaryDate, assignedDate(for: lastDate) == today {
+            return
+        }
+
+        // 获取今天的数据
+        let todayCheckIns = state.checkIns.filter { $0.assignedDate == today && $0.type == .main }
+        let completions = todayCheckIns.count
+        let focusMinutes = state.focusSessions
+            .filter { assignedDate(for: $0.startedAt) == today && $0.completed }
+            .reduce(0) { $0 + $1.durationSeconds / 60 }
+        let streak = state.rhythmState.currentStreak
+        let mood = state.dogMood
+
+        // 生成日记内容
+        let content = generateDiaryContent(
+            breed: state.selectedDog,
+            completions: completions,
+            focusMinutes: focusMinutes,
+            streak: streak,
+            mood: mood
+        )
+
+        // 创建日记条目
+        let entry = DogDiaryEntry(
+            date: Date(),
+            content: content,
+            mood: mood,
+            completions: completions,
+            focusMinutes: focusMinutes,
+            streakDays: streak
+        )
+
+        state.diaryEntries.append(entry)
+        state.lastDiaryDate = Date()
+    }
+
+    /// 生成日记内容（模板 + 品种性格）
+    private func generateDiaryContent(breed: DogBreed, completions: Int, focusMinutes: Int, streak: Int, mood: DogMood) -> String {
+        let templates: [String]
+
+        switch breed {
+        case .shiba:
+            // 傲娇毒舌
+            templates = [
+                "今天主人完成了 \(completions) 个计划，勉强及格吧...才不是为你高兴呢！",
+                "专注了 \(focusMinutes) 分钟，哼，算你努力。",
+                "连续打卡 \(streak) 天了，本汪才不会夸你。",
+                "今天什么都没做？本汪都快忘了你长什么样了。",
+                "又来找我玩了？好吧，陪你一下。"
+            ]
+        case .golden:
+            // 暖心鼓励
+            templates = [
+                "今天完成了 \(completions) 个计划！主人好棒！尾巴都摇累了！",
+                "专注了 \(focusMinutes) 分钟呢，主人认真的样子最帅了！",
+                "连续 \(streak) 天了！我们是最好的搭档！",
+                "今天也要开开心心的哦！",
+                "无论怎样，我都在这里陪你。"
+            ]
+        case .borderCollie:
+            // 理性分析
+            templates = [
+                "今日完成度：\(completions) 个计划。效率评估：\(mood == .ecstatic ? "优秀" : "良好")。",
+                "专注时长 \(focusMinutes) 分钟，建议保持当前节奏。",
+                "连续打卡 \(streak) 天，习惯养成进度正常。",
+                "数据分析完成，明日目标已准备。",
+                "建议：保持当前强度，避免过度疲劳。"
+            ]
+        case .native:
+            // 朴实真诚
+            templates = [
+                "今天完成了 \(completions) 个计划，踏实的一天。",
+                "专注了 \(focusMinutes) 分钟，辛苦了。",
+                "连续 \(streak) 天了，慢慢来，不着急。",
+                "没事，我还在这儿陪你。",
+                "门又打开了，欢迎回来。"
+            ]
+        case .bulldog:
+            // 憨厚可爱
+            templates = [
+                "呼...今天做了 \(completions) 个计划，好累但是好开心。",
+                "专注了 \(focusMinutes) 分钟，我都在旁边陪你哦。",
+                "连续 \(streak) 天了，慢慢来，不着急。",
+                "没事，继续走。",
+                "回来了，很好。"
+            ]
+        case .teddy:
+            // 活泼话痨
+            templates = [
+                "哇！今天完成了 \(completions) 个计划！太棒了太棒了！",
+                "专注了 \(focusMinutes) 分钟！你好厉害！我好开心！",
+                "连续 \(streak) 天了！继续继续！冲冲冲！",
+                "快来快来！今天也要开开心心！",
+                "你来了！好开心好开心！"
+            ]
+        }
+
+        return templates.randomElement() ?? "今天也是平凡的一天。"
+    }
+
+    /// 获取最近的日记条目
+    func getRecentDiaryEntries(limit: Int = 7) -> [DogDiaryEntry] {
+        Array(state.diaryEntries.suffix(limit)).reversed()
     }
 }
