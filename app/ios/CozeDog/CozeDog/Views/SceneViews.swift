@@ -746,6 +746,36 @@ struct MushroomView: View {
     }
 }
 
+// MARK: - WaveShape（海浪边缘）
+
+struct WaveShape: Shape {
+    var offset: CGFloat
+
+    var animatableData: CGFloat {
+        get { offset }
+        set { offset = newValue }
+    }
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let amplitude: CGFloat = 4
+        let frequency: CGFloat = 0.02
+
+        path.move(to: CGPoint(x: 0, y: rect.midY))
+
+        for x in stride(from: 0, through: rect.width, by: 1) {
+            let y = rect.midY + sin(x * frequency + offset) * amplitude
+            path.addLine(to: CGPoint(x: x, y: y))
+        }
+
+        path.addLine(to: CGPoint(x: rect.width, y: rect.height))
+        path.addLine(to: CGPoint(x: 0, y: rect.height))
+        path.closeSubpath()
+
+        return path
+    }
+}
+
 // MARK: - Color 扩展
 
 extension Color {
