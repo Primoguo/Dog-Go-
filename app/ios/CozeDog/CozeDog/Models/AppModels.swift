@@ -632,6 +632,19 @@ struct DogAppearance: Codable, Equatable {
     var legColorHex: UInt
     var tailColorHex: UInt
 
+    init(seed: String, primaryFurHex: UInt, secondaryFurHex: UInt, marking: DogMarking, collarHex: UInt, bodyColorHex: UInt, headColorHex: UInt, earColorHex: UInt, legColorHex: UInt, tailColorHex: UInt) {
+        self.seed = seed
+        self.primaryFurHex = primaryFurHex
+        self.secondaryFurHex = secondaryFurHex
+        self.marking = marking
+        self.collarHex = collarHex
+        self.bodyColorHex = bodyColorHex
+        self.headColorHex = headColorHex
+        self.earColorHex = earColorHex
+        self.legColorHex = legColorHex
+        self.tailColorHex = tailColorHex
+    }
+
     static func generated(for breed: DogBreed, seed: String = UUID().uuidString) -> DogAppearance {
         let hash = stableHash(seed + breed.rawValue)
         let palettes = breed.paletteOptions

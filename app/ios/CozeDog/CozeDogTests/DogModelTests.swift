@@ -12,7 +12,7 @@ final class DogModelTests: XCTestCase {
         XCTAssertEqual(state.breed, .shiba)
         XCTAssertEqual(state.name, "旺财")
         XCTAssertEqual(state.level, 1)
-        XCTAssertEqual(state.mood, .neutral)
+        XCTAssertEqual(state.mood, "neutral")
     }
 
     func testDogStateAllBreeds() {
@@ -117,9 +117,9 @@ final class DogModelTests: XCTestCase {
         store.selectDog(.shiba)
 
         // 不同进度应该有不同鼓励语
-        let copy25 = store.encouragementCopy(progress: 0.25)
-        let copy50 = store.encouragementCopy(progress: 0.50)
-        let copy75 = store.encouragementCopy(progress: 0.75)
+        let copy25 = store.encouragementCopy(progress: 25)
+        let copy50 = store.encouragementCopy(progress: 50)
+        let copy75 = store.encouragementCopy(progress: 75)
 
         XCTAssertFalse(copy25.isEmpty)
         XCTAssertFalse(copy50.isEmpty)
