@@ -83,6 +83,7 @@ struct HaloEffect: View {
 
 struct ParticleEffect: View {
     @State private var particles: [Particle] = (0..<12).map { _ in Particle() }
+    @State private var isAnimating = false
 
     var body: some View {
         ZStack {
@@ -91,18 +92,22 @@ struct ParticleEffect: View {
                     .fill(particle.color)
                     .frame(width: particle.size, height: particle.size)
                     .position(particle.position)
-                    .opacity(particle.opacity)
-                    .onAppear {
-                        withAnimation(
-                            .easeInOut(duration: particle.duration)
-                            .repeatForever(autoreverses: false)
-                        ) {
-                            particle.animate()
-                        }
-                    }
+                    .opacity(isAnimating ? particle.targetOpacity : particle.opacity)
+                    .offset(
+                        x: isAnimating ? particle.targetOffset.x : 0,
+                        y: isAnimating ? particle.targetOffset.y : 0
+                    )
             }
         }
         .frame(width: 160, height: 160)
+        .onAppear {
+            withAnimation(
+                .easeInOut(duration: 2)
+                .repeatForever(autoreverses: true)
+            ) {
+                isAnimating = true
+            }
+        }
     }
 }
 
@@ -112,7 +117,8 @@ struct Particle: Identifiable {
     var size: CGFloat
     var color: Color
     var opacity: Double
-    var duration: Double
+    var targetOpacity: Double
+    var targetOffset: CGSize
 
     init() {
         let angle = Double.random(in: 0..<360)
@@ -124,17 +130,13 @@ struct Particle: Identifiable {
         self.size = CGFloat.random(in: 3...6)
         self.color = [Color.yellow, Color.orange, Color.pink].randomElement()!
         self.opacity = Double.random(in: 0.3...0.7)
-        self.duration = Double.random(in: 2...4)
-    }
-
-    mutating func animate() {
-        let angle = Double.random(in: 0..<360)
-        let radius = Double.random(in: 50..<80)
-        position = CGPoint(
-            x: 80 + CGFloat(cos(angle * .pi / 180) * radius),
-            y: 80 + CGFloat(sin(angle * .pi / 180) * radius)
+        self.targetOpacity = Double.random(in: 0.1...0.3)
+        let targetAngle = Double.random(in: 0..<360)
+        let targetRadius = Double.random(in: 10...30)
+        self.targetOffset = CGSize(
+            width: CGFloat(cos(targetAngle * .pi / 180) * targetRadius),
+            height: CGFloat(sin(targetAngle * .pi / 180) * targetRadius)
         )
-        opacity = Double.random(in: 0.2...0.8)
     }
 }
 
