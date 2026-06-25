@@ -283,58 +283,210 @@ struct CreateGoalView: View {
 
     var body: some View {
         ScreenScaffold {
-            VStack(alignment: .leading, spacing: 18) {
-                Header(eyebrow: "\(store.state.selectedDog.breedName)已经住进小院子", title: "先定一个今天能开始的目标", subtitle: "首版默认推荐健身，也可以切到学习或作息。")
+            VStack(spacing: 0) {
+                // 顶部：狗狗问候 + 标题
+                VStack(spacing: 8) {
+                    // 小像素狗
+                    if let appearance = store.state.dogAppearance {
+                        PixelDogSprite(breed: store.state.selectedDog, appearance: appearance, size: 56, pose: .happy)
+                            .padding(.top, 4)
+                    }
 
-                Panel {
-                    VStack(alignment: .leading, spacing: 18) {
+                    Text("\(store.state.selectedDog.name)说")
+                        .font(.caption)
+                        .foregroundStyle(Color(hex: 0x8B8B8B))
+
+                    Text(store.state.selectedDog.preview)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Color(hex: 0x4A4A4A))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 20)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.bottom, 12)
+
+                // 可滚动内容区
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 14) {
+                        // 场景选择（自定义按钮替代 segmented picker）
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("场景")
-                                .eyebrowStyle()
-                            Picker("场景", selection: $store.goalDraftType) {
+                            Text("今天想做什么？")
+                                .font(.subheadline.weight(.bold))
+                                .foregroundStyle(Color(hex: 0x2C2C2C))
+
+                            HStack(spacing: 8) {
                                 ForEach(GoalType.allCases) { type in
-                                    Text(type.label).tag(type)
+                                    GoalTypeButton(
+                                        type: type,
+                                        isSelected: store.goalDraftType == type
+                                    ) {
+                                        store.selectGoalType(type)
+                                    }
                                 }
-                            }
-                            .pickerStyle(.segmented)
-                            .onChange(of: store.goalDraftType) { _, newValue in
-                                store.selectGoalType(newValue)
                             }
                         }
 
-                        VStack(alignment: .leading, spacing: 10) {
+                        // 推荐模板
+                        VStack(alignment: .leading, spacing: 8) {
                             Text("推荐模板")
-                                .eyebrowStyle()
-                            ForEach(store.goalDraftType.templates) { template in
-                                Button {
-                                    store.goalDraftTitle = template.title
-                                } label: {
-                                    TemplateRow(template: template, selected: store.goalDraftTitle == template.title)
+                                .font(.subheadline.weight(.bold))
+                                .foregroundStyle(Color(hex: 0x2C2C2C))
+
+                            VStack(spacing: 8) {
+                                ForEach(store.goalDraftType.templates) { template in
+                                    Button {
+                                        store.goalDraftTitle = template.title
+                                    } label: {
+                                        TemplateCard(template: template, selected: store.goalDraftTitle == template.title)
+                                    }
+                                    .buttonStyle(.plain)
                                 }
-                                .buttonStyle(.plain)
                             }
                         }
 
+                        // 目标名称
                         VStack(alignment: .leading, spacing: 8) {
                             Text("目标名称")
-                                .eyebrowStyle()
-                            TextField("目标名称", text: $store.goalDraftTitle)
-                                .textFieldStyle(.roundedBorder)
+                                .font(.subheadline.weight(.bold))
+                                .foregroundStyle(Color(hex: 0x2C2C2C))
+
+                            TextField("给目标起个名字", text: $store.goalDraftTitle)
+                                .font(.subheadline)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 12)
+                                .background(Color.white.opacity(0.8))
+                                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                        .stroke(Color(hex: 0xECE0D0), lineWidth: 1)
+                                }
                         }
                     }
+                    .padding(.bottom, 16)
                 }
 
-                Spacer()
+                // 底部按钮（固定）
+                VStack(spacing: 8) {
+                    PrimaryButton(title: "开始今天的节奏") {
+                        store.createGoal()
+                    }
 
-                PrimaryButton(title: "开始今天的节奏") {
-                    store.createGoal()
+                    Button {
+                        store.go(.adopt)
+                    } label: {
+                        Text("返回选狗")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(Color(hex: 0x8B8B8B))
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                    }
+                    .buttonStyle(.plain)
                 }
-
-                SecondaryButton(title: "返回选狗") {
-                    store.go(.adopt)
-                }
+                .padding(.top, 8)
             }
         }
+    }
+}
+
+// MARK: - 场景类型按钮
+
+struct GoalTypeButton: View {
+    let type: GoalType
+    let isSelected: Bool
+    let action: () -> Void
+
+    private var icon: String {
+        switch type {
+        case .fitness: return ""
+        case .study: return ""
+        case .sleep: return ""
+        }
+    }
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Text(icon)
+                    .font(.title2)
+                Text(type.label)
+                    .font(.caption.weight(.bold))
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+            .background(isSelected ? Color(hex: 0x356247) : Color.white.opacity(0.7))
+            .foregroundStyle(isSelected ? .white : Color(hex: 0x4A4A4A))
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .stroke(isSelected ? Color(hex: 0x356247) : Color(hex: 0xECE0D0), lineWidth: isSelected ? 0 : 1)
+            }
+            .scaleEffect(isSelected ? 1.02 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - 模板卡片
+
+struct TemplateCard: View {
+    let template: GoalTemplate
+    let selected: Bool
+
+    private var icon: String {
+        if template.title.contains("运动") || template.title.contains("拉伸") || template.title.contains("跑步") {
+            return "🏃"
+        } else if template.title.contains("阅读") || template.title.contains("学习") || template.title.contains("背单词") {
+            return "📖"
+        } else if template.title.contains("冥想") || template.title.contains("呼吸") {
+            return "🧘"
+        } else if template.title.contains("早睡") || template.title.contains("作息") {
+            return "🌙"
+        } else {
+            return "✨"
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            // 图标
+            Text(icon)
+                .font(.title2)
+                .frame(width: 40, height: 40)
+                .background(selected ? Color(hex: 0xE6F0E9) : Color(hex: 0xF8F4EE))
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+            // 文字
+            VStack(alignment: .leading, spacing: 3) {
+                Text(template.title)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color(hex: 0x2C2C2C))
+                Text("恢复：\(template.recoveryTitle)")
+                    .font(.caption)
+                    .foregroundStyle(Color(hex: 0x8B8B8B))
+            }
+
+            Spacer()
+
+            // 选中标记
+            if selected {
+                Circle()
+                    .fill(Color(hex: 0x356247))
+                    .frame(width: 20, height: 20)
+                    .overlay {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(.white)
+                    }
+            }
+        }
+        .padding(12)
+        .background(selected ? Color(hex: 0xE6F0E9).opacity(0.5) : Color.white.opacity(0.6))
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .stroke(selected ? Color(hex: 0x356247) : Color(hex: 0xECE0D0), lineWidth: selected ? 1.5 : 1)
+        }
+        .animation(.easeInOut(duration: 0.2), value: selected)
     }
 }
 
