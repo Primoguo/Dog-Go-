@@ -1029,6 +1029,11 @@ struct AppState: Codable {
     // 场景系统
     var sceneSettings: SceneSettings
 
+    // 每日任务建议系统
+    var customTasks: [CustomTask]
+    var taskHistory: [TaskHistoryEntry]
+    var lastTaskRecommendationDate: Date?
+
     enum CodingKeys: String, CodingKey {
         case screen
         case selectedDog
@@ -1057,6 +1062,9 @@ struct AppState: Codable {
         case diaryEntries
         case lastDiaryDate
         case sceneSettings
+        case customTasks
+        case taskHistory
+        case lastTaskRecommendationDate
     }
 
     init(
@@ -1086,7 +1094,10 @@ struct AppState: Codable {
         dogMood: DogMood = .neutral,
         diaryEntries: [DogDiaryEntry] = [],
         lastDiaryDate: Date? = nil,
-        sceneSettings: SceneSettings = .default
+        sceneSettings: SceneSettings = .default,
+        customTasks: [CustomTask] = [],
+        taskHistory: [TaskHistoryEntry] = [],
+        lastTaskRecommendationDate: Date? = nil
     ) {
         self.screen = screen
         self.selectedDog = selectedDog
@@ -1115,6 +1126,9 @@ struct AppState: Codable {
         self.diaryEntries = diaryEntries
         self.lastDiaryDate = lastDiaryDate
         self.sceneSettings = sceneSettings
+        self.customTasks = customTasks
+        self.taskHistory = taskHistory
+        self.lastTaskRecommendationDate = lastTaskRecommendationDate
     }
 
     init(from decoder: Decoder) throws {
@@ -1152,6 +1166,11 @@ struct AppState: Codable {
 
         // 场景系统字段（向后兼容）
         sceneSettings = try container.decodeIfPresent(SceneSettings.self, forKey: .sceneSettings) ?? .default
+
+        // 每日任务建议系统字段（向后兼容）
+        customTasks = try container.decodeIfPresent([CustomTask].self, forKey: .customTasks) ?? []
+        taskHistory = try container.decodeIfPresent([TaskHistoryEntry].self, forKey: .taskHistory) ?? []
+        lastTaskRecommendationDate = try container.decodeIfPresent(Date.self, forKey: .lastTaskRecommendationDate)
     }
 
     static let initial = AppState(
@@ -1201,6 +1220,159 @@ struct CollectedDog: Codable, Identifiable, Equatable {
         self.appearance = appearance
         self.nickname = nickname
         self.collectedAt = collectedAt
+    }
+}
+
+// MARK: - 每日任务建议系统
+
+/// 任务时间段
+enum TaskTimeSlot: String, Codable, CaseIterable {
+    case morning      // 早上 6-12
+    case afternoon    // 下午 12-18
+    case evening      // 晚上 18-22
+    case night        // 深夜 22-6
+
+    /// 根据当前小时判断时间段
+    static var current: TaskTimeSlot {
+        let hour = Calendar.current.component(.hour, from: Date())
+        switch hour {
+        case 6..<12: return .morning
+        case 12..<18: return .afternoon
+        case 18..<22: return .evening
+        default: return .night
+        }
+    }
+
+    var label: String {
+        switch self {
+        case .morning: return "早上"
+        case .afternoon: return "下午"
+        case .evening: return "晚上"
+        case .night: return "深夜"
+        }
+    }
+
+    var emoji: String {
+        switch self {
+        case .morning: return "🌅"
+        case .afternoon: return "☀️"
+        case .evening: return "🌆"
+        case .night: return "🌙"
+        }
+    }
+}
+
+/// 预设任务模板
+struct TaskTemplate: Codable, Identifiable {
+    let id: String
+    let title: String
+    let goalType: GoalType
+    let estimatedMinutes: Int
+    let timeSlots: [TaskTimeSlot]  // 适合的时间段
+    let tags: [String]
+
+    init(id: String = UUID().uuidString, title: String, goalType: GoalType, estimatedMinutes: Int, timeSlots: [TaskTimeSlot] = TaskTimeSlot.allCases, tags: [String] = []) {
+        self.id = id
+        self.title = title
+        self.goalType = goalType
+        self.estimatedMinutes = estimatedMinutes
+        self.timeSlots = timeSlots
+        self.tags = tags
+    }
+}
+
+/// 用户自定义任务
+struct CustomTask: Codable, Identifiable {
+    let id: UUID
+    var title: String
+    var goalType: GoalType
+    var estimatedMinutes: Int
+    var isFavorite: Bool
+    var createdAt: Date
+
+    init(id: UUID = UUID(), title: String, goalType: GoalType, estimatedMinutes: Int, isFavorite: Bool = false, createdAt: Date = Date()) {
+        self.id = id
+        self.title = title
+        self.goalType = goalType
+        self.estimatedMinutes = estimatedMinutes
+        self.isFavorite = isFavorite
+        self.createdAt = createdAt
+    }
+}
+
+/// 任务历史记录
+struct TaskHistoryEntry: Codable, Identifiable {
+    let id: UUID
+    let title: String
+    let goalType: GoalType
+    let acceptedDate: Date
+    var completed: Bool
+    var completedDate: Date?
+
+    init(id: UUID = UUID(), title: String, goalType: GoalType, acceptedDate: Date = Date(), completed: Bool = false, completedDate: Date? = nil) {
+        self.id = id
+        self.title = title
+        self.goalType = goalType
+        self.acceptedDate = acceptedDate
+        self.completed = completed
+        self.completedDate = completedDate
+    }
+}
+
+/// 预设任务库
+struct PresetTaskLibrary {
+    /// 健身类任务
+    static let fitnessTasks: [TaskTemplate] = [
+        TaskTemplate(title: "晨跑 20 分钟", goalType: .fitness, estimatedMinutes: 20, timeSlots: [.morning], tags: ["有氧", "户外"]),
+        TaskTemplate(title: "俯卧撑 3 组 × 15 个", goalType: .fitness, estimatedMinutes: 10, timeSlots: [.morning, .afternoon], tags: ["力量", "上肢"]),
+        TaskTemplate(title: "拉伸放松 10 分钟", goalType: .fitness, estimatedMinutes: 10, timeSlots: [.evening, .night], tags: ["柔韧", "恢复"]),
+        TaskTemplate(title: "深蹲 3 组 × 12 个", goalType: .fitness, estimatedMinutes: 12, timeSlots: [.afternoon, .evening], tags: ["力量", "下肢"]),
+        TaskTemplate(title: "平板支撑 3 分钟", goalType: .fitness, estimatedMinutes: 5, timeSlots: [.morning, .afternoon], tags: ["核心", "耐力"]),
+        TaskTemplate(title: "散步 30 分钟", goalType: .fitness, estimatedMinutes: 30, timeSlots: [.evening], tags: ["有氧", "放松"]),
+        TaskTemplate(title: "跳绳 15 分钟", goalType: .fitness, estimatedMinutes: 15, timeSlots: [.morning, .afternoon], tags: ["有氧", "协调"]),
+        TaskTemplate(title: "瑜伽 20 分钟", goalType: .fitness, estimatedMinutes: 20, timeSlots: [.morning, .evening], tags: ["柔韧", "身心"]),
+        TaskTemplate(title: "开合跳 5 分钟", goalType: .fitness, estimatedMinutes: 5, timeSlots: [.morning], tags: ["热身", "有氧"]),
+        TaskTemplate(title: "引体向上 3 组 × 8 个", goalType: .fitness, estimatedMinutes: 10, timeSlots: [.afternoon], tags: ["力量", "上肢"]),
+    ]
+
+    /// 学习类任务
+    static let studyTasks: [TaskTemplate] = [
+        TaskTemplate(title: "背单词 20 个", goalType: .study, estimatedMinutes: 15, timeSlots: [.morning], tags: ["英语", "记忆"]),
+        TaskTemplate(title: "阅读 30 分钟", goalType: .study, estimatedMinutes: 30, timeSlots: [.afternoon, .evening], tags: ["阅读", "积累"]),
+        TaskTemplate(title: "写日记", goalType: .study, estimatedMinutes: 10, timeSlots: [.evening, .night], tags: ["写作", "反思"]),
+        TaskTemplate(title: "复习笔记 20 分钟", goalType: .study, estimatedMinutes: 20, timeSlots: [.afternoon], tags: ["复习", "巩固"]),
+        TaskTemplate(title: "学习新知识点", goalType: .study, estimatedMinutes: 25, timeSlots: [.morning, .afternoon], tags: ["学习", "探索"]),
+        TaskTemplate(title: "做练习题 30 分钟", goalType: .study, estimatedMinutes: 30, timeSlots: [.afternoon, .evening], tags: ["练习", "应用"]),
+        TaskTemplate(title: "听播客/课程 20 分钟", goalType: .study, estimatedMinutes: 20, timeSlots: [.morning, .evening], tags: ["听力", "输入"]),
+        TaskTemplate(title: "整理思维导图", goalType: .study, estimatedMinutes: 15, timeSlots: [.evening], tags: ["整理", "归纳"]),
+        TaskTemplate(title: "阅读专业文章", goalType: .study, estimatedMinutes: 20, timeSlots: [.morning, .afternoon], tags: ["专业", "深度"]),
+        TaskTemplate(title: "写学习计划", goalType: .study, estimatedMinutes: 10, timeSlots: [.evening, .night], tags: ["规划", "目标"]),
+    ]
+
+    /// 作息类任务
+    static let sleepTasks: [TaskTemplate] = [
+        TaskTemplate(title: "23:00 前上床", goalType: .sleep, estimatedMinutes: 5, timeSlots: [.night], tags: ["早睡", "规律"]),
+        TaskTemplate(title: "睡前放下手机 10 分钟", goalType: .sleep, estimatedMinutes: 10, timeSlots: [.night], tags: ["戒手机", "放松"]),
+        TaskTemplate(title: "整理明天计划", goalType: .sleep, estimatedMinutes: 5, timeSlots: [.night], tags: ["规划", "安心"]),
+        TaskTemplate(title: "冥想 10 分钟", goalType: .sleep, estimatedMinutes: 10, timeSlots: [.evening, .night], tags: ["冥想", "静心"]),
+        TaskTemplate(title: "喝杯温水放松", goalType: .sleep, estimatedMinutes: 5, timeSlots: [.evening, .night], tags: ["放松", "健康"]),
+        TaskTemplate(title: "睡前拉伸 5 分钟", goalType: .sleep, estimatedMinutes: 5, timeSlots: [.night], tags: ["拉伸", "放松"]),
+        TaskTemplate(title: "写感恩日记", goalType: .sleep, estimatedMinutes: 5, timeSlots: [.night], tags: ["反思", "正面"]),
+        TaskTemplate(title: "调暗灯光准备入睡", goalType: .sleep, estimatedMinutes: 3, timeSlots: [.night], tags: ["环境", "入睡"]),
+    ]
+
+    /// 根据目标类型获取对应任务库
+    static func tasks(for goalType: GoalType) -> [TaskTemplate] {
+        switch goalType {
+        case .fitness: return fitnessTasks
+        case .study: return studyTasks
+        case .sleep: return sleepTasks
+        }
+    }
+
+    /// 所有预设任务
+    static var allTasks: [TaskTemplate] {
+        fitnessTasks + studyTasks + sleepTasks
     }
 }
 

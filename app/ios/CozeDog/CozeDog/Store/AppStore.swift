@@ -837,4 +837,191 @@ final class AppStore: ObservableObject {
     func getRecentDiaryEntries(limit: Int = 7) -> [DogDiaryEntry] {
         Array(state.diaryEntries.suffix(limit)).reversed()
     }
+
+    // MARK: - 每日任务建议系统
+
+    /// 获取智能推荐任务（综合评分算法）
+    func recommendTasks(limit: Int = 5) -> [TaskTemplate] {
+        let currentTimeSlot = TaskTimeSlot.current
+        let allPresetTasks = PresetTaskLibrary.allTasks
+        let customTasksAsTemplates = state.customTasks.map { customTask in
+            TaskTemplate(
+                id: customTask.id.uuidString,
+                title: customTask.title,
+                goalType: customTask.goalType,
+                estimatedMinutes: customTask.estimatedMinutes,
+                timeSlots: TaskTimeSlot.allCases,
+                tags: ["自定义"]
+            )
+        }
+        let allTasks = allPresetTasks + customTasksAsTemplates
+
+        // 过滤掉今天已完成的任务
+        let todayCompletedTitles = Set(
+            state.taskHistory
+                .filter { isSameDay($0.acceptedDate, Date()) && $0.completed }
+                .map(\.title)
+        )
+        let availableTasks = allTasks.filter { !todayCompletedTitles.contains($0.title) }
+
+        // 计算每个任务的综合评分
+        let scoredTasks = availableTasks.map { task -> (task: TaskTemplate, score: Double) in
+            let score = calculateTaskScore(task: task, currentTimeSlot: currentTimeSlot)
+            return (task, score)
+        }
+
+        // 按评分排序，取前 N 个
+        let sorted = scoredTasks.sorted { $0.score > $1.score }
+        return Array(sorted.prefix(limit)).map(\.task)
+    }
+
+    /// 计算任务综合评分
+    private func calculateTaskScore(task: TaskTemplate, currentTimeSlot: TaskTimeSlot) -> Double {
+        var score = 0.0
+
+        // 1. 时间段匹配度 (30%)
+        if task.timeSlots.contains(currentTimeSlot) {
+            score += 0.30
+        }
+
+        // 2. 历史频率 (25%) - 最近做过的任务降低优先级
+        let recentHistory = state.taskHistory.suffix(20)
+        let taskHistoryCount = recentHistory.filter { $0.title == task.title }.count
+        let maxHistoryCount = Double(max(recentHistory.count, 1))
+        let frequencyScore = 1.0 - (Double(taskHistoryCount) / maxHistoryCount)
+        score += 0.25 * frequencyScore
+
+        // 3. 新鲜度 (25%) - 最近没做过的任务得分更高
+        let lastDoneDate = state.taskHistory
+            .filter { $0.title == task.title }
+            .last?.acceptedDate
+        let freshnessScore: Double
+        if let lastDate = lastDoneDate {
+            let daysSinceLastDone = Date().timeIntervalSince(lastDate) / 86400
+            freshnessScore = min(1.0, daysSinceLastDone / 7.0) // 7天内线性增长
+        } else {
+            freshnessScore = 1.0 // 从未做过，最高分
+        }
+        score += 0.25 * freshnessScore
+
+        // 4. 多样性 (20%) - 优先推荐不同类型的任务
+        let recentGoalTypes = state.taskHistory.suffix(5).map(\.goalType)
+        let diversityScore = recentGoalTypes.contains(task.goalType) ? 0.5 : 1.0
+        score += 0.20 * diversityScore
+
+        // 5. 收藏任务加权
+        if let customTask = state.customTasks.first(where: { $0.title == task.title }),
+           customTask.isFavorite {
+            score += 0.15
+        }
+
+        return score
+    }
+
+    /// 接受任务建议
+    func acceptTaskSuggestion(_ task: TaskTemplate) {
+        // 记录到历史
+        let historyEntry = TaskHistoryEntry(
+            title: task.title,
+            goalType: task.goalType,
+            acceptedDate: Date()
+        )
+        state.taskHistory.append(historyEntry)
+        state.lastTaskRecommendationDate = Date()
+
+        // 自动填充 Dog Go 表单
+        state.goalDraftType = task.goalType
+        state.goalDraftTitle = task.title
+
+        // 打开 Dog Go
+        openDogGo()
+        save()
+    }
+
+    /// 标记任务完成
+    func completeTaskSuggestion(_ taskTitle: String) {
+        if let index = state.taskHistory.lastIndex(where: { $0.title == taskTitle && !$0.completed }) {
+            state.taskHistory[index].completed = true
+            state.taskHistory[index].completedDate = Date()
+            save()
+        }
+    }
+
+    /// 添加自定义任务
+    func addCustomTask(title: String, goalType: GoalType, estimatedMinutes: Int) {
+        let newTask = CustomTask(
+            title: title,
+            goalType: goalType,
+            estimatedMinutes: estimatedMinutes
+        )
+        state.customTasks.append(newTask)
+        save()
+    }
+
+    /// 切换任务收藏状态
+    func toggleTaskFavorite(_ customTaskId: UUID) {
+        if let index = state.customTasks.firstIndex(where: { $0.id == customTaskId }) {
+            state.customTasks[index].isFavorite.toggle()
+            save()
+        }
+    }
+
+    /// 删除自定义任务
+    func deleteCustomTask(_ customTaskId: UUID) {
+        state.customTasks.removeAll { $0.id == customTaskId }
+        save()
+    }
+
+    /// 获取今日任务统计
+    func getTodayTaskStats() -> (completed: Int, total: Int) {
+        let todayTasks = state.taskHistory.filter { isSameDay($0.acceptedDate, Date()) }
+        let completed = todayTasks.filter(\.completed).count
+        return (completed, todayTasks.count)
+    }
+
+    /// 判断两个日期是否同一天
+    private func isSameDay(_ date1: Date, _ date2: Date) -> Bool {
+        Calendar.current.isDate(date1, inSameDayAs: date2)
+    }
+
+    /// 获取连续完成任务天数
+    func getTaskStreak() -> Int {
+        let calendar = Calendar.current
+        let sortedHistory = state.taskHistory
+            .filter(\.completed)
+            .sorted { $0.completedDate ?? $0.acceptedDate < $1.completedDate ?? $1.acceptedDate }
+
+        guard let lastDate = sortedHistory.last?.completedDate ?? sortedHistory.last?.acceptedDate else {
+            return 0
+        }
+
+        // 如果今天没有完成任何任务，检查昨天
+        if !calendar.isDateInToday(lastDate) {
+            if calendar.isDateInYesterday(lastDate) {
+                // 昨天完成了，继续计算
+            } else {
+                return 0 // 超过一天没完成
+            }
+        }
+
+        var streak = 0
+        var currentDate = Date()
+
+        for _ in 0..<365 { // 最多回溯一年
+            let hasCompletedOnDate = sortedHistory.contains { entry in
+                let date = entry.completedDate ?? entry.acceptedDate
+                return calendar.isDate(date, inSameDayAs: currentDate)
+            }
+
+            if hasCompletedOnDate {
+                streak += 1
+                guard let previousDate = calendar.date(byAdding: .day, value: -1, to: currentDate) else { break }
+                currentDate = previousDate
+            } else {
+                break
+            }
+        }
+
+        return streak
+    }
 }

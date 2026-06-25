@@ -6,6 +6,7 @@ struct DogWorldScene: View {
     @State private var activityIndex = 0
     @State private var wanderOffset = CGSize.zero
     @State private var showsSceneSelector = false
+    @State private var showsTaskSuggestion = false
     @State private var dragOffset: CGSize = .zero
     @State private var isDragging: Bool = false
     @State private var isJumping: Bool = false
@@ -160,9 +161,20 @@ struct DogWorldScene: View {
                 SceneSwitchButton(isPresented: $showsSceneSelector)
                     .position(x: width * 0.9, y: height * 0.1)
 
+                // 任务建议按钮
+                TaskSuggestionButton(isPresented: $showsTaskSuggestion)
+                    .position(x: width * 0.1, y: height * 0.1)
+
                 // 场景选择器
                 if showsSceneSelector {
                     SceneSelectorView(isPresented: $showsSceneSelector)
+                        .transition(.opacity)
+                        .zIndex(100)
+                }
+
+                // 任务建议弹窗
+                if showsTaskSuggestion {
+                    TaskSuggestionView(isPresented: $showsTaskSuggestion)
                         .transition(.opacity)
                         .zIndex(100)
                 }
