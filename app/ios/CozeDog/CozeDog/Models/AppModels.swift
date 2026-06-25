@@ -9,6 +9,7 @@ enum AppScreen: String, Codable {
     case progress
     case dogDog
     case dogHome
+    case focusStats
 }
 
 enum DogBreed: String, Codable, CaseIterable, Identifiable {
@@ -561,6 +562,17 @@ struct AppState: Codable {
     var availableAdoptions: Int
     var activeCompanionId: UUID?
 
+    // 专注模式统计
+    var totalFocusMinutes: Int
+    var longestFocusSession: Int
+    var focusSessionsCount: Int
+    var focusSessions: [FocusSession]
+
+    // 专注模式状态
+    var isFocusMode: Bool
+    var lastEncouragementProgress: Int
+    var focusStartTime: Date?
+
     enum CodingKeys: String, CodingKey {
         case screen
         case selectedDog
@@ -575,6 +587,13 @@ struct AppState: Codable {
         case totalMainCheckIns
         case availableAdoptions
         case activeCompanionId
+        case totalFocusMinutes
+        case longestFocusSession
+        case focusSessionsCount
+        case focusSessions
+        case isFocusMode
+        case lastEncouragementProgress
+        case focusStartTime
     }
 
     init(
@@ -590,7 +609,14 @@ struct AppState: Codable {
         dogCollection: DogCollection = DogCollection(),
         totalMainCheckIns: Int = 0,
         availableAdoptions: Int = 0,
-        activeCompanionId: UUID? = nil
+        activeCompanionId: UUID? = nil,
+        totalFocusMinutes: Int = 0,
+        longestFocusSession: Int = 0,
+        focusSessionsCount: Int = 0,
+        focusSessions: [FocusSession] = [],
+        isFocusMode: Bool = false,
+        lastEncouragementProgress: Int = 0,
+        focusStartTime: Date? = nil
     ) {
         self.screen = screen
         self.selectedDog = selectedDog
@@ -605,6 +631,13 @@ struct AppState: Codable {
         self.totalMainCheckIns = totalMainCheckIns
         self.availableAdoptions = availableAdoptions
         self.activeCompanionId = activeCompanionId
+        self.totalFocusMinutes = totalFocusMinutes
+        self.longestFocusSession = longestFocusSession
+        self.focusSessionsCount = focusSessionsCount
+        self.focusSessions = focusSessions
+        self.isFocusMode = isFocusMode
+        self.lastEncouragementProgress = lastEncouragementProgress
+        self.focusStartTime = focusStartTime
     }
 
     init(from decoder: Decoder) throws {
@@ -622,6 +655,15 @@ struct AppState: Codable {
         totalMainCheckIns = try container.decodeIfPresent(Int.self, forKey: .totalMainCheckIns) ?? 0
         availableAdoptions = try container.decodeIfPresent(Int.self, forKey: .availableAdoptions) ?? 0
         activeCompanionId = try container.decodeIfPresent(UUID.self, forKey: .activeCompanionId)
+
+        // 专注模式字段（向后兼容）
+        totalFocusMinutes = try container.decodeIfPresent(Int.self, forKey: .totalFocusMinutes) ?? 0
+        longestFocusSession = try container.decodeIfPresent(Int.self, forKey: .longestFocusSession) ?? 0
+        focusSessionsCount = try container.decodeIfPresent(Int.self, forKey: .focusSessionsCount) ?? 0
+        focusSessions = try container.decodeIfPresent([FocusSession].self, forKey: .focusSessions) ?? []
+        isFocusMode = try container.decodeIfPresent(Bool.self, forKey: .isFocusMode) ?? false
+        lastEncouragementProgress = try container.decodeIfPresent(Int.self, forKey: .lastEncouragementProgress) ?? 0
+        focusStartTime = try container.decodeIfPresent(Date.self, forKey: .focusStartTime)
     }
 
     static let initial = AppState(
@@ -636,6 +678,26 @@ struct AppState: Codable {
         actionSession: .idle,
         dogCollection: DogCollection()
     )
+}
+
+// MARK: - Focus Session
+
+struct FocusSession: Codable, Identifiable {
+    let id: UUID
+    let plan: ActionPlan
+    let durationSeconds: Int
+    let startedAt: Date
+    let completedAt: Date?
+    let completed: Bool
+
+    init(id: UUID = UUID(), plan: ActionPlan, durationSeconds: Int, startedAt: Date, completedAt: Date? = nil, completed: Bool = false) {
+        self.id = id
+        self.plan = plan
+        self.durationSeconds = durationSeconds
+        self.startedAt = startedAt
+        self.completedAt = completedAt
+        self.completed = completed
+    }
 }
 
 struct CollectedDog: Codable, Identifiable, Equatable {

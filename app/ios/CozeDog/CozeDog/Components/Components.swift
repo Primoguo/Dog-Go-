@@ -1000,12 +1000,24 @@ struct PixelDogSprite: View {
                     .offset(x: size * 0.16, y: size * 0.08)
             }
 
-            PixelRect(color: Color(hex: 0x2A241F))
-                .frame(width: size * eyeSize, height: size * eyeSize)
-                .offset(x: size * -0.10, y: size * -0.14)
-            PixelRect(color: Color(hex: 0x2A241F))
-                .frame(width: size * eyeSize, height: size * eyeSize)
-                .offset(x: size * 0.10, y: size * -0.14)
+            // Eyes - different based on pose
+            if pose == "focused" {
+                // Focused pose: half-closed eyes (horizontal lines)
+                PixelRect(color: Color(hex: 0x2A241F))
+                    .frame(width: size * eyeSize * 1.2, height: size * eyeSize * 0.3)
+                    .offset(x: size * -0.10, y: size * -0.14)
+                PixelRect(color: Color(hex: 0x2A241F))
+                    .frame(width: size * eyeSize * 1.2, height: size * eyeSize * 0.3)
+                    .offset(x: size * 0.10, y: size * -0.14)
+            } else {
+                // Normal eyes
+                PixelRect(color: Color(hex: 0x2A241F))
+                    .frame(width: size * eyeSize, height: size * eyeSize)
+                    .offset(x: size * -0.10, y: size * -0.14)
+                PixelRect(color: Color(hex: 0x2A241F))
+                    .frame(width: size * eyeSize, height: size * eyeSize)
+                    .offset(x: size * 0.10, y: size * -0.14)
+            }
 
             PixelRect(color: Color(hex: 0x2A241F))
                 .frame(width: size * 0.07, height: size * 0.04)
@@ -1057,8 +1069,8 @@ struct PixelDogSprite: View {
             }
         }
         .frame(width: size, height: size)
-        .scaleEffect(pose == "happy" ? 1.04 : 1)
-    }
+        .scaleEffect(pose == "happy" ? 1.04 : (pose == "focused" ? 0.98 : 1))
+        .offset(y: pose == "focused" ? size * 0.03 : 0)
 
     private var bodyWidth: CGFloat {
         switch breed {

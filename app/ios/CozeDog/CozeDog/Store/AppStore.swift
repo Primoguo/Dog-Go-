@@ -1,4 +1,5 @@
 import SwiftUI
+import UserNotifications
 
 final class AppStore: ObservableObject {
     @Published private(set) var state: AppState
@@ -138,8 +139,12 @@ final class AppStore: ObservableObject {
         let seconds = max(60, minutes * 60)
         state.actionSession = ActionSession(phase: .running, plan: plan, durationSeconds: seconds, remainingSeconds: seconds)
         state.dogState.mood = "focused"
-        state.dogState.pose = "idle"
+        state.dogState.pose = "focused"  // 专注姿态
         speechMode = "pending"
+
+        // 启动专注模式
+        startFocusMode(plan: plan, durationSeconds: seconds)
+
         save()
     }
 
@@ -147,16 +152,40 @@ final class AppStore: ObservableObject {
         guard state.actionSession.phase == .running else { return }
         let remaining = max(0, state.actionSession.remainingSeconds - 1)
         state.actionSession.remainingSeconds = remaining
+
+        // 专注模式逻辑
+        if state.isFocusMode {
+            // 计算进度
+            let elapsed = state.actionSession.durationSeconds - remaining
+            let progress = Int((Double(elapsed) / Double(state.actionSession.durationSeconds)) * 100)
+
+            // 检查鼓励时机
+            checkAndShowEncouragement(progress: progress)
+
+            // 检查休息提醒（番茄时间：25分钟专注 + 5分钟休息）
+            checkRestReminder(elapsedSeconds: elapsed)
+        }
+
         if remaining == 0 {
             state.actionSession.phase = .finished
             state.dogState.mood = "happy"
             state.dogState.pose = "happy"
             speechMode = "done"
+
+            // 完成专注会话
+            if state.isFocusMode {
+                completeFocusSession()
+            }
         }
         save()
     }
 
     func cancelActionSession() {
+        // 如果正在专注模式，记录放弃
+        if state.isFocusMode {
+            abandonFocusSession()
+        }
+
         state.actionSession = .idle
         state.dogState.mood = "expecting"
         state.dogState.pose = "idle"
@@ -413,6 +442,151 @@ final class AppStore: ObservableObject {
             return ["spin", "dash", "spark"].randomElement() ?? "spin"
         case .native:
             return ["jump", "heart", "spark"].randomElement() ?? "jump"
+        }
+    }
+
+    // MARK: - 专注模式功能
+
+    func startFocusMode(plan: ActionPlan, durationSeconds: Int) {
+        state.isFocusMode = true
+        state.focusStartTime = Date()
+        state.lastEncouragementProgress = 0
+
+        // 安排专注完成通知
+        scheduleFocusNotifications(durationSeconds: durationSeconds)
+    }
+
+    func checkAndShowEncouragement(progress: Int) {
+        let milestones = [25, 50, 75, 90]
+
+        for milestone in milestones {
+            if progress >= milestone && state.lastEncouragementProgress < milestone {
+                state.lastEncouragementProgress = milestone
+                // 鼓励消息会在 UI 层通过观察 lastEncouragementProgress 变化来显示
+                break
+            }
+        }
+    }
+
+    func checkRestReminder(elapsedSeconds: Int) {
+        // 番茄时间：25分钟（1500秒）后提醒休息
+        let pomodoroDuration = 25 * 60
+        if elapsedSeconds == pomodoroDuration {
+            // 休息提醒会在 UI 层通过观察 elapsedSeconds 来显示
+            // 这里可以添加通知或其他逻辑
+        }
+    }
+
+    func completeFocusSession() {
+        guard let startTime = state.focusStartTime else { return }
+
+        let session = FocusSession(
+            id: UUID(),
+            plan: state.actionSession.plan ?? .study,
+            durationSeconds: state.actionSession.durationSeconds,
+            startedAt: startTime,
+            completedAt: Date(),
+            completed: true
+        )
+
+        // 更新统计
+        state.focusSessions.append(session)
+        state.focusSessionsCount += 1
+        state.totalFocusMinutes += state.actionSession.durationSeconds / 60
+        state.longestFocusSession = max(state.longestFocusSession, state.actionSession.durationSeconds / 60)
+
+        // 重置专注模式状态
+        state.isFocusMode = false
+        state.focusStartTime = nil
+        state.lastEncouragementProgress = 0
+
+        // 取消通知
+        cancelFocusNotifications()
+    }
+
+    func abandonFocusSession() {
+        guard let startTime = state.focusStartTime else { return }
+
+        let elapsedSeconds = state.actionSession.durationSeconds - state.actionSession.remainingSeconds
+
+        // 只记录超过 1 分钟的专注
+        if elapsedSeconds >= 60 {
+            let session = FocusSession(
+                id: UUID(),
+                plan: state.actionSession.plan ?? .study,
+                durationSeconds: elapsedSeconds,
+                startedAt: startTime,
+                completedAt: Date(),
+                completed: false
+            )
+            state.focusSessions.append(session)
+        }
+
+        // 重置专注模式状态
+        state.isFocusMode = false
+        state.focusStartTime = nil
+        state.lastEncouragementProgress = 0
+
+        // 取消通知
+        cancelFocusNotifications()
+    }
+
+    func scheduleFocusNotifications(durationSeconds: Int) {
+        // 请求通知权限
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            guard granted else { return }
+
+            // 安排专注完成通知
+            let content = UNMutableNotificationContent()
+            content.title = "专注完成！"
+            content.body = "太棒了！你完成了一次专注。"
+            content.sound = .default
+
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(durationSeconds), repeats: false)
+            let request = UNNotificationRequest(identifier: "focusComplete", content: content, trigger: trigger)
+
+            UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
+        }
+    }
+
+    func cancelFocusNotifications() {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["focusComplete"])
+    }
+
+    func encouragementCopy(progress: Int) -> String {
+        switch state.selectedDog {
+        case .shiba:
+            switch progress {
+            case 25: return "开始了，加油！"
+            case 50: return "已经一半了，继续！"
+            case 75: return "快完成了，坚持！"
+            case 90: return "最后一点，冲刺！"
+            default: return ""
+            }
+        case .golden:
+            switch progress {
+            case 25: return "你做得很好，继续保持！"
+            case 50: return "我在这里陪你，不着急。"
+            case 75: return "慢慢来，你已经在进步了。"
+            case 90: return "快要到了，我相信你！"
+            default: return ""
+            }
+        case .borderCollie:
+            switch progress {
+            case 25: return "进度正常，保持节奏。"
+            case 50: return "中点达成，效率良好。"
+            case 75: return "接近目标，维持专注。"
+            case 90: return "即将完成，最后冲刺。"
+            default: return ""
+            }
+        case .native:
+            switch progress {
+            case 25: return "开始啦，咱慢慢来。"
+            case 50: return "一半了，不着急。"
+            case 75: return "快啦，再坚持一下。"
+            case 90: return "就差一点了，加油！"
+            default: return ""
+            }
         }
     }
 

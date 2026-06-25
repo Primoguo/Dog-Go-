@@ -16,10 +16,15 @@ struct RootView: View {
             case .createGoal:
                 CreateGoalView()
             case .home:
-                HomeView()
-                    .safeAreaInset(edge: .bottom, spacing: 0) {
-                        AppBottomBar()
-                    }
+                // 如果正在专注模式，显示专注模式视图
+                if store.state.isFocusMode && store.state.actionSession.phase == .running {
+                    FocusModeView()
+                } else {
+                    HomeView()
+                        .safeAreaInset(edge: .bottom, spacing: 0) {
+                            AppBottomBar()
+                        }
+                }
             case .feedback:
                 FeedbackView()
             case .progress:
@@ -34,6 +39,11 @@ struct RootView: View {
                     }
             case .dogHome:
                 DogHomeView()
+                    .safeAreaInset(edge: .bottom, spacing: 0) {
+                        AppBottomBar()
+                    }
+            case .focusStats:
+                FocusStatsView()
                     .safeAreaInset(edge: .bottom, spacing: 0) {
                         AppBottomBar()
                     }
@@ -432,6 +442,30 @@ struct ProgressScreen: View {
                             MetricCard(label: "清洁", value: "\(store.state.dogState.cleanliness)")
                             MetricCard(label: "精力", value: "\(store.state.dogState.energy)")
                         }
+
+                        // Focus stats button
+                        Button {
+                            store.go(.focusStats)
+                        } label: {
+                            HStack {
+                                Image(systemName: "target")
+                                    .font(.caption.weight(.heavy))
+                                Text("专注统计")
+                                    .font(.subheadline.weight(.bold))
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.caption.weight(.bold))
+                            }
+                            .foregroundStyle(Color(hex: 0x356247))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 10)
+                            .background(Color(hex: 0xE8F0E0))
+                            .overlay {
+                                Rectangle()
+                                    .stroke(Color(hex: 0x9BB985), lineWidth: 1)
+                            }
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
 
@@ -687,6 +721,511 @@ struct DogHomeView: View {
                 }
 
                 Spacer()
+            }
+        }
+    }
+}
+
+// MARK: - 专注模式视图
+
+struct FocusModeView: View {
+    @EnvironmentObject private var store: AppStore
+    @State private var showEncouragement = false
+    @State private var encouragementText = ""
+    @State private var showRestReminder = false
+    @State private var showAbandonConfirm = false
+
+    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+    var body: some View {
+        ZStack {
+            LinearGradient(colors: [Color(hex: 0xF2F7EE), Color(hex: 0xE8F0E0)], startPoint: .top, endPoint: .bottom)
+                .ignoresSafeArea()
+
+            VStack(spacing: 24) {
+                // 顶部标识
+                HStack {
+                    Image(systemName: "target")
+                        .font(.title2.weight(.bold))
+                        .foregroundStyle(Color(hex: 0x5D8B6A))
+                    Text("专注模式")
+                        .font(.title2.weight(.heavy))
+                        .foregroundStyle(Color(hex: 0x26382B))
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+
+                Spacer()
+
+                // 狗狗专注姿态
+                ZStack {
+                    PixelDogSprite(
+                        breed: store.state.selectedDog,
+                        appearance: store.currentDogAppearance(),
+                        size: 180,
+                        pose: "focused"
+                    )
+
+                    // 鼓励气泡
+                    if showEncouragement {
+                        EncouragementBubble(text: encouragementText)
+                            .offset(y: -120)
+                            .transition(.scale.combined(with: .opacity))
+                    }
+                }
+
+                // 鼓励文字
+                Text("你和\(store.state.selectedDog.name)一起专注中...")
+                    .font(.headline)
+                    .foregroundStyle(Color(hex: 0x356247))
+
+                // 倒计时
+                VStack(spacing: 8) {
+                    Text(formattedTime(store.state.actionSession.remainingSeconds))
+                        .font(.system(size: 56, weight: .heavy, design: .monospaced))
+                        .foregroundStyle(Color(hex: 0x26382B))
+
+                    // 进度条
+                    ProgressView(value: Double(store.state.actionSession.durationSeconds - store.state.actionSession.remainingSeconds), total: Double(store.state.actionSession.durationSeconds))
+                        .tint(Color(hex: 0x5D8B6A))
+                        .frame(width: 200)
+                }
+
+                Spacer()
+
+                // 放弃按钮
+                Button {
+                    showAbandonConfirm = true
+                } label: {
+                    Text("放弃")
+                        .font(.headline)
+                        .foregroundStyle(Color(hex: 0x8B6A5D))
+                        .padding(.horizontal, 32)
+                        .padding(.vertical, 12)
+                        .background(Color(hex: 0xF5E5E0))
+                        .overlay {
+                            Rectangle()
+                                .stroke(Color(hex: 0x8B6A5D), lineWidth: 2)
+                        }
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+                .padding(.bottom, 30)
+            }
+
+            // 休息提醒弹窗
+            if showRestReminder {
+                RestReminderView(
+                    onContinue: {
+                        showRestReminder = false
+                    },
+                    onRest: {
+                        showRestReminder = false
+                        // TODO: 实现休息逻辑
+                    }
+                )
+            }
+
+            // 放弃确认弹窗
+            if showAbandonConfirm {
+                AbandonConfirmView(
+                    onConfirm: {
+                        store.cancelActionSession()
+                    },
+                    onCancel: {
+                        showAbandonConfirm = false
+                    }
+                )
+            }
+        }
+        .onReceive(timer) { _ in
+            if store.state.actionSession.phase == .running {
+                store.tickActionTimer()
+                checkEncouragement()
+                checkRestReminder()
+            }
+        }
+        .onChange(of: store.state.lastEncouragementProgress) { newProgress in
+            if newProgress > 0 {
+                showEncouragementMessage()
+            }
+        }
+    }
+
+    private func formattedTime(_ seconds: Int) -> String {
+        let minutes = seconds / 60
+        let secs = seconds % 60
+        return String(format: "%02d:%02d", minutes, secs)
+    }
+
+    private func checkEncouragement() {
+        let elapsed = store.state.actionSession.durationSeconds - store.state.actionSession.remainingSeconds
+        let progress = Int((Double(elapsed) / Double(store.state.actionSession.durationSeconds)) * 100)
+
+        let milestones = [25, 50, 75, 90]
+        for milestone in milestones {
+            if progress >= milestone && store.state.lastEncouragementProgress < milestone {
+                encouragementText = store.encouragementCopy(progress: milestone)
+                break
+            }
+        }
+    }
+
+    private func checkRestReminder() {
+        let elapsed = store.state.actionSession.durationSeconds - store.state.actionSession.remainingSeconds
+        // 番茄时间：25分钟（1500秒）后提醒休息
+        if elapsed == 25 * 60 && store.state.actionSession.durationSeconds > 25 * 60 {
+            showRestReminder = true
+        }
+    }
+
+    private func showEncouragementMessage() {
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+            showEncouragement = true
+        }
+
+        // 3秒后自动消失
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            withAnimation(.easeOut(duration: 0.3)) {
+                showEncouragement = false
+            }
+        }
+    }
+}
+
+// MARK: - 鼓励气泡组件
+
+struct EncouragementBubble: View {
+    let text: String
+
+    var body: some View {
+        VStack {
+            Text(text)
+                .font(.headline)
+                .foregroundStyle(Color(hex: 0x26382B))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(Color.white)
+                .overlay {
+                    Rectangle()
+                        .stroke(Color(hex: 0x5D8B6A), lineWidth: 2)
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+
+            // 气泡尾巴
+            Triangle()
+                .fill(Color.white)
+                .frame(width: 16, height: 12)
+                .overlay {
+                    Triangle()
+                        .stroke(Color(hex: 0x5D8B6A), lineWidth: 2)
+                        .frame(width: 16, height: 12)
+                        .offset(y: 1)
+                }
+                .offset(y: -6)
+        }
+    }
+}
+
+struct Triangle: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.midX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        path.closeSubpath()
+        return path
+    }
+}
+
+// MARK: - 休息提醒视图
+
+struct RestReminderView: View {
+    let onContinue: () -> Void
+    let onRest: () -> Void
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.4)
+                .ignoresSafeArea()
+
+            VStack(spacing: 20) {
+                Image(systemName: "cup.and.saucer.fill")
+                    .font(.system(size: 48))
+                    .foregroundStyle(Color(hex: 0x5D8B6A))
+
+                Text("休息一下？")
+                    .font(.title2.weight(.bold))
+                    .foregroundStyle(Color(hex: 0x26382B))
+
+                Text("你已经专注了 25 分钟，站起来活动活动吧！")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 20)
+
+                VStack(spacing: 12) {
+                    Button {
+                        onContinue()
+                    } label: {
+                        Text("继续专注")
+                            .font(.headline)
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(Color(hex: 0x5D8B6A))
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    }
+
+                    Button {
+                        onRest()
+                    } label: {
+                        Text("休息 5 分钟")
+                            .font(.headline)
+                            .foregroundStyle(Color(hex: 0x5D8B6A))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(Color(hex: 0xE8F0E0))
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
+            .padding(24)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .padding(.horizontal, 40)
+        }
+    }
+}
+
+// MARK: - 放弃确认视图
+
+struct AbandonConfirmView: View {
+    let onConfirm: () -> Void
+    let onCancel: () -> Void
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.4)
+                .ignoresSafeArea()
+
+            VStack(spacing: 20) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 48))
+                    .foregroundStyle(Color(hex: 0xC69A3E))
+
+                Text("确定要放弃吗？")
+                    .font(.title2.weight(.bold))
+                    .foregroundStyle(Color(hex: 0x26382B))
+
+                Text("放弃后不会记录这次专注")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+
+                VStack(spacing: 12) {
+                    Button {
+                        onConfirm()
+                    } label: {
+                        Text("确定放弃")
+                            .font(.headline)
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(Color(hex: 0x8B6A5D))
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    }
+
+                    Button {
+                        onCancel()
+                    } label: {
+                        Text("继续专注")
+                            .font(.headline)
+                            .foregroundStyle(Color(hex: 0x5D8B6A))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(Color(hex: 0xE8F0E0))
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    }
+                }
+            }
+            .padding(24)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .padding(.horizontal, 40)
+        }
+    }
+}
+
+// MARK: - Focus Stats View
+
+struct FocusStatsView: View {
+    @EnvironmentObject private var store: AppStore
+
+    var body: some View {
+        ScreenScaffold {
+            VStack(alignment: .leading, spacing: 18) {
+                Header(
+                    eyebrow: "专注统计",
+                    title: "你的专注历程",
+                    subtitle: "每一次专注都是成长"
+                )
+
+                // Summary stats
+                Panel {
+                    VStack(spacing: 16) {
+                        HStack(spacing: 20) {
+                            FocusStatCard(
+                                icon: "clock.fill",
+                                value: formatMinutes(store.state.totalFocusMinutes),
+                                label: "总专注时长"
+                            )
+
+                            FocusStatCard(
+                                icon: "timer",
+                                value: formatMinutes(store.state.longestFocusSession),
+                                label: "最长单次"
+                            )
+                        }
+
+                        FocusStatCard(
+                            icon: "checkmark.circle.fill",
+                            value: "\(store.state.focusSessionsCount)",
+                            label: "专注次数"
+                        )
+                    }
+                }
+
+                // Recent sessions
+                if !store.state.focusSessions.isEmpty {
+                    Panel {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("最近专注记录")
+                                .eyebrowStyle()
+
+                            ForEach(store.state.focusSessions.prefix(5)) { session in
+                                FocusSessionRow(session: session)
+                            }
+                        }
+                    }
+                } else {
+                    Panel {
+                        VStack(spacing: 12) {
+                            Image(systemName: "clock.badge.questionmark")
+                                .font(.system(size: 48))
+                                .foregroundStyle(.secondary)
+
+                            Text("还没有专注记录")
+                                .font(.headline)
+                                .foregroundStyle(.secondary)
+
+                            Text("开始你的第一次专注吧！")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 20)
+                    }
+                }
+
+                Spacer()
+
+                PrimaryButton(title: "返回首页") {
+                    store.go(.home)
+                }
+            }
+        }
+    }
+
+    private func formatMinutes(_ minutes: Int) -> String {
+        if minutes < 60 {
+            return "\(minutes)分钟"
+        } else {
+            let hours = minutes / 60
+            let mins = minutes % 60
+            if mins == 0 {
+                return "\(hours)小时"
+            } else {
+                return "\(hours)小时\(mins)分钟"
+            }
+        }
+    }
+}
+
+struct FocusStatCard: View {
+    let icon: String
+    let value: String
+    let label: String
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.title2)
+                .foregroundStyle(Color(hex: 0x5D8B6A))
+
+            Text(value)
+                .font(.title3.weight(.heavy))
+                .foregroundStyle(Color(hex: 0x26382B))
+
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .background(Color(hex: 0xEAF1DA))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+}
+
+struct FocusSessionRow: View {
+    let session: FocusSession
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: session.completed ? "checkmark.circle.fill" : "xmark.circle.fill")
+                .font(.title3)
+                .foregroundStyle(session.completed ? Color(hex: 0x5D8B6A) : Color(hex: 0x8B6A5D))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(session.plan.label)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color(hex: 0x26382B))
+
+                Text(formatDate(session.startedAt))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            Text(formatDuration(session.durationSeconds))
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Color(hex: 0x5D8B6A))
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
+    }
+
+    private func formatDuration(_ seconds: Int) -> String {
+        let minutes = seconds / 60
+        if minutes < 60 {
+            return "\(minutes)分钟"
+        } else {
+            let hours = minutes / 60
+            let mins = minutes % 60
+            if mins == 0 {
+                return "\(hours)小时"
+            } else {
+                return "\(hours)小时\(mins)分钟"
             }
         }
     }
