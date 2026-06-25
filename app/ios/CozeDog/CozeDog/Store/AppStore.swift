@@ -1090,19 +1090,19 @@ final class AppStore: ObservableObject {
         // 1. 聚合主打卡记录（从 checkIns 数组）
         for checkIn in state.checkIns {
             records.append(CheckInRecord(
-                date: checkIn.date,
+                date: checkIn.completedAt,
                 type: .mainCheckIn,
-                goalType: checkIn.goal?.type
+                goalType: state.goal?.type
             ))
         }
 
         // 2. 聚合专注记录
         for session in state.focusSessions {
             records.append(CheckInRecord(
-                date: session.startTime,
+                date: session.startedAt,
                 type: .focusSession,
-                goalType: session.plan.goalType,
-                duration: session.duration
+                goalType: session.plan.rewardGoalType,
+                duration: session.durationSeconds
             ))
         }
 
@@ -1325,11 +1325,11 @@ final class AppStore: ObservableObject {
         let focusMinutes = state.focusSessions
             .filter { session in
                 if let interval = monthInterval {
-                    return session.startTime >= interval.start && session.startTime < interval.end
+                    return session.startedAt >= interval.start && session.startedAt < interval.end
                 }
                 return false
             }
-            .reduce(0) { $0 + $1.duration }
+            .reduce(0) { $0 + $1.durationSeconds }
 
         // 统计最多的目标类型
         let records = aggregateCheckInRecords()

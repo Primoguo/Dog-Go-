@@ -901,8 +901,11 @@ struct CheckIn: Codable, Identifiable {
 }
 
 enum CheckInType: String, Codable {
-    case main
-    case recovery
+    case main          // 主打卡（CheckIn 用）
+    case recovery      // 断签恢复（CheckIn 用）
+    case mainCheckIn   // 日历聚合用
+    case focusSession  // 专注记录
+    case taskCompletion // 任务完成
 }
 
 struct DogState: Codable {
@@ -1484,13 +1487,6 @@ struct PresetTaskLibrary {
 }
 
 // MARK: - Habit Tracking Calendar
-
-/// 打卡类型
-enum CheckInType: String, Codable {
-    case mainCheckIn      // 主打卡
-    case focusSession     // 专注
-    case taskCompletion   // 任务完成
-}
 
 /// 打卡记录（用于日历聚合）
 struct CheckInRecord: Codable, Identifiable {
