@@ -298,6 +298,40 @@ enum ItemType: String, Codable, CaseIterable {
     }
 }
 
+// MARK: - Dog Pose
+
+enum DogPose: String, Codable, CaseIterable {
+    // 基础姿态
+    case idle, happy, focused, waiting, resting
+
+    // 庆祝姿态
+    case jump, spin, dash, heart, roll, spark
+
+    var isCelebration: Bool {
+        switch self {
+        case .jump, .spin, .dash, .heart, .roll, .spark: return true
+        default: return false
+        }
+    }
+
+    var scaleMultiplier: CGFloat {
+        switch self {
+        case .happy: return 1.04
+        case .focused: return 0.98
+        case .resting: return 0.95
+        default: return 1.0
+        }
+    }
+
+    var yOffset: CGFloat {
+        switch self {
+        case .focused: return 0.03
+        case .resting: return 0.05
+        default: return 0.0
+        }
+    }
+}
+
 // MARK: - Dog Evolution System
 
 enum DogEvolution: String, Codable, CaseIterable {
@@ -415,6 +449,59 @@ enum DogMood: String, Codable, CaseIterable {
             return (wanderMultiplier: 1.8, pauseMultiplier: 0.5, speedMultiplier: 1.5, jumpProbability: 0.35)
         }
     }
+
+    // MARK: - 心情驱动表情
+
+    var eyeStyle: EyeStyle {
+        switch self {
+        case .sad: return .droopy
+        case .neutral: return .normal
+        case .happy: return .squint
+        case .excited: return .sparkle
+        case .ecstatic: return .heart
+        }
+    }
+
+    var mouthStyle: MouthStyle {
+        switch self {
+        case .sad: return .downturn
+        case .neutral: return .straight
+        case .happy: return .slightSmile
+        case .excited: return .wideSmile
+        case .ecstatic: return .bigSmile
+        }
+    }
+
+    // MARK: - 尾巴摇摆参数
+    var tailWagAngle: Double {
+        switch self {
+        case .sad: return 5
+        case .neutral: return 10
+        case .happy: return 20
+        case .excited: return 22
+        case .ecstatic: return 25
+        }
+    }
+
+    var tailWagDuration: Double {
+        switch self {
+        case .sad: return 2.0
+        case .neutral: return 1.2
+        case .happy: return 0.5
+        case .excited: return 0.4
+        case .ecstatic: return 0.3
+        }
+    }
+}
+
+// MARK: - 表情样式
+
+enum EyeStyle {
+    case normal, droopy, squint, sparkle, heart, halfClosed, closed
+}
+
+enum MouthStyle {
+    case downturn, straight, slightSmile, wideSmile, bigSmile
 }
 
 struct DogDiaryEntry: Codable, Identifiable {
@@ -825,7 +912,7 @@ struct DogState: Codable {
     var fullness: Int
     var cleanliness: Int
     var energy: Int
-    var pose: String
+    var pose: DogPose
     var inventory: [PixelRewardItem]
 
     enum CodingKeys: String, CodingKey {
@@ -848,7 +935,7 @@ struct DogState: Codable {
         fullness: Int,
         cleanliness: Int,
         energy: Int,
-        pose: String,
+        pose: DogPose,
         inventory: [PixelRewardItem]
     ) {
         self.intimacy = intimacy
@@ -871,7 +958,7 @@ struct DogState: Codable {
         fullness = try container.decode(Int.self, forKey: .fullness)
         cleanliness = try container.decode(Int.self, forKey: .cleanliness)
         energy = try container.decode(Int.self, forKey: .energy)
-        pose = try container.decode(String.self, forKey: .pose)
+        pose = try container.decodeIfPresent(DogPose.self, forKey: .pose) ?? .idle
         inventory = try container.decodeIfPresent([PixelRewardItem].self, forKey: .inventory) ?? []
     }
 
@@ -883,7 +970,7 @@ struct DogState: Codable {
         fullness: 60,
         cleanliness: 60,
         energy: 60,
-        pose: "idle",
+        pose: .idle,
         inventory: []
     )
 }
@@ -954,7 +1041,7 @@ struct FeedbackState: Codable {
     var gains: [StateGain]
     var leveledUp: Bool
     var rewardItem: PixelRewardItem?
-    var celebrationPose: String
+    var celebrationPose: DogPose
     var completedPlanTitle: String?
 
     enum CodingKeys: String, CodingKey {
@@ -966,7 +1053,7 @@ struct FeedbackState: Codable {
         case completedPlanTitle
     }
 
-    init(message: String, gains: [StateGain], leveledUp: Bool = false, rewardItem: PixelRewardItem? = nil, celebrationPose: String = "jump", completedPlanTitle: String? = nil) {
+    init(message: String, gains: [StateGain], leveledUp: Bool = false, rewardItem: PixelRewardItem? = nil, celebrationPose: DogPose = .jump, completedPlanTitle: String? = nil) {
         self.message = message
         self.gains = gains
         self.leveledUp = leveledUp
@@ -981,7 +1068,7 @@ struct FeedbackState: Codable {
         gains = try container.decode([StateGain].self, forKey: .gains)
         leveledUp = try container.decodeIfPresent(Bool.self, forKey: .leveledUp) ?? false
         rewardItem = try container.decodeIfPresent(PixelRewardItem.self, forKey: .rewardItem)
-        celebrationPose = try container.decodeIfPresent(String.self, forKey: .celebrationPose) ?? "jump"
+        celebrationPose = try container.decodeIfPresent(DogPose.self, forKey: .celebrationPose) ?? .jump
         completedPlanTitle = try container.decodeIfPresent(String.self, forKey: .completedPlanTitle)
     }
 }

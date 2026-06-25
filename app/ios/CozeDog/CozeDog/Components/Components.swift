@@ -83,7 +83,8 @@ struct DogWorldScene: View {
                             appearance: store.currentDogAppearance(),
                             size: dogSize,
                             pose: store.state.dogState.pose,
-                            evolution: store.state.dogEvolution
+                            evolution: store.state.dogEvolution,
+                            mood: store.state.dogMood
                         )
                         .offset(y: isJumping ? -dogSize * 0.3 : 0)
                         .scaleEffect(y: isJumping ? 1.1 : 1.0, x: isJumping ? 0.95 : 1.0)
@@ -96,7 +97,8 @@ struct DogWorldScene: View {
                                 appearance: companion.appearance,
                                 size: dogSize * 0.85,
                                 pose: store.state.dogState.pose,
-                                evolution: store.state.dogEvolution
+                                evolution: store.state.dogEvolution,
+                                mood: store.state.dogMood
                             )
                             .offset(x: dogSize * 0.9, y: dogSize * 0.1)
                         }
@@ -912,7 +914,7 @@ struct PixelCelebrationPanel: View {
 
                 PixelCelebrationBurst()
 
-                PixelDogSprite(breed: breed, appearance: appearance, size: 128, pose: "happy")
+                PixelDogSprite(breed: breed, appearance: appearance, size: 128, pose: .happy, mood: .ecstatic)
                     .scaleEffect(isAnimating ? celebrationScale : 1)
                     .rotationEffect(.degrees(isAnimating ? celebrationRotation : -celebrationRotation))
                     .offset(x: isAnimating ? celebrationX : -celebrationX, y: isAnimating ? celebrationY : 0)
@@ -950,29 +952,29 @@ struct PixelCelebrationPanel: View {
 
     private var celebrationScale: CGFloat {
         switch feedback?.celebrationPose {
-        case "roll": return 1.06
-        case "heart": return 1.08
+        case .roll: return 1.06
+        case .heart: return 1.08
         default: return 1.12
         }
     }
 
     private var celebrationRotation: Double {
         switch feedback?.celebrationPose {
-        case "spin": return 6
-        case "roll": return 10
-        case "dash": return -4
+        case .spin: return 6
+        case .roll: return 10
+        case .dash: return -4
         default: return 3
         }
     }
 
     private var celebrationX: CGFloat {
-        feedback?.celebrationPose == "dash" ? 16 : 0
+        feedback?.celebrationPose == .dash ? 16 : 0
     }
 
     private var celebrationY: CGFloat {
         switch feedback?.celebrationPose {
-        case "jump": return -12
-        case "spark": return -8
+        case .jump: return -12
+        case .spark: return -8
         default: return -6
         }
     }
@@ -1119,8 +1121,11 @@ struct PixelDogSprite: View {
     let breed: DogBreed
     let appearance: DogAppearance
     let size: CGFloat
-    let pose: String
+    let pose: DogPose
     var evolution: DogEvolution = .adult
+    var mood: DogMood = .neutral
+
+    @State private var tailWag = false
 
     var body: some View {
         ZStack {
@@ -1129,7 +1134,7 @@ struct PixelDogSprite: View {
                 .offset(y: size * 0.33)
 
             PixelRect(color: Color(hex: appearance.bodyColorHex))
-                .frame(width: size * bodyWidth, height: size * bodyHeight)
+                .frame(width: size * bodyWidth * evolutionBodyScale, height: size * bodyHeight * evolutionBodyScale)
                 .offset(y: size * 0.12)
 
             PixelRect(color: Color(hex: appearance.secondaryFurHex))
@@ -1137,16 +1142,13 @@ struct PixelDogSprite: View {
                 .offset(x: size * bellyX, y: size * 0.17)
 
             PixelRect(color: Color(hex: appearance.headColorHex))
-                .frame(width: size * headWidth, height: size * headHeight)
+                .frame(width: size * headWidth * evolutionHeadScale, height: size * headHeight * evolutionHeadScale)
                 .offset(y: size * -0.16)
 
-            PixelRect(color: Color(hex: appearance.earColorHex))
-                .frame(width: size * earWidth, height: size * earHeight)
-                .offset(x: size * -0.20, y: size * earY)
+            // Breed-specific ears
+            breedEarLeft
 
-            PixelRect(color: Color(hex: appearance.earColorHex))
-                .frame(width: size * earWidth, height: size * earHeight)
-                .offset(x: size * 0.20, y: size * earY)
+            breedEarRight
 
             if appearance.marking == .forehead || breed == .borderCollie {
                 PixelRect(color: Color(hex: appearance.secondaryFurHex))
@@ -1204,17 +1206,17 @@ struct PixelDogSprite: View {
                     .offset(x: size * 0.16, y: size * 0.08)
             }
 
-            // Eyes - different based on pose
-            if pose == "focused" {
-                // Focused pose: half-closed eyes (horizontal lines)
+            // Eyes - pose takes priority, then mood
+            if pose == .focused {
+                // Focused: half-closed eyes
                 PixelRect(color: Color(hex: 0x2A241F))
                     .frame(width: size * eyeSize * 1.2, height: size * eyeSize * 0.3)
                     .offset(x: size * -0.10, y: size * -0.14)
                 PixelRect(color: Color(hex: 0x2A241F))
                     .frame(width: size * eyeSize * 1.2, height: size * eyeSize * 0.3)
                     .offset(x: size * 0.10, y: size * -0.14)
-            } else if pose == "resting" {
-                // Resting pose: closed eyes (curved lines like sleeping)
+            } else if pose == .resting {
+                // Resting: closed eyes
                 PixelRect(color: Color(hex: 0x2A241F))
                     .frame(width: size * eyeSize * 1.0, height: size * eyeSize * 0.2)
                     .offset(x: size * -0.10, y: size * -0.14)
@@ -1222,13 +1224,8 @@ struct PixelDogSprite: View {
                     .frame(width: size * eyeSize * 1.0, height: size * eyeSize * 0.2)
                     .offset(x: size * 0.10, y: size * -0.14)
             } else {
-                // Normal eyes
-                PixelRect(color: Color(hex: 0x2A241F))
-                    .frame(width: size * eyeSize, height: size * eyeSize)
-                    .offset(x: size * -0.10, y: size * -0.14)
-                PixelRect(color: Color(hex: 0x2A241F))
-                    .frame(width: size * eyeSize, height: size * eyeSize)
-                    .offset(x: size * 0.10, y: size * -0.14)
+                // Mood-driven eyes
+                moodEyes
             }
 
             PixelRect(color: Color(hex: 0x2A241F))
@@ -1243,9 +1240,8 @@ struct PixelDogSprite: View {
                 .frame(width: size * 0.07, height: size * 0.04)
                 .offset(y: size * -0.03)
 
-            PixelRect(color: Color(hex: 0x2A241F))
-                .frame(width: size * 0.08, height: size * 0.025)
-                .offset(y: size * 0.01)
+            // Mood-driven mouth
+            moodMouth
 
             PixelRect(color: Color(hex: appearance.collarHex))
                 .frame(width: size * 0.46, height: size * 0.07)
@@ -1267,6 +1263,7 @@ struct PixelDogSprite: View {
                     .offset(x: size * 0.18, y: size * 0.39)
             }
 
+            // Tail with wagging animation
             if breed == .shiba {
                 PixelRect(color: Color(hex: appearance.tailColorHex))
                     .frame(width: size * 0.20, height: size * 0.20)
@@ -1279,13 +1276,39 @@ struct PixelDogSprite: View {
                     .frame(width: size * tailWidth, height: size * tailHeight)
                     .offset(x: size * tailX, y: size * tailY)
             }
+            .rotationEffect(.degrees(tailWag ? mood.tailWagAngle : -mood.tailWagAngle), anchor: .bottom)
+            .animation(.easeInOut(duration: mood.tailWagDuration).repeatForever(autoreverses: true), value: tailWag)
+
+            // Evolution decorations
+            if evolution == .legendary {
+                // Crown
+                PixelRect(color: Color(hex: 0xFFD700))
+                    .frame(width: size * 0.18, height: size * 0.06)
+                    .offset(y: size * -0.36)
+                PixelRect(color: Color(hex: 0xFFD700))
+                    .frame(width: size * 0.04, height: size * 0.08)
+                    .offset(x: size * -0.07, y: size * -0.40)
+                PixelRect(color: Color(hex: 0xFFD700))
+                    .frame(width: size * 0.04, height: size * 0.10)
+                    .offset(y: size * -0.41)
+                PixelRect(color: Color(hex: 0xFFD700))
+                    .frame(width: size * 0.04, height: size * 0.08)
+                    .offset(x: size * 0.07, y: size * -0.40)
+            } else if evolution == .complete {
+                // Collar badge
+                PixelRect(color: Color(hex: 0xFFD700))
+                    .frame(width: size * 0.06, height: size * 0.06)
+                    .offset(y: size * 0.06)
+            }
         }
         .frame(width: size, height: size)
         .scaleEffect(
-            (pose == "happy" ? 1.04 : (pose == "focused" ? 0.98 : (pose == "resting" ? 0.95 : 1)))
-            * evolution.scale
+            pose.scaleMultiplier * evolution.scale
         )
-        .offset(y: pose == "focused" ? size * 0.03 : (pose == "resting" ? size * 0.05 : 0))
+        .offset(y: pose.yOffset != 0 ? size * pose.yOffset : 0)
+        .onAppear {
+            tailWag = true
+        }
     }
 
     private var bodyWidth: CGFloat {
@@ -1372,12 +1395,12 @@ struct PixelDogSprite: View {
 
     private var tailX: CGFloat {
         switch breed {
-        case .shiba: return pose == "waiting" ? -0.34 : 0.34
-        case .golden: return pose == "waiting" ? -0.43 : 0.43
-        case .borderCollie: return pose == "waiting" ? -0.40 : 0.40
-        case .native: return pose == "waiting" ? -0.38 : 0.38
-        case .bulldog: return pose == "waiting" ? -0.36 : 0.36
-        case .teddy: return pose == "waiting" ? -0.30 : 0.30
+        case .shiba: return pose == .waiting ? -0.34 : 0.34
+        case .golden: return pose == .waiting ? -0.43 : 0.43
+        case .borderCollie: return pose == .waiting ? -0.40 : 0.40
+        case .native: return pose == .waiting ? -0.38 : 0.38
+        case .bulldog: return pose == .waiting ? -0.36 : 0.36
+        case .teddy: return pose == .waiting ? -0.30 : 0.30
         }
     }
 
@@ -1418,7 +1441,253 @@ struct PixelDogSprite: View {
     }
 
     private var shadowColor: UInt {
-        pose == "waiting" ? 0x50675A : 0x315039
+        pose == .waiting ? 0x50675A : 0x315039
+    }
+
+    // MARK: - Breed-specific ears
+
+    @ViewBuilder
+    private var breedEarLeft: some View {
+        switch breed {
+        case .shiba:
+            // Triangle ear: wide base, narrow top
+            PixelRect(color: Color(hex: appearance.earColorHex))
+                .frame(width: size * 0.16, height: size * 0.10)
+                .offset(x: size * -0.20, y: size * earY + size * 0.05)
+            PixelRect(color: Color(hex: appearance.earColorHex))
+                .frame(width: size * 0.10, height: size * 0.12)
+                .offset(x: size * -0.20, y: size * earY - size * 0.04)
+        case .golden:
+            // Floppy ear: long, hanging down
+            PixelRect(color: Color(hex: appearance.earColorHex))
+                .frame(width: size * 0.13, height: size * 0.26)
+                .offset(x: size * -0.22, y: size * earY + size * 0.06)
+                .rotationEffect(.degrees(8), anchor: .top)
+        case .borderCollie:
+            // Pointed ear: narrow and tall
+            PixelRect(color: Color(hex: appearance.earColorHex))
+                .frame(width: size * 0.09, height: size * 0.24)
+                .offset(x: size * -0.20, y: size * earY - size * 0.02)
+            PixelRect(color: Color(hex: appearance.earColorHex))
+                .frame(width: size * 0.05, height: size * 0.08)
+                .offset(x: size * -0.20, y: size * earY - size * 0.14)
+        case .native:
+            // Half-folded ear: rectangle with tilt
+            PixelRect(color: Color(hex: appearance.earColorHex))
+                .frame(width: size * 0.13, height: size * 0.20)
+                .offset(x: size * -0.20, y: size * earY)
+                .rotationEffect(.degrees(-12), anchor: .bottom)
+        case .bulldog:
+            // Bat ear: wide and short with rounded top
+            PixelRect(color: Color(hex: appearance.earColorHex))
+                .frame(width: size * 0.18, height: size * 0.10)
+                .offset(x: size * -0.20, y: size * earY + size * 0.03)
+            PixelRect(color: Color(hex: appearance.earColorHex))
+                .frame(width: size * 0.14, height: size * 0.10)
+                .offset(x: size * -0.20, y: size * earY - size * 0.05)
+        case .teddy:
+            // Round ear: small circle
+            Circle()
+                .fill(Color(hex: appearance.earColorHex))
+                .frame(width: size * 0.14, height: size * 0.14)
+                .offset(x: size * -0.20, y: size * earY)
+        }
+    }
+
+    @ViewBuilder
+    private var breedEarRight: some View {
+        switch breed {
+        case .shiba:
+            PixelRect(color: Color(hex: appearance.earColorHex))
+                .frame(width: size * 0.16, height: size * 0.10)
+                .offset(x: size * 0.20, y: size * earY + size * 0.05)
+            PixelRect(color: Color(hex: appearance.earColorHex))
+                .frame(width: size * 0.10, height: size * 0.12)
+                .offset(x: size * 0.20, y: size * earY - size * 0.04)
+        case .golden:
+            PixelRect(color: Color(hex: appearance.earColorHex))
+                .frame(width: size * 0.13, height: size * 0.26)
+                .offset(x: size * 0.22, y: size * earY + size * 0.06)
+                .rotationEffect(.degrees(-8), anchor: .top)
+        case .borderCollie:
+            PixelRect(color: Color(hex: appearance.earColorHex))
+                .frame(width: size * 0.09, height: size * 0.24)
+                .offset(x: size * 0.20, y: size * earY - size * 0.02)
+            PixelRect(color: Color(hex: appearance.earColorHex))
+                .frame(width: size * 0.05, height: size * 0.08)
+                .offset(x: size * 0.20, y: size * earY - size * 0.14)
+        case .native:
+            PixelRect(color: Color(hex: appearance.earColorHex))
+                .frame(width: size * 0.13, height: size * 0.20)
+                .offset(x: size * 0.20, y: size * earY)
+                .rotationEffect(.degrees(12), anchor: .bottom)
+        case .bulldog:
+            PixelRect(color: Color(hex: appearance.earColorHex))
+                .frame(width: size * 0.18, height: size * 0.10)
+                .offset(x: size * 0.20, y: size * earY + size * 0.03)
+            PixelRect(color: Color(hex: appearance.earColorHex))
+                .frame(width: size * 0.14, height: size * 0.10)
+                .offset(x: size * 0.20, y: size * earY - size * 0.05)
+        case .teddy:
+            Circle()
+                .fill(Color(hex: appearance.earColorHex))
+                .frame(width: size * 0.14, height: size * 0.14)
+                .offset(x: size * 0.20, y: size * earY)
+        }
+    }
+
+    // MARK: - Mood-driven eyes
+
+    @ViewBuilder
+    private var moodEyes: some View {
+        switch mood.eyeStyle {
+        case .normal:
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * eyeSize, height: size * eyeSize)
+                .offset(x: size * -0.10, y: size * -0.14)
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * eyeSize, height: size * eyeSize)
+                .offset(x: size * 0.10, y: size * -0.14)
+        case .droopy:
+            // Sad droopy eyes - tilted outward
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * eyeSize, height: size * eyeSize * 0.8)
+                .offset(x: size * -0.10, y: size * -0.13)
+                .rotationEffect(.degrees(-8))
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * eyeSize, height: size * eyeSize * 0.8)
+                .offset(x: size * 0.10, y: size * -0.13)
+                .rotationEffect(.degrees(8))
+        case .squint:
+            // Happy squint - shorter, wider
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * eyeSize * 1.1, height: size * eyeSize * 0.5)
+                .offset(x: size * -0.10, y: size * -0.14)
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * eyeSize * 1.1, height: size * eyeSize * 0.5)
+                .offset(x: size * 0.10, y: size * -0.14)
+        case .sparkle:
+            // Excited sparkle - diamond shape (rotated square)
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * eyeSize * 0.8, height: size * eyeSize * 0.8)
+                .offset(x: size * -0.10, y: size * -0.14)
+                .rotationEffect(.degrees(45))
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * eyeSize * 0.8, height: size * eyeSize * 0.8)
+                .offset(x: size * 0.10, y: size * -0.14)
+                .rotationEffect(.degrees(45))
+            // Sparkle highlight
+            PixelRect(color: .white)
+                .frame(width: size * 0.02, height: size * 0.02)
+                .offset(x: size * -0.09, y: size * -0.15)
+            PixelRect(color: .white)
+                .frame(width: size * 0.02, height: size * 0.02)
+                .offset(x: size * 0.11, y: size * -0.15)
+        case .heart:
+            // Heart eyes - two small rects forming heart shape
+            PixelRect(color: Color(hex: 0xE85D75))
+                .frame(width: size * eyeSize * 0.5, height: size * eyeSize * 0.5)
+                .offset(x: size * -0.12, y: size * -0.15)
+                .rotationEffect(.degrees(-20))
+            PixelRect(color: Color(hex: 0xE85D75))
+                .frame(width: size * eyeSize * 0.5, height: size * eyeSize * 0.5)
+                .offset(x: size * -0.08, y: size * -0.15)
+                .rotationEffect(.degrees(20))
+            PixelRect(color: Color(hex: 0xE85D75))
+                .frame(width: size * eyeSize * 0.5, height: size * eyeSize * 0.5)
+                .offset(x: size * 0.08, y: size * -0.15)
+                .rotationEffect(.degrees(-20))
+            PixelRect(color: Color(hex: 0xE85D75))
+                .frame(width: size * eyeSize * 0.5, height: size * eyeSize * 0.5)
+                .offset(x: size * 0.12, y: size * -0.15)
+                .rotationEffect(.degrees(20))
+        case .halfClosed:
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * eyeSize * 1.1, height: size * eyeSize * 0.4)
+                .offset(x: size * -0.10, y: size * -0.14)
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * eyeSize * 1.1, height: size * eyeSize * 0.4)
+                .offset(x: size * 0.10, y: size * -0.14)
+        case .closed:
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * eyeSize * 1.0, height: size * eyeSize * 0.15)
+                .offset(x: size * -0.10, y: size * -0.14)
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * eyeSize * 1.0, height: size * eyeSize * 0.15)
+                .offset(x: size * 0.10, y: size * -0.14)
+        }
+    }
+
+    // MARK: - Mood-driven mouth
+
+    @ViewBuilder
+    private var moodMouth: some View {
+        switch mood.mouthStyle {
+        case .downturn:
+            // Sad mouth - angled down
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * 0.08, height: size * 0.02)
+                .offset(x: size * -0.02, y: size * 0.015)
+                .rotationEffect(.degrees(10))
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * 0.08, height: size * 0.02)
+                .offset(x: size * 0.02, y: size * 0.015)
+                .rotationEffect(.degrees(-10))
+        case .straight:
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * 0.08, height: size * 0.02)
+                .offset(y: size * 0.01)
+        case .slightSmile:
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * 0.10, height: size * 0.02)
+                .offset(y: size * 0.01)
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * 0.03, height: size * 0.02)
+                .offset(x: size * -0.05, y: size * 0.005)
+                .rotationEffect(.degrees(-15))
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * 0.03, height: size * 0.02)
+                .offset(x: size * 0.05, y: size * 0.005)
+                .rotationEffect(.degrees(15))
+        case .wideSmile:
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * 0.12, height: size * 0.02)
+                .offset(y: size * 0.01)
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * 0.03, height: size * 0.025)
+                .offset(x: size * -0.06, y: size * 0.0)
+                .rotationEffect(.degrees(-20))
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * 0.03, height: size * 0.025)
+                .offset(x: size * 0.06, y: size * 0.0)
+                .rotationEffect(.degrees(20))
+        case .bigSmile:
+            // Big open smile with tongue hint
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * 0.14, height: size * 0.02)
+                .offset(y: size * 0.01)
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * 0.04, height: size * 0.03)
+                .offset(x: size * -0.07, y: size * -0.005)
+                .rotationEffect(.degrees(-25))
+            PixelRect(color: Color(hex: 0x2A241F))
+                .frame(width: size * 0.04, height: size * 0.03)
+                .offset(x: size * 0.07, y: size * -0.005)
+                .rotationEffect(.degrees(25))
+            PixelRect(color: Color(hex: 0xE85D75))
+                .frame(width: size * 0.05, height: size * 0.03)
+                .offset(y: size * 0.025)
+        }
+    }
+
+    // MARK: - Evolution proportions
+
+    private var evolutionBodyScale: CGFloat {
+        evolution == .puppy ? 1.08 : 1.0
+    }
+
+    private var evolutionHeadScale: CGFloat {
+        evolution == .puppy ? 1.10 : 1.0
     }
 }
 

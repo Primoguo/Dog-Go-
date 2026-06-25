@@ -119,7 +119,7 @@ struct AdoptDogView: View {
                                     .foregroundStyle(Color(hex: 0x356247))
                             }
 
-                            PixelDogSprite(breed: store.state.selectedDog, appearance: appearance, size: 140, pose: "idle")
+                            PixelDogSprite(breed: store.state.selectedDog, appearance: appearance, size: 140, pose: .idle)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 8)
 
@@ -215,7 +215,7 @@ struct AdoptionView: View {
                                         .foregroundStyle(Color(hex: 0x356247))
                                 }
 
-                                PixelDogSprite(breed: breed, appearance: appearance, size: 140, pose: "idle")
+                                PixelDogSprite(breed: breed, appearance: appearance, size: 140, pose: .idle)
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 8)
 
@@ -616,7 +616,7 @@ struct DogDogView: View {
                             if let companionId = store.state.activeCompanionId,
                                let companion = store.state.dogCollection.dog(with: companionId) {
                                 HStack(spacing: 12) {
-                                    PixelDogSprite(breed: companion.breed, appearance: companion.appearance, size: 60, pose: "idle")
+                                    PixelDogSprite(breed: companion.breed, appearance: companion.appearance, size: 60, pose: .idle)
 
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(companion.nickname)
@@ -677,7 +677,7 @@ struct DogDogView: View {
                                     } label: {
                                         VStack(spacing: 6) {
                                             ZStack {
-                                                PixelDogSprite(breed: dog.breed, appearance: dog.appearance, size: 60, pose: "idle")
+                                                PixelDogSprite(breed: dog.breed, appearance: dog.appearance, size: 60, pose: .idle)
 
                                                 if store.state.activeCompanionId == dog.id {
                                                     Image(systemName: "checkmark.circle.fill")
@@ -847,7 +847,7 @@ struct FocusModeView: View {
                         breed: store.state.selectedDog,
                         appearance: store.currentDogAppearance(),
                         size: 180,
-                        pose: "focused"
+                        pose: .focused
                     )
 
                     // 鼓励气泡
@@ -1126,7 +1126,7 @@ struct RestModeView: View {
                     breed: store.state.selectedDog,
                     appearance: store.currentDogAppearance(),
                     size: 180,
-                    pose: "resting"
+                    pose: .resting
                 )
 
                 // 休息提示

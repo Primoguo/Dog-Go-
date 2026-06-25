@@ -96,9 +96,10 @@ struct OnboardingView: View {
                     .frame(width: 200, height: 200)
 
                 PixelDogSprite(
-                    dog: Dog.breed(.shiba).build(),
-                    pose: .idle,
-                    size: 150
+                    breed: .shiba,
+                    appearance: DogAppearance.generated(for: .shiba, seed: "preview"),
+                    size: 150,
+                    pose: .idle
                 )
             }
 
@@ -149,19 +150,22 @@ struct OnboardingView: View {
             // 展示多只狗狗
             HStack(spacing: 20) {
                 PixelDogSprite(
-                    dog: Dog.breed(.shiba).build(),
-                    pose: .happy,
-                    size: 80
+                    breed: .shiba,
+                    appearance: DogAppearance.generated(for: .shiba, seed: "preview"),
+                    size: 80,
+                    pose: .happy
                 )
                 PixelDogSprite(
-                    dog: Dog.breed(.golden).build(),
-                    pose: .happy,
-                    size: 80
+                    breed: .golden,
+                    appearance: DogAppearance.generated(for: .golden, seed: "preview"),
+                    size: 80,
+                    pose: .happy
                 )
                 PixelDogSprite(
-                    dog: Dog.breed(.borderCollie).build(),
-                    pose: .happy,
-                    size: 80
+                    breed: .borderCollie,
+                    appearance: DogAppearance.generated(for: .borderCollie, seed: "preview"),
+                    size: 80,
+                    pose: .happy
                 )
             }
 
@@ -189,9 +193,10 @@ struct OnboardingView: View {
 
             // 开心的狗狗
             PixelDogSprite(
-                dog: Dog.breed(.shiba).build(),
-                pose: .happy,
-                size: 180
+                breed: .shiba,
+                appearance: DogAppearance.generated(for: .shiba, seed: "preview"),
+                size: 180,
+                pose: .happy
             )
 
             Text("准备好了吗？")

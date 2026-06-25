@@ -135,7 +135,7 @@ final class AppStore: ObservableObject {
     func selectActionPlan(_ plan: ActionPlan) {
         state.actionSession = ActionSession(phase: .choosingTime, plan: plan, durationSeconds: 0, remainingSeconds: 0)
         state.dogState.mood = "focused"
-        state.dogState.pose = "idle"
+        state.dogState.pose = .idle
         save()
     }
 
@@ -144,7 +144,7 @@ final class AppStore: ObservableObject {
         let seconds = max(60, minutes * 60)
         state.actionSession = ActionSession(phase: .running, plan: plan, durationSeconds: seconds, remainingSeconds: seconds)
         state.dogState.mood = "focused"
-        state.dogState.pose = "focused"  // 专注姿态
+        state.dogState.pose = .focused  // 专注姿态
         speechMode = "pending"
 
         // 启动专注模式
@@ -174,7 +174,7 @@ final class AppStore: ObservableObject {
         if remaining == 0 {
             state.actionSession.phase = .finished
             state.dogState.mood = "happy"
-            state.dogState.pose = "happy"
+            state.dogState.pose = .happy
             speechMode = "done"
 
             // 完成专注会话
@@ -193,7 +193,7 @@ final class AppStore: ObservableObject {
 
         state.actionSession = .idle
         state.dogState.mood = "expecting"
-        state.dogState.pose = "idle"
+        state.dogState.pose = .idle
         speechMode = "pending"
         save()
     }
@@ -234,7 +234,7 @@ final class AppStore: ObservableObject {
         state.rhythmState.status = .missed
         state.rhythmState.missedDays = 1
         state.dogState.mood = "waiting"
-        state.dogState.pose = "waiting"
+        state.dogState.pose = .waiting
         speechMode = "pending"
         save()
     }
@@ -336,7 +336,7 @@ final class AppStore: ObservableObject {
         }
 
         state.dogState.mood = type == .recovery ? "recovering" : "happy"
-        state.dogState.pose = "happy"
+        state.dogState.pose = .happy
         state.rhythmState.status = type == .recovery ? .recovering : .stable
         state.rhythmState.currentStreak += 1
         state.rhythmState.missedDays = 0
@@ -465,20 +465,20 @@ final class AppStore: ObservableObject {
         PixelRewardItem.allCases.randomElement() ?? .redBall
     }
 
-    private func randomCelebrationPose() -> String {
+    private func randomCelebrationPose() -> DogPose {
         switch state.selectedDog {
         case .shiba:
-            return ["jump", "spin", "dash"].randomElement() ?? "jump"
+            return [.jump, .spin, .dash].randomElement() ?? .jump
         case .golden:
-            return ["jump", "heart", "roll"].randomElement() ?? "heart"
+            return [.jump, .heart, .roll].randomElement() ?? .heart
         case .borderCollie:
-            return ["spin", "dash", "spark"].randomElement() ?? "spin"
+            return [.spin, .dash, .spark].randomElement() ?? .spin
         case .native:
-            return ["jump", "heart", "spark"].randomElement() ?? "jump"
+            return [.jump, .heart, .spark].randomElement() ?? .jump
         case .bulldog:
-            return ["jump", "roll", "heart"].randomElement() ?? "jump"
+            return [.jump, .roll, .heart].randomElement() ?? .jump
         case .teddy:
-            return ["spin", "jump", "dash"].randomElement() ?? "spin"
+            return [.spin, .jump, .dash].randomElement() ?? .spin
         }
     }
 
