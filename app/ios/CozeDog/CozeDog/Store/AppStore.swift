@@ -28,6 +28,8 @@ final class AppStore: ObservableObject {
         } else {
             state = .initial
         }
+        // 每日属性衰减
+        applyDailyDecay()
     }
 
     func selectDog(_ dog: DogBreed) {
@@ -217,7 +219,7 @@ final class AppStore: ObservableObject {
             return
         }
 
-        complete(type: .main, message: copy(for: "done"), gains: dogGoGains(), completedPlanTitle: completedPlanTitle(for: session))
+        complete(type: .main, message: copy(for: "done"), gains: dogGoGains(durationSeconds: session.durationSeconds), completedPlanTitle: completedPlanTitle(for: session))
     }
 
     func completeRecoveryGoal() {
@@ -233,10 +235,16 @@ final class AppStore: ObservableObject {
     func simulateMissedDay() {
         state.rhythmState.status = .missed
         state.rhythmState.missedDays = 1
-        state.dogState.mood = "waiting"
+        // 设置 lastActiveDate 为昨天，触发衰减
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        state.dogState.lastActiveDate = formatter.string(from: yesterday)
         state.dogState.pose = .waiting
         speechMode = "pending"
         save()
+        // 重新触发衰减
+        applyDailyDecay()
     }
 
     func useSmallGoal() {
@@ -306,9 +314,6 @@ final class AppStore: ObservableObject {
             checkAndUnlockAchievements()
         }
 
-        // 更新心情
-        updateDogMood()
-
         // 生成日记（如果今天还没有）
         generateDailyDiaryIfNeeded()
 
@@ -335,7 +340,11 @@ final class AppStore: ObservableObject {
             }
         }
 
-        state.dogState.mood = type == .recovery ? "recovering" : "happy"
+        // 更新活跃日期，用于下次启动时的衰减计算
+        state.dogState.lastActiveDate = assignedDate()
+
+        // 属性变化后重新派生心情
+        updateDogMood()
         state.dogState.pose = .happy
         state.rhythmState.status = type == .recovery ? .recovering : .stable
         state.rhythmState.currentStreak += 1
@@ -352,10 +361,26 @@ final class AppStore: ObservableObject {
         return "\(plan.label) \(max(1, session.durationSeconds / 60))m"
     }
 
-    private func dogGoGains() -> [StateGain] {
-        [
-            StateGain(label: "亲密度", amount: 1),
-            StateGain(label: "心情", amount: 1)
+    private func dogGoGains(durationSeconds: Int) -> [StateGain] {
+        let minutes = durationSeconds / 60
+        // 亲密度随时长阶梯增长
+        let intimacyGain: Int
+        let statGain: Int
+        switch minutes {
+        case ..<15:
+            intimacyGain = 1; statGain = 1
+        case ..<30:
+            intimacyGain = 2; statGain = 3
+        case ..<60:
+            intimacyGain = 3; statGain = 6
+        default:
+            intimacyGain = 5; statGain = 10
+        }
+        return [
+            StateGain(label: "亲密度", amount: intimacyGain),
+            StateGain(label: "饱腹", amount: statGain),
+            StateGain(label: "清洁", amount: statGain),
+            StateGain(label: "精力", amount: statGain)
         ]
     }
 
@@ -707,11 +732,40 @@ final class AppStore: ObservableObject {
         save()
     }
 
-    /// 更新狗狗心情
+    /// 每日属性衰减（方案 B）：饱腹/清洁/精力各 -8/天，下限 10
+    private func applyDailyDecay() {
+        guard let lastActive = state.dogState.lastActiveDate else {
+            // 首次使用，记录今天但不衰减
+            state.dogState.lastActiveDate = assignedDate()
+            return
+        }
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        guard let lastDate = formatter.date(from: lastActive) else { return }
+
+        let today = Date()
+        let days = Calendar.current.dateComponents([.day], from: lastDate, to: today).day ?? 0
+        guard days > 0 else { return }
+
+        let decay = min(days * 8, 90)  // 每天 -8，最多衰减 90（保留下限 10）
+        state.dogState.fullness = max(10, state.dogState.fullness - decay)
+        state.dogState.cleanliness = max(10, state.dogState.cleanliness - decay)
+        state.dogState.energy = max(10, state.dogState.energy - decay)
+
+        // 衰减后重新派生心情
+        updateDogMood()
+        save()
+    }
+
+    /// 更新狗狗心情（基于三项属性均值派生）
     func updateDogMood() {
-        let recentCheckIns = getRecentCheckInsCount(days: 7)
-        let streak = state.rhythmState.currentStreak
-        state.dogMood = DogMood.from(recentCheckIns: recentCheckIns, streak: streak)
+        state.dogMood = DogMood.from(
+            fullness: state.dogState.fullness,
+            cleanliness: state.dogState.cleanliness,
+            energy: state.dogState.energy
+        )
+        state.dogState.mood = state.dogMood.rawValue
     }
 
     /// 获取最近 N 天的完成次数

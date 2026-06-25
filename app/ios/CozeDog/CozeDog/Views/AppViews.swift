@@ -424,7 +424,7 @@ struct FeedbackView: View {
                     feedback: store.state.lastFeedback,
                     dogLevel: store.state.dogState.level,
                     intimacy: store.state.dogState.intimacy,
-                    moodScore: store.state.dogState.moodScore,
+                    moodScore: (store.state.dogState.fullness + store.state.dogState.cleanliness + store.state.dogState.energy) / 30,
                     isAnimating: celebrates
                 )
                 .onAppear {

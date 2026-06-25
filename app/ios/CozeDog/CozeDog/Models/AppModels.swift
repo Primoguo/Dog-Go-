@@ -425,12 +425,13 @@ enum DogMood: String, Codable, CaseIterable {
         }
     }
 
-    static func from(recentCheckIns: Int, streak: Int) -> DogMood {
-        // 基于最近 7 天完成数和连续打卡天数计算心情
-        if streak >= 7 { return .ecstatic }
-        if streak >= 3 || recentCheckIns >= 5 { return .excited }
-        if recentCheckIns >= 3 { return .happy }
-        if recentCheckIns >= 1 { return .neutral }
+    static func from(fullness: Int, cleanliness: Int, energy: Int) -> DogMood {
+        // 基于三项属性均值派生心情（方案 B）
+        let avg = (fullness + cleanliness + energy) / 3
+        if avg >= 75 { return .ecstatic }
+        if avg >= 55 { return .excited }
+        if avg >= 35 { return .happy }
+        if avg >= 20 { return .neutral }
         return .sad
     }
 
@@ -914,6 +915,7 @@ struct DogState: Codable {
     var energy: Int
     var pose: DogPose
     var inventory: [PixelRewardItem]
+    var lastActiveDate: String?  // yyyy-MM-dd，用于计算属性衰减
 
     enum CodingKeys: String, CodingKey {
         case intimacy
@@ -925,6 +927,7 @@ struct DogState: Codable {
         case energy
         case pose
         case inventory
+        case lastActiveDate
     }
 
     init(
@@ -936,7 +939,8 @@ struct DogState: Codable {
         cleanliness: Int,
         energy: Int,
         pose: DogPose,
-        inventory: [PixelRewardItem]
+        inventory: [PixelRewardItem],
+        lastActiveDate: String? = nil
     ) {
         self.intimacy = intimacy
         self.level = level
@@ -947,6 +951,7 @@ struct DogState: Codable {
         self.energy = energy
         self.pose = pose
         self.inventory = inventory
+        self.lastActiveDate = lastActiveDate
     }
 
     init(from decoder: Decoder) throws {
@@ -960,6 +965,7 @@ struct DogState: Codable {
         energy = try container.decode(Int.self, forKey: .energy)
         pose = try container.decodeIfPresent(DogPose.self, forKey: .pose) ?? .idle
         inventory = try container.decodeIfPresent([PixelRewardItem].self, forKey: .inventory) ?? []
+        lastActiveDate = try container.decodeIfPresent(String.self, forKey: .lastActiveDate)
     }
 
     static let initial = DogState(
