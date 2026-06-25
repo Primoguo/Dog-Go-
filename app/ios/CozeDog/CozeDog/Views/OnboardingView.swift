@@ -60,7 +60,7 @@ struct OnboardingView: View {
                     .foregroundColor(.orange)
                     .padding(.horizontal, 20)
                 } else {
-                    Button("开始自律之旅 🐕") {
+                    Button("Dog Go！") {
                         hasSeenOnboarding = true
                     }
                     .font(.headline)
