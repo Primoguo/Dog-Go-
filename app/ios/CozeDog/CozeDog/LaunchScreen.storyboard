@@ -14,27 +14,13 @@
                     <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="LaunchImages" translatesAutoresizingMaskIntoConstraints="NO" id="Y8V-Yr-Lh5">
-                                <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
-                            </imageView>
-                        </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <constraints>
-                            <constraint firstItem="Y8V-Yr-Lh5" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" id="B8X-8v-JQ5"/>
-                            <constraint firstItem="Y8V-Yr-Lh5" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leading" id="H9T-7v-N5K"/>
-                            <constraint firstAttribute="bottom" secondItem="Y8V-Yr-Lh5" secondAttribute="bottom" id="L3N-5w-X8P"/>
-                            <constraint firstAttribute="trailing" secondItem="Y8V-Yr-Lh5" secondAttribute="trailing" id="M2V-9x-R4L"/>
-                        </constraints>
+                        <color key="backgroundColor" red="1.0" green="0.5490196078431373" blue="0.2588235294117647" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="52.671755725190835" y="374.64788732394368"/>
+            <point key="canvasLocation" x="53" y="375"/>
         </scene>
     </scenes>
-    <resources>
-        <image name="LaunchImages" width="1170" height="2532"/>
-    </resources>
 </document>
