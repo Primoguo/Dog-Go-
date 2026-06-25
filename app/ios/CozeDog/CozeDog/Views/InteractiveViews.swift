@@ -134,7 +134,8 @@ struct FlowerView: View {
     var body: some View {
         ZStack {
             // 茎
-            PixelRect(color: "#228B22", width: 3, height: 20)
+            PixelRect(color: Color(hex: "#228B22"))
+                .frame(width: 3, height: 20)
                 .offset(y: 10)
 
             // 花朵

@@ -103,17 +103,17 @@ struct YardHouseView: View {
                 .offset(y: -30)
 
             // 房体
-            PixelRect(color: "#DEB887", width: 50, height: 40)
+            PixelRect(color: Color(hex: "#DEB887")).frame(width: 50, height: 40)
                 .offset(y: 10)
 
             // 门
-            PixelRect(color: "#8B4513", width: 12, height: 20)
+            PixelRect(color: Color(hex: "#8B4513")).frame(width: 12, height: 20)
                 .offset(y: 20)
 
             // 窗户
-            PixelRect(color: "#87CEEB", width: 10, height: 10)
+            PixelRect(color: Color(hex: "#87CEEB")).frame(width: 10, height: 10)
                 .offset(x: -15, y: 5)
-            PixelRect(color: "#87CEEB", width: 10, height: 10)
+            PixelRect(color: Color(hex: "#87CEEB")).frame(width: 10, height: 10)
                 .offset(x: 15, y: 5)
         }
     }
@@ -125,7 +125,7 @@ struct YardTreeView: View {
     var body: some View {
         ZStack {
             // 树干
-            PixelRect(color: "#8B4513", width: 12, height: 40)
+            PixelRect(color: Color(hex: "#8B4513")).frame(width: 12, height: 40)
                 .offset(y: 20)
 
             // 树叶
@@ -184,7 +184,7 @@ struct ParkTreeView: View {
     var body: some View {
         ZStack {
             // 树干
-            PixelRect(color: "#8B4513", width: 16, height: 50)
+            PixelRect(color: Color(hex: "#8B4513")).frame(width: 16, height: 50)
                 .offset(y: 25)
 
             // 树冠
@@ -200,17 +200,17 @@ struct ParkBenchView: View {
     var body: some View {
         ZStack {
             // 座位
-            PixelRect(color: "#8B4513", width: 60, height: 8)
+            PixelRect(color: Color(hex: "#8B4513")).frame(width: 60, height: 8)
                 .offset(y: -5)
 
             // 靠背
-            PixelRect(color: "#8B4513", width: 60, height: 20)
+            PixelRect(color: Color(hex: "#8B4513")).frame(width: 60, height: 20)
                 .offset(y: -15)
 
             // 腿
-            PixelRect(color: "#654321", width: 6, height: 15)
+            PixelRect(color: Color(hex: "#654321")).frame(width: 6, height: 15)
                 .offset(x: -25, y: 5)
-            PixelRect(color: "#654321", width: 6, height: 15)
+            PixelRect(color: Color(hex: "#654321")).frame(width: 6, height: 15)
                 .offset(x: 25, y: 5)
         }
     }
@@ -311,7 +311,7 @@ struct PalmTreeView: View {
     var body: some View {
         ZStack {
             // 树干
-            PixelRect(color: "#8B4513", width: 12, height: 60)
+            PixelRect(color: Color(hex: "#8B4513")).frame(width: 12, height: 60)
                 .offset(y: 30)
 
             // 叶子
@@ -398,7 +398,7 @@ struct ForestTreeView: View {
     var body: some View {
         ZStack {
             // 树干
-            PixelRect(color: "#654321", width: 20, height: 70)
+            PixelRect(color: Color(hex: "#654321")).frame(width: 20, height: 70)
                 .offset(y: 35)
 
             // 树冠（三角形）
@@ -454,7 +454,7 @@ struct MushroomView: View {
                 .offset(x: 5, y: -3)
 
             // 菌柄
-            PixelRect(color: "#F5F5DC", width: 8, height: 12)
+            PixelRect(color: Color(hex: "#F5F5DC")).frame(width: 8, height: 12)
                 .offset(y: 5)
         }
     }
@@ -528,7 +528,7 @@ struct RainView: View {
         GeometryReader { proxy in
             ZStack {
                 ForEach(rainDrops) { drop in
-                    PixelRect(color: "#4682B4", width: 2, height: 15)
+                    PixelRect(color: Color(hex: "#4682B4")).frame(width: 2, height: 15)
                         .position(drop.position)
                         .opacity(0.6)
                         .onAppear {

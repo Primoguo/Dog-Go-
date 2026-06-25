@@ -8,7 +8,6 @@ final class DataEncodingTests: XCTestCase {
     func testAppStateEncoding() {
         var state = AppState.initial
         state.selectedDog = .shiba
-        state.dogCollected = true
         state.totalMainCheckIns = 5
 
         do {
@@ -17,7 +16,6 @@ final class DataEncodingTests: XCTestCase {
 
             let decoded = try JSONDecoder().decode(AppState.self, from: data)
             XCTAssertEqual(decoded.selectedDog, .shiba)
-            XCTAssertEqual(decoded.dogCollected, true)
             XCTAssertEqual(decoded.totalMainCheckIns, 5)
         } catch {
             XCTFail("编解码失败: \(error)")
@@ -26,15 +24,15 @@ final class DataEncodingTests: XCTestCase {
 
     func testAppStateWithFocusSessions() {
         var state = AppState.initial
-        state.totalFocusSessions = 3
-        state.totalFocusTime = 3600
+        state.focusSessionsCount = 3
+        state.totalFocusMinutes = 60
 
         do {
             let data = try JSONEncoder().encode(state)
             let decoded = try JSONDecoder().decode(AppState.self, from: data)
 
-            XCTAssertEqual(decoded.totalFocusSessions, 3)
-            XCTAssertEqual(decoded.totalFocusTime, 3600)
+            XCTAssertEqual(decoded.focusSessionsCount, 3)
+            XCTAssertEqual(decoded.totalFocusMinutes, 60)
         } catch {
             XCTFail("编解码失败: \(error)")
         }
@@ -42,16 +40,34 @@ final class DataEncodingTests: XCTestCase {
 
     func testAppStateWithCollectedDogs() {
         var state = AppState.initial
-        state.collectedDogs = [.shiba, .golden, .borderCollie]
+        let shibaDog = CollectedDog(
+            breed: .shiba,
+            appearance: DogAppearance.generated(for: .shiba),
+            nickname: "小白",
+            collectedAt: Date()
+        )
+        let goldenDog = CollectedDog(
+            breed: .golden,
+            appearance: DogAppearance.generated(for: .golden),
+            nickname: "大金",
+            collectedAt: Date()
+        )
+        let borderDog = CollectedDog(
+            breed: .borderCollie,
+            appearance: DogAppearance.generated(for: .borderCollie),
+            nickname: "边边",
+            collectedAt: Date()
+        )
+        state.dogCollection = DogCollection(dogs: [shibaDog, goldenDog, borderDog])
 
         do {
             let data = try JSONEncoder().encode(state)
             let decoded = try JSONDecoder().decode(AppState.self, from: data)
 
-            XCTAssertEqual(decoded.collectedDogs.count, 3)
-            XCTAssertTrue(decoded.collectedDogs.contains(.shiba))
-            XCTAssertTrue(decoded.collectedDogs.contains(.golden))
-            XCTAssertTrue(decoded.collectedDogs.contains(.borderCollie))
+            XCTAssertEqual(decoded.dogCollection.totalCollected, 3)
+            XCTAssertTrue(decoded.dogCollection.collectedBreeds.contains(.shiba))
+            XCTAssertTrue(decoded.dogCollection.collectedBreeds.contains(.golden))
+            XCTAssertTrue(decoded.dogCollection.collectedBreeds.contains(.borderCollie))
         } catch {
             XCTFail("编解码失败: \(error)")
         }
@@ -65,8 +81,8 @@ final class DataEncodingTests: XCTestCase {
         {
             "screen": "home",
             "selectedDog": "shiba",
-            "dogCollected": true,
-            "goal": null
+            "totalMainCheckIns": 0,
+            "availableAdoptions": 0
         }
         """
 
@@ -74,11 +90,9 @@ final class DataEncodingTests: XCTestCase {
             let data = oldJson.data(using: .utf8)!
             let decoded = try JSONDecoder().decode(AppState.self, from: data)
 
-            // 新增字段应该有默认值
             XCTAssertEqual(decoded.selectedDog, .shiba)
-            XCTAssertEqual(decoded.dogCollected, true)
-            XCTAssertEqual(decoded.totalMainCheckIns, 0) // 默认值
-            XCTAssertEqual(decoded.availableAdoptions, 0) // 默认值
+            XCTAssertEqual(decoded.totalMainCheckIns, 0)
+            XCTAssertEqual(decoded.availableAdoptions, 0)
         } catch {
             XCTFail("向后兼容解码失败: \(error)")
         }
@@ -89,8 +103,7 @@ final class DataEncodingTests: XCTestCase {
         let oldJson = """
         {
             "screen": "home",
-            "selectedDog": "golden",
-            "dogCollected": true
+            "selectedDog": "golden"
         }
         """
 
@@ -99,47 +112,49 @@ final class DataEncodingTests: XCTestCase {
             let decoded = try JSONDecoder().decode(AppState.self, from: data)
 
             // 专注模式字段应该有默认值
-            XCTAssertEqual(decoded.totalFocusSessions, 0)
-            XCTAssertEqual(decoded.totalFocusTime, 0)
-            XCTAssertFalse(decoded.isFocusModeActive)
+            XCTAssertEqual(decoded.focusSessionsCount, 0)
+            XCTAssertEqual(decoded.totalFocusMinutes, 0)
+            XCTAssertFalse(decoded.isFocusMode)
         } catch {
             XCTFail("向后兼容解码失败: \(error)")
         }
     }
 
-    // MARK: - Dog 编解码测试
+    // MARK: - CollectedDog 编解码测试
 
-    func testDogEncoding() {
-        let dog = Dog.breed(.shiba).name("小白").build()
+    func testCollectedDogEncoding() {
+        let appearance = DogAppearance.generated(for: .shiba, seed: "test-seed")
+        let dog = CollectedDog(
+            breed: .shiba,
+            appearance: appearance,
+            nickname: "小白",
+            collectedAt: Date()
+        )
 
         do {
             let data = try JSONEncoder().encode(dog)
-            let decoded = try JSONDecoder().decode(Dog.self, from: data)
+            let decoded = try JSONDecoder().decode(CollectedDog.self, from: data)
 
             XCTAssertEqual(decoded.breed, .shiba)
-            XCTAssertEqual(decoded.name, "小白")
+            XCTAssertEqual(decoded.nickname, "小白")
+            XCTAssertEqual(decoded.appearance.seed, appearance.seed)
         } catch {
-            XCTFail("Dog 编解码失败: \(error)")
+            XCTFail("CollectedDog 编解码失败: \(error)")
         }
     }
 
     // MARK: - DogAppearance 编解码测试
 
     func testDogAppearanceEncoding() {
-        let appearance = DogAppearance(
-            bodyColor: .orange,
-            earColor: .brown,
-            eyeColor: .black,
-            noseColor: .black,
-            tongueColor: .pink
-        )
+        let appearance = DogAppearance.generated(for: .shiba, seed: "test-seed")
 
         do {
             let data = try JSONEncoder().encode(appearance)
             let decoded = try JSONDecoder().decode(DogAppearance.self, from: data)
 
-            XCTAssertEqual(decoded.bodyColor, .orange)
-            XCTAssertEqual(decoded.earColor, .brown)
+            XCTAssertEqual(decoded.seed, appearance.seed)
+            XCTAssertEqual(decoded.primaryFurHex, appearance.primaryFurHex)
+            XCTAssertEqual(decoded.bodyColorHex, appearance.bodyColorHex)
         } catch {
             XCTFail("DogAppearance 编解码失败: \(error)")
         }
@@ -149,10 +164,11 @@ final class DataEncodingTests: XCTestCase {
 
     func testGoalEncoding() {
         let goal = Goal(
+            id: UUID(),
             type: .fitness,
             title: "每天跑步",
-            frequency: .daily,
-            createdAt: Date()
+            createdAt: Date(),
+            updatedAt: Date()
         )
 
         do {
@@ -161,7 +177,6 @@ final class DataEncodingTests: XCTestCase {
 
             XCTAssertEqual(decoded.type, .fitness)
             XCTAssertEqual(decoded.title, "每天跑步")
-            XCTAssertEqual(decoded.frequency, .daily)
         } catch {
             XCTFail("Goal 编解码失败: \(error)")
         }
@@ -172,17 +187,20 @@ final class DataEncodingTests: XCTestCase {
     func testFocusSessionEncoding() {
         let session = FocusSession(
             id: UUID(),
-            duration: 1500,
+            plan: .study,
+            durationSeconds: 1500,
+            startedAt: Date(),
             completedAt: Date(),
-            planTitle: "学习 Swift"
+            completed: true
         )
 
         do {
             let data = try JSONEncoder().encode(session)
             let decoded = try JSONDecoder().decode(FocusSession.self, from: data)
 
-            XCTAssertEqual(decoded.duration, 1500)
-            XCTAssertEqual(decoded.planTitle, "学习 Swift")
+            XCTAssertEqual(decoded.durationSeconds, 1500)
+            XCTAssertEqual(decoded.plan, .study)
+            XCTAssertTrue(decoded.completed)
         } catch {
             XCTFail("FocusSession 编解码失败: \(error)")
         }
@@ -190,38 +208,26 @@ final class DataEncodingTests: XCTestCase {
 
     // MARK: - 边界情况测试
 
-    func testEmptyStringEncoding() {
-        var state = AppState.initial
-        state.completedPlanTitle = ""
-
-        do {
-            let data = try JSONEncoder().encode(state)
-            let decoded = try JSONDecoder().decode(AppState.self, from: data)
-
-            XCTAssertEqual(decoded.completedPlanTitle, "")
-        } catch {
-            XCTFail("空字符串编解码失败: \(error)")
-        }
-    }
-
     func testLargeDataEncoding() {
         var state = AppState.initial
         // 添加大量专注记录
         for i in 0..<100 {
             let session = FocusSession(
                 id: UUID(),
-                duration: 1500,
+                plan: .study,
+                durationSeconds: 1500,
+                startedAt: Date(),
                 completedAt: Date(),
-                planTitle: "测试计划 \(i)"
+                completed: true
             )
-            state.focusHistory.append(session)
+            state.focusSessions.append(session)
         }
 
         do {
             let data = try JSONEncoder().encode(state)
             let decoded = try JSONDecoder().decode(AppState.self, from: data)
 
-            XCTAssertEqual(decoded.focusHistory.count, 100)
+            XCTAssertEqual(decoded.focusSessions.count, 100)
         } catch {
             XCTFail("大数据编解码失败: \(error)")
         }

@@ -462,7 +462,7 @@ struct MonthlyReportView: View {
                     reportStatRow(icon: "timer", label: "专注时长", value: "\(report.totalFocusMinutes) 分钟")
 
                     if let goalType = report.topGoalType {
-                        reportStatRow(icon: "star.fill", label: "最多目标", value: goalType.displayName)
+                        reportStatRow(icon: "star.fill", label: "最多目标", value: goalType.label)
                     }
                 }
                 .padding(16)
