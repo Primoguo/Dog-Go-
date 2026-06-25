@@ -1006,11 +1006,11 @@ struct EncouragementBubble: View {
                 .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
 
             // 气泡尾巴
-            Triangle()
+            BubbleTailShape()
                 .fill(Color.white)
                 .frame(width: 16, height: 12)
                 .overlay {
-                    Triangle()
+                    BubbleTailShape()
                         .stroke(Color(hex: 0x5D8B6A), lineWidth: 2)
                         .frame(width: 16, height: 12)
                         .offset(y: 1)
@@ -1020,7 +1020,7 @@ struct EncouragementBubble: View {
     }
 }
 
-struct Triangle: Shape {
+struct BubbleTailShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         path.move(to: CGPoint(x: rect.midX, y: rect.maxY))

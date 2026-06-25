@@ -61,11 +61,8 @@ struct YardSceneView: View {
 
                 // 栅栏
                 ForEach(0..<8) { index in
-                    PixelRect(
-                        color: "#8B4513",
-                        width: 4,
-                        height: 40
-                    )
+                    PixelRect(color: Color(hex: "#8B4513"))
+                        .frame(width: 4, height: 40)
                     .position(
                         x: CGFloat(index) * proxy.size.width / 7 + 20,
                         y: proxy.size.height * 0.45

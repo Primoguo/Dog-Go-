@@ -3,117 +3,123 @@ import XCTest
 
 final class DogModelTests: XCTestCase {
 
-    // MARK: - Dog 构建测试
+    // MARK: - DogState 基础测试
 
-    func testBuildShiba() {
-        let dog = Dog.breed(.shiba).build()
+    func testDogStateInitialization() {
+        let appearance = DogAppearance.generated(for: .shiba)
+        let state = DogState(breed: .shiba, name: "旺财", appearance: appearance)
 
-        XCTAssertEqual(dog.breed, .shiba)
-        XCTAssertFalse(dog.name.isEmpty)
+        XCTAssertEqual(state.breed, .shiba)
+        XCTAssertEqual(state.name, "旺财")
+        XCTAssertEqual(state.level, 1)
+        XCTAssertEqual(state.mood, .neutral)
     }
 
-    func testBuildAllBreeds() {
+    func testDogStateAllBreeds() {
         let breeds: [DogBreed] = [.shiba, .golden, .borderCollie, .native, .bulldog, .teddy]
 
         for breed in breeds {
-            let dog = Dog.breed(breed).build()
-            XCTAssertEqual(dog.breed, breed)
+            let appearance = DogAppearance.generated(for: breed)
+            let state = DogState(breed: breed, name: "测试", appearance: appearance)
+            XCTAssertEqual(state.breed, breed)
         }
     }
 
-    func testDogWithCustomName() {
-        let dog = Dog.breed(.shiba).name("旺财").build()
+    func testDogStateDefaultValues() {
+        let appearance = DogAppearance.generated(for: .golden)
+        let state = DogState(breed: .golden, name: "大金", appearance: appearance)
 
-        XCTAssertEqual(dog.name, "旺财")
-        XCTAssertEqual(dog.breed, .shiba)
+        XCTAssertEqual(state.intimacy, 50)
+        XCTAssertEqual(state.fullness, 80)
+        XCTAssertEqual(state.cleanliness, 80)
+        XCTAssertEqual(state.energy, 80)
+        XCTAssertEqual(state.level, 1)
     }
 
-    // MARK: - 狗狗外观测试
+    // MARK: - DogAppearance 生成测试
 
     func testDogAppearanceGeneration() {
         let appearance = DogAppearance.generated(for: .shiba)
 
-        // 外观应该有所有必要的颜色
-        XCTAssertNotNil(appearance.bodyColor)
-        XCTAssertNotNil(appearance.earColor)
-        XCTAssertNotNil(appearance.eyeColor)
+        // 外观属性应该是有效的 UInt 值
+        XCTAssertGreaterThan(appearance.primaryFurHex, 0)
+        XCTAssertGreaterThan(appearance.bodyColorHex, 0)
+        XCTAssertGreaterThan(appearance.earColorHex, 0)
     }
 
     func testDogAppearanceConsistency() {
-        // 同一种狗狗、同一个 seed 应该生成相同外观
-        let appearance1 = DogAppearance.generated(for: .shiba, seed: 12345)
-        let appearance2 = DogAppearance.generated(for: .shiba, seed: 12345)
+        // 同一个 seed 应该生成相同外观
+        let appearance1 = DogAppearance.generated(for: .shiba, seed: "test-seed-123")
+        let appearance2 = DogAppearance.generated(for: .shiba, seed: "test-seed-123")
 
-        XCTAssertEqual(appearance1.bodyColor, appearance2.bodyColor)
-        XCTAssertEqual(appearance1.earColor, appearance2.earColor)
-        XCTAssertEqual(appearance1.eyeColor, appearance2.eyeColor)
+        XCTAssertEqual(appearance1.primaryFurHex, appearance2.primaryFurHex)
+        XCTAssertEqual(appearance1.bodyColorHex, appearance2.bodyColorHex)
+        XCTAssertEqual(appearance1.earColorHex, appearance2.earColorHex)
     }
 
     func testDogAppearanceDifferentSeeds() {
         // 不同 seed 应该生成不同外观（大概率）
-        let appearance1 = DogAppearance.generated(for: .shiba, seed: 111)
-        let appearance2 = DogAppearance.generated(for: .shiba, seed: 222)
+        let appearance1 = DogAppearance.generated(for: .shiba, seed: "seed-aaa")
+        let appearance2 = DogAppearance.generated(for: .shiba, seed: "seed-bbb")
 
-        // 至少有一个颜色不同
-        let different = appearance1.bodyColor != appearance2.bodyColor ||
-                       appearance1.earColor != appearance2.earColor ||
-                       appearance1.eyeColor != appearance2.eyeColor
+        // 至少有一个颜色属性不同
+        let different = appearance1.primaryFurHex != appearance2.primaryFurHex ||
+                       appearance1.bodyColorHex != appearance2.bodyColorHex ||
+                       appearance1.earColorHex != appearance2.earColorHex
 
         XCTAssertTrue(different, "不同 seed 应该生成不同外观")
     }
 
-    // MARK: - 狗狗状态测试
+    // MARK: - DogPose 测试
 
-    func testDogStatusInitialization() {
-        let status = DogStatus()
-
-        XCTAssertEqual(status.affection, 50)
-        XCTAssertEqual(status.hunger, 50)
-        XCTAssertEqual(status.cleanliness, 50)
-        XCTAssertEqual(status.energy, 50)
-        XCTAssertEqual(status.mood, 50)
+    func testDogPoseCases() {
+        // 确保所有姿态都存在
+        let allPoses: [DogPose] = DogPose.allCases
+        XCTAssertGreaterThan(allPoses.count, 0)
+        XCTAssertTrue(allPoses.contains(.idle))
+        XCTAssertTrue(allPoses.contains(.happy))
+        XCTAssertTrue(allPoses.contains(.focused))
     }
 
-    func testDogStatusLevelUp() {
-        var status = DogStatus()
-        status.level = 1
-        status.experience = 90
-
-        // 升级应该重置经验值
-        status.experience += 20
-        if status.experience >= 100 {
-            status.level += 1
-            status.experience -= 100
-        }
-
-        XCTAssertEqual(status.level, 2)
-        XCTAssertEqual(status.experience, 10)
+    func testDogPoseCelebration() {
+        // 庆祝姿态应该有特定标记
+        let celebrationPoses = DogPose.allCases.filter { $0.isCelebration }
+        XCTAssertGreaterThan(celebrationPoses.count, 0)
     }
 
-    // MARK: - 品种特性测试
+    // MARK: - DogMood 测试
 
-    func testBreedProperties() {
-        let shiba = Dog.breed(.shiba).build()
-
-        // 柴犬应该有特定的性格描述
-        XCTAssertFalse(shiba.personality.isEmpty)
+    func testDogMoodCases() {
+        let allMoods: [DogMood] = DogMood.allCases
+        XCTAssertGreaterThan(allMoods.count, 0)
+        XCTAssertTrue(allMoods.contains(.neutral))
+        XCTAssertTrue(allMoods.contains(.happy))
+        XCTAssertTrue(allMoods.contains(.sad))
     }
 
-    func testCelebrationPoses() {
-        let dog = Dog.breed(.shiba).build()
+    // MARK: - DogBreed 测试
 
-        // 每个品种都应该有庆祝姿势
-        let pose = dog.celebrationPose()
-        XCTAssertNotNil(pose)
+    func testDogBreedAllCases() {
+        let breeds = DogBreed.allCases
+        XCTAssertEqual(breeds.count, 6)
+        XCTAssertTrue(breeds.contains(.shiba))
+        XCTAssertTrue(breeds.contains(.golden))
+        XCTAssertTrue(breeds.contains(.borderCollie))
+        XCTAssertTrue(breeds.contains(.native))
+        XCTAssertTrue(breeds.contains(.bulldog))
+        XCTAssertTrue(breeds.contains(.teddy))
     }
+
+    // MARK: - 鼓励文案测试
 
     func testEncouragementCopies() {
-        let dog = Dog.breed(.shiba).build()
+        let store = AppStore()
+        store.selectDog(.shiba)
 
         // 不同进度应该有不同鼓励语
-        let copy25 = dog.encouragementCopy(progress: 0.25)
-        let copy50 = dog.encouragementCopy(progress: 0.50)
-        let copy75 = dog.encouragementCopy(progress: 0.75)
+        let copy25 = store.encouragementCopy(progress: 0.25)
+        let copy50 = store.encouragementCopy(progress: 0.50)
+        let copy75 = store.encouragementCopy(progress: 0.75)
 
         XCTAssertFalse(copy25.isEmpty)
         XCTAssertFalse(copy50.isEmpty)
