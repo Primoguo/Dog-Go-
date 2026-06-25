@@ -405,6 +405,24 @@ final class AppStore: ObservableObject {
                 "recoveryDone": "门又打开了。",
                 "longBreak": "目标大了，咱就改小。"
             ][event] ?? "今天咱先做一点。"
+        case .bulldog:
+            return [
+                "pending": "慢慢来，不着急。",
+                "tap": "我在，稳住。",
+                "done": "好，又完成一个。",
+                "recovery": "没事，继续走。",
+                "recoveryDone": "回来了，很好。",
+                "longBreak": "目标太重就拆小步。"
+            ][event] ?? "慢慢来，不着急。"
+        case .teddy:
+            return [
+                "pending": "来玩个游戏吧！",
+                "tap": "你来了！好开心！",
+                "done": "太棒了！你做到了！",
+                "recovery": "没关系，我还在等你。",
+                "recoveryDone": "欢迎回来！继续加油！",
+                "longBreak": "累了就休息一下下。"
+            ][event] ?? "来玩个游戏吧！"
         }
     }
 
@@ -442,6 +460,10 @@ final class AppStore: ObservableObject {
             return ["spin", "dash", "spark"].randomElement() ?? "spin"
         case .native:
             return ["jump", "heart", "spark"].randomElement() ?? "jump"
+        case .bulldog:
+            return ["jump", "roll", "heart"].randomElement() ?? "jump"
+        case .teddy:
+            return ["spin", "jump", "dash"].randomElement() ?? "spin"
         }
     }
 
@@ -585,6 +607,22 @@ final class AppStore: ObservableObject {
             case 50: return "一半了，不着急。"
             case 75: return "快啦，再坚持一下。"
             case 90: return "就差一点了，加油！"
+            default: return ""
+            }
+        case .bulldog:
+            switch progress {
+            case 25: return "稳住了，继续。"
+            case 50: return "一半了，节奏很好。"
+            case 75: return "快到了，保持住。"
+            case 90: return "最后一点，稳住。"
+            default: return ""
+            }
+        case .teddy:
+            switch progress {
+            case 25: return "开始啦！好棒！"
+            case 50: return "一半了！继续继续！"
+            case 75: return "快完成啦！加油！"
+            case 90: return "就差一点点！冲呀！"
             default: return ""
             }
         }
