@@ -821,7 +821,7 @@ struct FocusModeView: View {
                     },
                     onRest: {
                         showRestReminder = false
-                        // TODO: 实现休息逻辑
+                        store.startRest()
                     }
                 )
             }
@@ -837,9 +837,18 @@ struct FocusModeView: View {
                     }
                 )
             }
+
+            // 休息模式覆盖层
+            if store.state.isResting {
+                RestModeView(
+                    onEndRest: {
+                        store.endRest()
+                    }
+                )
+            }
         }
         .onReceive(timer) { _ in
-            if store.state.actionSession.phase == .running {
+            if store.state.actionSession.phase == .running && !store.state.isResting {
                 store.tickActionTimer()
                 checkEncouragement()
                 checkRestReminder()
@@ -997,6 +1006,101 @@ struct RestReminderView: View {
             .clipShape(RoundedRectangle(cornerRadius: 16))
             .padding(.horizontal, 40)
         }
+    }
+}
+
+// MARK: - 休息模式视图
+
+struct RestModeView: View {
+    let onEndRest: () -> Void
+    @EnvironmentObject private var store: AppStore
+
+    private let restDuration = 5 * 60 // 5分钟
+    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+    var body: some View {
+        ZStack {
+            Color(hex: 0xF2F7EE).ignoresSafeArea()
+
+            VStack(spacing: 24) {
+                // 顶部标识
+                HStack {
+                    Image(systemName: "cup.and.saucer.fill")
+                        .font(.title2.weight(.bold))
+                        .foregroundStyle(Color(hex: 0x5D8B6A))
+                    Text("休息时间")
+                        .font(.title2.weight(.heavy))
+                        .foregroundStyle(Color(hex: 0x26382B))
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+
+                Spacer()
+
+                // 狗狗休息姿态
+                PixelDogSprite(
+                    breed: store.state.selectedDog,
+                    appearance: store.currentDogAppearance(),
+                    size: 180,
+                    pose: "resting"
+                )
+
+                // 休息提示
+                Text("站起来活动活动，喝口水吧！")
+                    .font(.headline)
+                    .foregroundStyle(Color(hex: 0x356247))
+
+                // 休息倒计时
+                VStack(spacing: 8) {
+                    Text(formattedTime(restRemainingTime))
+                        .font(.system(size: 56, weight: .heavy, design: .monospaced))
+                        .foregroundStyle(Color(hex: 0x26382B))
+
+                    // 进度条
+                    ProgressView(value: Double(restDuration - restRemainingTime), total: Double(restDuration))
+                        .tint(Color(hex: 0x5D8B6A))
+                        .frame(width: 200)
+                }
+
+                Spacer()
+
+                // 结束休息按钮
+                Button {
+                    onEndRest()
+                } label: {
+                    Text("结束休息，继续专注")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 32)
+                        .padding(.vertical, 12)
+                        .background(Color(hex: 0x5D8B6A))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+                .padding(.bottom, 30)
+            }
+        }
+        .onReceive(timer) { _ in
+            // 检查是否已经休息了5分钟
+            if let restStart = store.state.restStartTime {
+                let elapsed = Int(Date().timeIntervalSince(restStart))
+                if elapsed >= restDuration {
+                    onEndRest()
+                }
+            }
+        }
+    }
+
+    private var restRemainingTime: Int {
+        guard let restStart = store.state.restStartTime else { return restDuration }
+        let elapsed = Int(Date().timeIntervalSince(restStart))
+        return max(0, restDuration - elapsed)
+    }
+
+    private func formattedTime(_ seconds: Int) -> String {
+        let minutes = seconds / 60
+        let secs = seconds % 60
+        return String(format: "%02d:%02d", minutes, secs)
     }
 }
 

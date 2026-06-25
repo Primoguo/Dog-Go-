@@ -499,6 +499,20 @@ final class AppStore: ObservableObject {
         }
     }
 
+    func startRest() {
+        state.isResting = true
+        state.restStartTime = Date()
+        save()
+    }
+
+    func endRest() {
+        state.isResting = false
+        state.restStartTime = nil
+        // 重置鼓励进度，因为休息后继续专注
+        state.lastEncouragementProgress = 0
+        save()
+    }
+
     func completeFocusSession() {
         guard let startTime = state.focusStartTime else { return }
 

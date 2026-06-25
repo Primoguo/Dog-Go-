@@ -572,6 +572,8 @@ struct AppState: Codable {
     var isFocusMode: Bool
     var lastEncouragementProgress: Int
     var focusStartTime: Date?
+    var isResting: Bool
+    var restStartTime: Date?
 
     enum CodingKeys: String, CodingKey {
         case screen
@@ -594,6 +596,8 @@ struct AppState: Codable {
         case isFocusMode
         case lastEncouragementProgress
         case focusStartTime
+        case isResting
+        case restStartTime
     }
 
     init(
@@ -616,7 +620,9 @@ struct AppState: Codable {
         focusSessions: [FocusSession] = [],
         isFocusMode: Bool = false,
         lastEncouragementProgress: Int = 0,
-        focusStartTime: Date? = nil
+        focusStartTime: Date? = nil,
+        isResting: Bool = false,
+        restStartTime: Date? = nil
     ) {
         self.screen = screen
         self.selectedDog = selectedDog
@@ -638,6 +644,8 @@ struct AppState: Codable {
         self.isFocusMode = isFocusMode
         self.lastEncouragementProgress = lastEncouragementProgress
         self.focusStartTime = focusStartTime
+        self.isResting = isResting
+        self.restStartTime = restStartTime
     }
 
     init(from decoder: Decoder) throws {
@@ -664,6 +672,8 @@ struct AppState: Codable {
         isFocusMode = try container.decodeIfPresent(Bool.self, forKey: .isFocusMode) ?? false
         lastEncouragementProgress = try container.decodeIfPresent(Int.self, forKey: .lastEncouragementProgress) ?? 0
         focusStartTime = try container.decodeIfPresent(Date.self, forKey: .focusStartTime)
+        isResting = try container.decodeIfPresent(Bool.self, forKey: .isResting) ?? false
+        restStartTime = try container.decodeIfPresent(Date.self, forKey: .restStartTime)
     }
 
     static let initial = AppState(
