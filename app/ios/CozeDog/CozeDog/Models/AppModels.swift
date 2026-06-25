@@ -399,6 +399,22 @@ enum DogMood: String, Codable, CaseIterable {
         if recentCheckIns >= 1 { return .neutral }
         return .sad
     }
+
+    // MARK: - 心情对移动的影响因子
+    var movementModifiers: (wanderMultiplier: Double, pauseMultiplier: Double, speedMultiplier: Double, jumpProbability: Double) {
+        switch self {
+        case .sad:
+            return (wanderMultiplier: 0.3, pauseMultiplier: 2.0, speedMultiplier: 0.5, jumpProbability: 0.0)
+        case .neutral:
+            return (wanderMultiplier: 0.6, pauseMultiplier: 1.5, speedMultiplier: 0.7, jumpProbability: 0.05)
+        case .happy:
+            return (wanderMultiplier: 1.0, pauseMultiplier: 1.0, speedMultiplier: 1.0, jumpProbability: 0.1)
+        case .excited:
+            return (wanderMultiplier: 1.4, pauseMultiplier: 0.7, speedMultiplier: 1.3, jumpProbability: 0.2)
+        case .ecstatic:
+            return (wanderMultiplier: 1.8, pauseMultiplier: 0.5, speedMultiplier: 1.5, jumpProbability: 0.35)
+        }
+    }
 }
 
 struct DogDiaryEntry: Codable, Identifiable {

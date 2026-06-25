@@ -8,6 +8,8 @@ struct DogWorldScene: View {
     @State private var showsSceneSelector = false
     @State private var dragOffset: CGSize = .zero
     @State private var isDragging: Bool = false
+    @State private var isJumping: Bool = false
+    @State private var isWaggingTail: Bool = false
 
     var body: some View {
         GeometryReader { proxy in
@@ -41,6 +43,24 @@ struct DogWorldScene: View {
                 Button {
                     showsDogStatus = true
                     store.speechMode = "tap"
+
+                    // 点击时的跳跃和摇尾巴动画
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
+                        isJumping = true
+                        isWaggingTail = true
+                    }
+
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                            isJumping = false
+                        }
+                    }
+
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        withAnimation {
+                            isWaggingTail = false
+                        }
+                    }
                 } label: {
                     ZStack {
                         if showsDogStatus {
@@ -63,6 +83,8 @@ struct DogWorldScene: View {
                             pose: store.state.dogState.pose,
                             evolution: store.state.dogEvolution
                         )
+                        .offset(y: isJumping ? -dogSize * 0.3 : 0)
+                        .scaleEffect(y: isJumping ? 1.1 : 1.0, x: isJumping ? 0.95 : 1.0)
 
                         // Companion dog
                         if let companionId = store.state.activeCompanionId,
@@ -156,8 +178,8 @@ struct DogWorldScene: View {
                 showsDogStatus = false
             }
             .animation(.spring(response: 0.35, dampingFraction: 0.8), value: showsDogStatus)
-            .animation(.easeInOut(duration: 1.2), value: wanderOffset)
-            .animation(.easeInOut(duration: 0.35), value: activityIndex)
+            .animation(.spring(response: 0.8, dampingFraction: 0.7), value: wanderOffset)
+            .animation(.spring(response: 0.35, dampingFraction: 0.7), value: activityIndex)
             .animation(.spring(response: 0.6, dampingFraction: 0.5), value: dragOffset)
             .task(id: dogWorldTaskID) {
                 await runDogWorldLoop(width: width, height: height)
@@ -202,6 +224,9 @@ struct DogWorldScene: View {
     @MainActor
     private func runDogWorldLoop(width: CGFloat, height: CGFloat) async {
         let config = store.state.sceneSettings.currentScene.movementConfig
+        let mood = store.state.dogMood
+        let moodModifiers = mood.movementModifiers
+        let placedItems = store.state.sceneSettings.placedItems
 
         while !Task.isCancelled {
             // 拖动时暂停漫游
@@ -210,24 +235,54 @@ struct DogWorldScene: View {
                 continue
             }
 
-            let maxX = width * config.wanderRange.width
-            let maxY = height * config.wanderRange.height
+            // 应用心情影响因子
+            let baseMaxX = width * config.wanderRange.width
+            let baseMaxY = height * config.wanderRange.height
+            let maxX = baseMaxX * moodModifiers.wanderMultiplier
+            let maxY = baseMaxY * moodModifiers.wanderMultiplier
+
             activityIndex = Int.random(in: 0...2)
+
+            // 根据心情决定是否跳跃（ecstatic/excited 心情会跳跃）
+            let shouldJump = Double.random(in: 0...1) < moodModifiers.jumpProbability
+
+            // 30% 概率主动靠近互动元素（如果有互动元素且心情不是 sad）
+            let shouldApproachItem = !placedItems.isEmpty && mood != .sad && Double.random(in: 0...1) < 0.3
 
             if isRecovery || isIdleCompleted {
                 wanderOffset = CGSize(
                     width: CGFloat.random(in: -maxX * 0.3...maxX * 0.3),
                     height: CGFloat.random(in: -maxY * 0.3...maxY * 0.3)
                 )
-            } else {
+            } else if shouldApproachItem, let targetItem = placedItems.randomElement() {
+                // 主动靠近互动元素
+                let dogBasePos = dogMapPosition(width: width, height: height)
+                let dx = targetItem.position.x - dogBasePos.x
+                let dy = targetItem.position.y - dogBasePos.y
+                // 移动到元素附近（保留一点距离）
                 wanderOffset = CGSize(
-                    width: CGFloat.random(in: -maxX...maxX),
-                    height: CGFloat.random(in: -maxY...maxY)
+                    width: dx * 0.6,
+                    height: dy * 0.6
+                )
+            } else if shouldJump {
+                // 跳跃式移动：更大的偏移
+                wanderOffset = CGSize(
+                    width: CGFloat.random(in: -maxX * 1.5...maxX * 1.5),
+                    height: CGFloat.random(in: -maxY * 1.5...maxY * 1.5)
+                )
+            } else {
+                // 正常移动：速度变化（慢走 → 快跑 → 停下）
+                let speedVariation = Double.random(in: 0.5...1.5)
+                wanderOffset = CGSize(
+                    width: CGFloat.random(in: -maxX * speedVariation...maxX * speedVariation),
+                    height: CGFloat.random(in: -maxY * speedVariation...maxY * speedVariation)
                 )
             }
 
-            // 使用配置的停顿时间范围
-            let pauseDuration = Double.random(in: config.pauseRange)
+            // 使用配置的停顿时间范围，应用心情影响
+            let basePauseDuration = Double.random(in: config.pauseRange)
+            let pauseDuration = basePauseDuration * moodModifiers.pauseMultiplier
+
             try? await Task.sleep(nanoseconds: UInt64(pauseDuration * 1_000_000_000))
         }
     }
