@@ -7,6 +7,7 @@ struct DogWorldScene: View {
     @State private var wanderOffset = CGSize.zero
     @State private var showsSceneSelector = false
     @State private var showsTaskSuggestion = false
+    @State private var showsCalendar = false
     @State private var dragOffset: CGSize = .zero
     @State private var isDragging: Bool = false
     @State private var isJumping: Bool = false
@@ -165,6 +166,10 @@ struct DogWorldScene: View {
                 TaskSuggestionButton(isPresented: $showsTaskSuggestion)
                     .position(x: width * 0.1, y: height * 0.1)
 
+                // 习惯日历按钮
+                HabitCalendarButton(isPresented: $showsCalendar)
+                    .position(x: width * 0.1, y: height * 0.22)
+
                 // 场景选择器
                 if showsSceneSelector {
                     SceneSelectorView(isPresented: $showsSceneSelector)
@@ -175,6 +180,13 @@ struct DogWorldScene: View {
                 // 任务建议弹窗
                 if showsTaskSuggestion {
                     TaskSuggestionView(isPresented: $showsTaskSuggestion)
+                        .transition(.opacity)
+                        .zIndex(100)
+                }
+
+                // 习惯日历弹窗
+                if showsCalendar {
+                    HabitCalendarView(isPresented: $showsCalendar)
                         .transition(.opacity)
                         .zIndex(100)
                 }

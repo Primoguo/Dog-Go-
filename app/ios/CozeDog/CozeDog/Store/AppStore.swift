@@ -302,6 +302,8 @@ final class AppStore: ObservableObject {
             }
             // 检测进化
             checkEvolution()
+            // 检测成就解锁
+            checkAndUnlockAchievements()
         }
 
         // 更新心情
@@ -1023,5 +1025,302 @@ final class AppStore: ObservableObject {
         }
 
         return streak
+    }
+
+    // MARK: - 习惯追踪日历系统
+
+    /// 聚合所有打卡记录（从现有数据源）
+    func aggregateCheckInRecords() -> [CheckInRecord] {
+        var records: [CheckInRecord] = []
+
+        // 1. 聚合主打卡记录（从 checkIns 数组）
+        for checkIn in state.checkIns {
+            records.append(CheckInRecord(
+                date: checkIn.date,
+                type: .mainCheckIn,
+                goalType: checkIn.goal?.type
+            ))
+        }
+
+        // 2. 聚合专注记录
+        for session in state.focusSessions {
+            records.append(CheckInRecord(
+                date: session.startTime,
+                type: .focusSession,
+                goalType: session.plan.goalType,
+                duration: session.duration
+            ))
+        }
+
+        // 3. 聚合任务完成记录
+        for entry in state.taskHistory where entry.completed {
+            if let completedDate = entry.completedDate {
+                records.append(CheckInRecord(
+                    date: completedDate,
+                    type: .taskCompletion,
+                    goalType: entry.goalType
+                ))
+            }
+        }
+
+        // 按日期排序（最新在前）
+        return records.sorted { $0.date > $1.date }
+    }
+
+    /// 获取指定日期的打卡记录
+    func getCheckIns(for date: Date) -> [CheckInRecord] {
+        let records = aggregateCheckInRecords()
+        return records.filter { Calendar.current.isDate($0.date, inSameDayAs: date) }
+    }
+
+    /// 检查指定日期是否有打卡
+    func hasCheckIn(on date: Date) -> Bool {
+        return !getCheckIns(for: date).isEmpty
+    }
+
+    /// 计算当前连续打卡天数
+    func calculateCurrentStreak() -> Int {
+        let calendar = Calendar.current
+        var streak = 0
+        var currentDate = Date()
+
+        // 如果今天没有打卡，从昨天开始计算
+        if !hasCheckIn(on: currentDate) {
+            guard let yesterday = calendar.date(byAdding: .day, value: -1, to: currentDate) else {
+                return 0
+            }
+            if !hasCheckIn(on: yesterday) {
+                return 0 // 昨天也没打卡
+            }
+            currentDate = yesterday
+        }
+
+        // 向前回溯计算连续天数
+        for _ in 0..<365 { // 最多回溯一年
+            if hasCheckIn(on: currentDate) {
+                streak += 1
+                guard let previousDate = calendar.date(byAdding: .day, value: -1, to: currentDate) else {
+                    break
+                }
+                currentDate = previousDate
+            } else {
+                break
+            }
+        }
+
+        return streak
+    }
+
+    /// 计算历史最长连续打卡天数
+    func calculateLongestStreak() -> Int {
+        let calendar = Calendar.current
+        let records = aggregateCheckInRecords()
+
+        // 获取所有有打卡的日期（去重）
+        var uniqueDates: Set<Date> = []
+        for record in records {
+            let startOfDay = calendar.startOfDay(for: record.date)
+            uniqueDates.insert(startOfDay)
+        }
+
+        let sortedDates = uniqueDates.sorted()
+        guard !sortedDates.isEmpty else { return 0 }
+
+        var longestStreak = 1
+        var currentStreak = 1
+
+        for i in 1..<sortedDates.count {
+            let previousDate = sortedDates[i - 1]
+            let currentDate = sortedDates[i]
+
+            // 检查是否连续（相差1天）
+            if let expectedDate = calendar.date(byAdding: .day, value: 1, to: previousDate),
+               calendar.isDate(expectedDate, inSameDayAs: currentDate) {
+                currentStreak += 1
+                longestStreak = max(longestStreak, currentStreak)
+            } else {
+                currentStreak = 1
+            }
+        }
+
+        return longestStreak
+    }
+
+    /// 计算指定月份的完成率
+    func calculateMonthlyCompletionRate(for month: Date = Date()) -> Double {
+        let calendar = Calendar.current
+
+        // 获取月份的起止日期
+        guard let monthInterval = calendar.dateInterval(of: .month, for: month) else {
+            return 0
+        }
+
+        let startDate = monthInterval.start
+        let endDate = monthInterval.end
+
+        // 计算月份的天数
+        guard let daysInMonth = calendar.range(of: .day, in: .month, for: month)?.count else {
+            return 0
+        }
+
+        // 如果是当前月份，只计算到今天
+        let lastDay = calendar.isDateInToday(month) || month > Date()
+            ? calendar.component(.day, from: Date())
+            : daysInMonth
+
+        // 统计有打卡的天数
+        var checkInDays: Set<Date> = []
+        let records = aggregateCheckInRecords()
+
+        for record in records {
+            let recordDate = record.date
+            if recordDate >= startDate && recordDate < endDate {
+                let startOfDay = calendar.startOfDay(for: recordDate)
+                checkInDays.insert(startOfDay)
+            }
+        }
+
+        let checkInCount = checkInDays.count
+        return Double(checkInCount) / Double(lastDay)
+    }
+
+    /// 获取指定月份的打卡天数
+    func getMonthlyCheckInCount(for month: Date = Date()) -> Int {
+        let calendar = Calendar.current
+        guard let monthInterval = calendar.dateInterval(of: .month, for: month) else {
+            return 0
+        }
+
+        let records = aggregateCheckInRecords()
+        var checkInDays: Set<Date> = []
+
+        for record in records {
+            if record.date >= monthInterval.start && record.date < monthInterval.end {
+                let startOfDay = calendar.startOfDay(for: record.date)
+                checkInDays.insert(startOfDay)
+            }
+        }
+
+        return checkInDays.count
+    }
+
+    /// 检查并解锁成就
+    func checkAndUnlockAchievements() {
+        let currentStreak = calculateCurrentStreak()
+        let longestStreak = calculateLongestStreak()
+        let monthlyRate = calculateMonthlyCompletionRate()
+        let totalFocusMinutes = state.totalFocusMinutes
+        let completedTasks = state.taskHistory.filter { $0.completed }.count
+
+        // 检查连续打卡成就
+        let streakAchievements: [(Int, AchievementType)] = [
+            (7, .streak7),
+            (30, .streak30),
+            (100, .streak100),
+            (365, .streak365)
+        ]
+
+        for (threshold, type) in streakAchievements {
+            if (currentStreak >= threshold || longestStreak >= threshold) && !hasAchievement(type) {
+                unlockAchievement(type)
+            }
+        }
+
+        // 检查完美月份
+        if monthlyRate >= 1.0 && !hasAchievement(.monthlyPerfect) {
+            unlockAchievement(.monthlyPerfect)
+        }
+
+        // 检查专注成就
+        if state.focusSessionsCount > 0 && !hasAchievement(.firstFocus) {
+            unlockAchievement(.firstFocus)
+        }
+
+        if totalFocusMinutes >= 6000 && !hasAchievement(.focusMaster) {
+            unlockAchievement(.focusMaster)
+        }
+
+        // 检查任务成就
+        if completedTasks >= 50 && !hasAchievement(.taskChampion) {
+            unlockAchievement(.taskChampion)
+        }
+
+        save()
+    }
+
+    /// 检查是否已获得某成就
+    func hasAchievement(_ type: AchievementType) -> Bool {
+        return state.achievements.contains { $0.type == type }
+    }
+
+    /// 解锁成就
+    private func unlockAchievement(_ type: AchievementType) {
+        let achievement = Achievement(type: type)
+        state.achievements.append(achievement)
+    }
+
+    /// 生成月度报告
+    func generateMonthlyReport(for month: Date = Date()) -> MonthlyReport {
+        let calendar = Calendar.current
+        let checkInCount = getMonthlyCheckInCount(for: month)
+        let completionRate = calculateMonthlyCompletionRate(for: month)
+        let longestStreak = calculateLongestStreak()
+
+        // 统计该月专注时长
+        let monthInterval = calendar.dateInterval(of: .month, for: month)
+        let focusMinutes = state.focusSessions
+            .filter { session in
+                if let interval = monthInterval {
+                    return session.startTime >= interval.start && session.startTime < interval.end
+                }
+                return false
+            }
+            .reduce(0) { $0 + $1.duration }
+
+        // 统计最多的目标类型
+        let records = aggregateCheckInRecords()
+        let monthRecords = records.filter { record in
+            if let interval = monthInterval {
+                return record.date >= interval.start && record.date < interval.end
+            }
+            return false
+        }
+
+        let goalTypeCounts = Dictionary(grouping: monthRecords.filter { $0.goalType != nil }, by: { $0.goalType! })
+        let topGoalType = goalTypeCounts.max(by: { $0.value.count < $1.value.count })?.key
+
+        return MonthlyReport(
+            month: month,
+            totalCheckIns: checkInCount,
+            completionRate: completionRate,
+            longestStreak: longestStreak,
+            totalFocusMinutes: focusMinutes,
+            topGoalType: topGoalType
+        )
+    }
+
+    /// 获取断签恢复激励文案
+    func getStreakRecoveryMessage() -> String {
+        let calendar = Calendar.current
+        let lastCheckInDate = aggregateCheckInRecords().first?.date
+
+        guard let lastDate = lastCheckInDate else {
+            return "开始你的第一天吧！每一步都很重要 💪"
+        }
+
+        let daysSinceLastCheckIn = calendar.dateComponents([.day], from: lastDate, to: Date()).day ?? 0
+
+        switch daysSinceLastCheckIn {
+        case 0:
+            return "今天已经打卡了，继续保持！🔥"
+        case 1:
+            return "坚持就是胜利，继续加油！💪"
+        case 2...3:
+            return "重新开始，继续前进！每段旅程都有暂停 ✨"
+        case 4...7:
+            return "欢迎回来！今天的你比昨天更强 🌟"
+        default:
+            return "每段旅程都有暂停，重要的是重新出发 🌈"
+        }
     }
 }

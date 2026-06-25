@@ -1034,6 +1034,10 @@ struct AppState: Codable {
     var taskHistory: [TaskHistoryEntry]
     var lastTaskRecommendationDate: Date?
 
+    // 习惯追踪日历系统
+    var achievements: [Achievement]
+    var monthlyReports: [MonthlyReport]
+
     enum CodingKeys: String, CodingKey {
         case screen
         case selectedDog
@@ -1065,6 +1069,8 @@ struct AppState: Codable {
         case customTasks
         case taskHistory
         case lastTaskRecommendationDate
+        case achievements
+        case monthlyReports
     }
 
     init(
@@ -1097,7 +1103,9 @@ struct AppState: Codable {
         sceneSettings: SceneSettings = .default,
         customTasks: [CustomTask] = [],
         taskHistory: [TaskHistoryEntry] = [],
-        lastTaskRecommendationDate: Date? = nil
+        lastTaskRecommendationDate: Date? = nil,
+        achievements: [Achievement] = [],
+        monthlyReports: [MonthlyReport] = []
     ) {
         self.screen = screen
         self.selectedDog = selectedDog
@@ -1129,6 +1137,8 @@ struct AppState: Codable {
         self.customTasks = customTasks
         self.taskHistory = taskHistory
         self.lastTaskRecommendationDate = lastTaskRecommendationDate
+        self.achievements = achievements
+        self.monthlyReports = monthlyReports
     }
 
     init(from decoder: Decoder) throws {
@@ -1171,6 +1181,10 @@ struct AppState: Codable {
         customTasks = try container.decodeIfPresent([CustomTask].self, forKey: .customTasks) ?? []
         taskHistory = try container.decodeIfPresent([TaskHistoryEntry].self, forKey: .taskHistory) ?? []
         lastTaskRecommendationDate = try container.decodeIfPresent(Date.self, forKey: .lastTaskRecommendationDate)
+
+        // 习惯追踪日历系统字段（向后兼容）
+        achievements = try container.decodeIfPresent([Achievement].self, forKey: .achievements) ?? []
+        monthlyReports = try container.decodeIfPresent([MonthlyReport].self, forKey: .monthlyReports) ?? []
     }
 
     static let initial = AppState(
@@ -1373,6 +1387,130 @@ struct PresetTaskLibrary {
     /// 所有预设任务
     static var allTasks: [TaskTemplate] {
         fitnessTasks + studyTasks + sleepTasks
+    }
+}
+
+// MARK: - Habit Tracking Calendar
+
+/// 打卡类型
+enum CheckInType: String, Codable {
+    case mainCheckIn      // 主打卡
+    case focusSession     // 专注
+    case taskCompletion   // 任务完成
+}
+
+/// 打卡记录（用于日历聚合）
+struct CheckInRecord: Codable, Identifiable {
+    let id: UUID
+    let date: Date
+    let type: CheckInType
+    let goalType: GoalType?
+    let duration: Int?  // 时长（分钟）
+
+    init(id: UUID = UUID(), date: Date, type: CheckInType, goalType: GoalType? = nil, duration: Int? = nil) {
+        self.id = id
+        self.date = date
+        self.type = type
+        self.goalType = goalType
+        self.duration = duration
+    }
+}
+
+/// 成就类型
+enum AchievementType: String, Codable, CaseIterable {
+    case streak7 = "7天连续"
+    case streak30 = "30天连续"
+    case streak100 = "100天连续"
+    case streak365 = "365天连续"
+    case monthlyPerfect = "完美月份"
+    case firstFocus = "首次专注"
+    case focusMaster = "专注达人"
+    case taskChampion = "任务冠军"
+
+    var title: String {
+        switch self {
+        case .streak7: return "一周坚持"
+        case .streak30: return "月度达人"
+        case .streak100: return "百日挑战"
+        case .streak365: return "年度传奇"
+        case .monthlyPerfect: return "完美月份"
+        case .firstFocus: return "初次专注"
+        case .focusMaster: return "专注大师"
+        case .taskChampion: return "任务王者"
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .streak7: return "连续打卡 7 天"
+        case .streak30: return "连续打卡 30 天"
+        case .streak100: return "连续打卡 100 天"
+        case .streak365: return "连续打卡 365 天"
+        case .monthlyPerfect: return "单月 100% 完成率"
+        case .firstFocus: return "完成首次专注"
+        case .focusMaster: return "累计专注 100 小时"
+        case .taskChampion: return "完成 50 个任务"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .streak7: return "flame.fill"
+        case .streak30: return "star.fill"
+        case .streak100: return "trophy.fill"
+        case .streak365: return "crown.fill"
+        case .monthlyPerfect: return "checkmark.seal.fill"
+        case .firstFocus: return "timer"
+        case .focusMaster: return "brain.head.profile"
+        case .taskChampion: return "list.bullet.clipboard.fill"
+        }
+    }
+
+    var threshold: Int {
+        switch self {
+        case .streak7: return 7
+        case .streak30: return 30
+        case .streak100: return 100
+        case .streak365: return 365
+        case .monthlyPerfect: return 100  // 100% 完成率
+        case .firstFocus: return 1
+        case .focusMaster: return 6000  // 100小时 = 6000分钟
+        case .taskChampion: return 50
+        }
+    }
+}
+
+/// 成就徽章
+struct Achievement: Codable, Identifiable {
+    let id: UUID
+    let type: AchievementType
+    let earnedDate: Date
+
+    init(id: UUID = UUID(), type: AchievementType, earnedDate: Date = Date()) {
+        self.id = id
+        self.type = type
+        self.earnedDate = earnedDate
+    }
+}
+
+/// 月度报告
+struct MonthlyReport: Codable, Identifiable {
+    let id: UUID
+    let month: Date
+    let totalCheckIns: Int
+    let completionRate: Double
+    let longestStreak: Int
+    let totalFocusMinutes: Int
+    let topGoalType: GoalType?
+
+    init(id: UUID = UUID(), month: Date, totalCheckIns: Int, completionRate: Double, longestStreak: Int, totalFocusMinutes: Int, topGoalType: GoalType? = nil) {
+        self.id = id
+        self.month = month
+        self.totalCheckIns = totalCheckIns
+        self.completionRate = completionRate
+        self.longestStreak = longestStreak
+        self.totalFocusMinutes = totalFocusMinutes
+        self.topGoalType = topGoalType
     }
 }
 
