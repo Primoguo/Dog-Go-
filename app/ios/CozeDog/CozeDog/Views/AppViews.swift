@@ -1039,12 +1039,14 @@ struct DogHomeView: View {
 
 struct FocusModeView: View {
     @EnvironmentObject private var store: AppStore
+    @Environment(\.scenePhase) private var scenePhase
     @State private var showEncouragement = false
     @State private var encouragementText = ""
     @State private var showRestReminder = false
     @State private var restReminderDismissedForSession = false
     @State private var showAbandonConfirm = false
     @State private var encouragementDismissTask: Task<Void, Never>?
+    @State private var isTimerActive = true
 
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -1160,6 +1162,7 @@ struct FocusModeView: View {
             }
         }
         .onReceive(timer) { _ in
+            guard isTimerActive else { return }
             if store.state.actionSession.phase == .running && !store.state.isResting {
                 store.tickActionTimer()
                 // 休息提醒（番茄时间：25分钟）
@@ -1168,6 +1171,10 @@ struct FocusModeView: View {
                     showRestReminder = true
                 }
             }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            // 进入后台时暂停 timer，回到前台时恢复
+            isTimerActive = (newPhase == .active)
         }
         .onChange(of: store.state.actionSession.phase) { oldPhase, newPhase in
             // 新会话开始时重置休息提醒状态
@@ -1310,6 +1317,8 @@ struct RestReminderView: View {
 struct RestModeView: View {
     let onEndRest: () -> Void
     @EnvironmentObject private var store: AppStore
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var isTimerActive = true
 
     private let restDuration = 5 * 60 // 5分钟
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -1376,6 +1385,7 @@ struct RestModeView: View {
             }
         }
         .onReceive(timer) { _ in
+            guard isTimerActive else { return }
             // 检查是否已经休息了5分钟
             if let restStart = store.state.restStartTime {
                 let elapsed = Int(Date().timeIntervalSince(restStart))
@@ -1383,6 +1393,9 @@ struct RestModeView: View {
                     onEndRest()
                 }
             }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            isTimerActive = (newPhase == .active)
         }
     }
 

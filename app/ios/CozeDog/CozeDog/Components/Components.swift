@@ -433,23 +433,22 @@ struct DogWorldScene: View {
 
 struct PixelGridBackground: View {
     var body: some View {
-        GeometryReader { proxy in
-            let tile = max(18, proxy.size.width / 15)
-            let columns = Int(ceil(proxy.size.width / tile))
-            let rows = Int(ceil(proxy.size.height / tile))
+        Canvas { context, size in
+            let tile = max(18, size.width / 15)
+            let columns = Int(ceil(size.width / tile))
+            let rows = Int(ceil(size.height / tile))
+            let colorA = Color(hex: 0xD8EBC1)
+            let colorB = Color(hex: 0xC6DBA9)
 
-            ZStack(alignment: .topLeading) {
-                Color(hex: 0xCFE4B5)
-                ForEach(0..<rows, id: \.self) { row in
-                    ForEach(0..<columns, id: \.self) { column in
-                        Rectangle()
-                            .fill((row + column).isMultiple(of: 2) ? Color(hex: 0xD8EBC1) : Color(hex: 0xC6DBA9))
-                            .frame(width: tile, height: tile)
-                            .position(x: CGFloat(column) * tile + tile / 2, y: CGFloat(row) * tile + tile / 2)
-                    }
+            for row in 0..<rows {
+                for column in 0..<columns {
+                    let rect = CGRect(x: CGFloat(column) * tile, y: CGFloat(row) * tile, width: tile, height: tile)
+                    let color = (row + column).isMultiple(of: 2) ? colorA : colorB
+                    context.fill(Path(rect), with: .color(color))
                 }
             }
         }
+        .background(Color(hex: 0xCFE4B5))
     }
 }
 
@@ -1704,18 +1703,15 @@ struct PixelTinyGrid: View {
     var tile: CGFloat = 10
 
     var body: some View {
-        GeometryReader { proxy in
-            let columns = Int(ceil(proxy.size.width / tile))
-            let rows = Int(ceil(proxy.size.height / tile))
+        Canvas { context, size in
+            let columns = Int(ceil(size.width / tile))
+            let rows = Int(ceil(size.height / tile))
 
-            ZStack(alignment: .topLeading) {
-                ForEach(0..<rows, id: \.self) { row in
-                    ForEach(0..<columns, id: \.self) { column in
-                        Rectangle()
-                            .fill((row + column).isMultiple(of: 2) ? colorA : colorB)
-                            .frame(width: tile, height: tile)
-                            .position(x: CGFloat(column) * tile + tile / 2, y: CGFloat(row) * tile + tile / 2)
-                    }
+            for row in 0..<rows {
+                for column in 0..<columns {
+                    let rect = CGRect(x: CGFloat(column) * tile, y: CGFloat(row) * tile, width: tile, height: tile)
+                    let color = (row + column).isMultiple(of: 2) ? colorA : colorB
+                    context.fill(Path(rect), with: .color(color))
                 }
             }
         }
@@ -1756,6 +1752,8 @@ struct TodayActionPanel: View {
     let completeAction: () -> Void
     let enterFocusModeAction: () -> Void
     let smallGoalAction: () -> Void
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var isTimerActive = true
 
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -1854,9 +1852,13 @@ struct TodayActionPanel: View {
         }
         .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 4, y: 4)
         .onReceive(timer) { _ in
+            guard isTimerActive else { return }
             if actionSession.phase == .running {
                 tickTimerAction()
             }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            isTimerActive = (newPhase == .active)
         }
     }
 

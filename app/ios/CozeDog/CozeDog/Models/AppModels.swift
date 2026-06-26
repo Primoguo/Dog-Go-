@@ -1215,6 +1215,9 @@ struct AppState: Codable {
     var achievements: [Achievement]
     var monthlyReports: [MonthlyReport]
 
+    /// 数据模型版本号，用于 UserDefaults 数据迁移
+    var schemaVersion: Int
+
     enum CodingKeys: String, CodingKey {
         case screen
         case selectedDog
@@ -1248,6 +1251,7 @@ struct AppState: Codable {
         case lastTaskRecommendationDate
         case achievements
         case monthlyReports
+        case schemaVersion
     }
 
     init(
@@ -1282,7 +1286,8 @@ struct AppState: Codable {
         taskHistory: [TaskHistoryEntry] = [],
         lastTaskRecommendationDate: Date? = nil,
         achievements: [Achievement] = [],
-        monthlyReports: [MonthlyReport] = []
+        monthlyReports: [MonthlyReport] = [],
+        schemaVersion: Int = 2
     ) {
         self.screen = screen
         self.selectedDog = selectedDog
@@ -1316,6 +1321,7 @@ struct AppState: Codable {
         self.lastTaskRecommendationDate = lastTaskRecommendationDate
         self.achievements = achievements
         self.monthlyReports = monthlyReports
+        self.schemaVersion = schemaVersion
     }
 
     init(from decoder: Decoder) throws {
@@ -1362,6 +1368,9 @@ struct AppState: Codable {
         // 习惯追踪日历系统字段（向后兼容）
         achievements = try container.decodeIfPresent([Achievement].self, forKey: .achievements) ?? []
         monthlyReports = try container.decodeIfPresent([MonthlyReport].self, forKey: .monthlyReports) ?? []
+
+        // 数据版本号（向后兼容：旧数据无此字段，默认为 1）
+        schemaVersion = try container.decodeIfPresent(Int.self, forKey: .schemaVersion) ?? 1
     }
 
     static let initial = AppState(

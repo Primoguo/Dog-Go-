@@ -14,11 +14,16 @@ final class AppStore: ObservableObject {
 
     private let key = "zilvgou.appState.v1"
 
+    /// 当前数据模型版本号，修改 AppState 字段时递增
+    private static let currentSchemaVersion = 2
+
     init() {
         if let data = UserDefaults.standard.data(forKey: key) {
             do {
                 let decoded = try JSONDecoder().decode(AppState.self, from: data)
                 state = decoded
+                // 数据迁移：按版本号逐步升级
+                migrateIfNeeded()
                 if state.goal == nil, state.screen != .adopt {
                     state.screen = .createGoal
                 }
@@ -41,6 +46,26 @@ final class AppStore: ObservableObject {
         checkStreakOnLaunch()
         // 每日属性衰减
         applyDailyDecay()
+    }
+
+    /// 数据迁移：检查 schemaVersion，按需执行迁移步骤
+    private func migrateIfNeeded() {
+        var migrated = false
+
+        // v1 → v2: 初始迁移（schemaVersion 字段本身是新增的，旧数据默认为 1）
+        if state.schemaVersion < 2 {
+            // v2 无需额外字段变更，仅标记版本号
+            migrated = true
+        }
+
+        // 未来迁移在此追加：
+        // if state.schemaVersion < 3 { ... migrated = true }
+
+        if migrated {
+            state.schemaVersion = Self.currentSchemaVersion
+            save()
+            os_log("数据迁移完成，版本: %d", log: .default, type: .info, Self.currentSchemaVersion)
+        }
     }
 
     /// 启动时检查上次打卡日期，自动标记断签状态
