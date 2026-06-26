@@ -1212,39 +1212,6 @@ struct SnowFlake: Identifiable {
 
 // MARK: - 辅助视图
 
-struct PixelTriangle: View {
-    let color: UInt
-    let size: CGFloat
-
-    var body: some View {
-        Triangle()
-            .fill(Color(hex: color))
-            .frame(width: size, height: size)
-    }
-}
-
-struct Triangle: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.midX, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        path.closeSubpath()
-        return path
-    }
-}
-
-struct ScenePathStrip: View {
-    let color: UInt
-    let width: CGFloat
-
-    var body: some View {
-        Rectangle()
-            .fill(Color(hex: color))
-            .frame(width: width, height: 20)
-    }
-}
-
 /// 等距花朵：可见花茎
 struct PixelFlowerView: View {
     let color: UInt
