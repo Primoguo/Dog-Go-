@@ -227,7 +227,7 @@ struct HabitCalendarView: View {
 
             // 日历网格
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 7), spacing: 4) {
-                ForEach(generateCalendarDays(), id: \.self) { date in
+                ForEach(Array(generateCalendarDays().enumerated()), id: \.offset) { _, date in
                     if let date = date {
                         CalendarDayCell(
                             date: date,

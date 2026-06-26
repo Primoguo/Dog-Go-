@@ -920,6 +920,7 @@ struct DogHomeView: View {
                                             store.setScene(scene)
                                         }
                                     }
+                                    .accessibilityLabel("\(scene.displayName)\(isSceneUnlocked(scene) ? "" : "（未解锁）")")
                                 }
                             }
                         }
@@ -971,6 +972,7 @@ struct DogHomeView: View {
                                     .onTapGesture {
                                         selectedItem = item
                                     }
+                                    .accessibilityLabel("使用\(item.label)")
                                 }
                             }
                         }

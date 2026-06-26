@@ -173,6 +173,8 @@ struct DogWorldScene: View {
                         dogState: store.state.dogState,
                         speech: store.speechText(),
                         nextLevelNeed: store.nextLevelNeed(),
+                        evolution: store.state.dogEvolution,
+                        mood: store.state.dogMood,
                         onClose: { showsDogStatus = false }
                     )
                     .padding(10)
@@ -287,9 +289,9 @@ struct DogWorldScene: View {
         var circularAngle: Double = 0
 
         while !Task.isCancelled {
-            // 拖动时暂停漫游
+            // 拖动时暂停漫游（降低轮询频率节省 CPU）
             guard !isDragging else {
-                try? await Task.sleep(nanoseconds: 100_000_000)
+                try? await Task.sleep(nanoseconds: 500_000_000)
                 continue
             }
 
@@ -720,12 +722,14 @@ struct DogStatusTray: View {
     let dogState: DogState
     let speech: String
     let nextLevelNeed: Int
+    var evolution: DogEvolution = .adult
+    var mood: DogMood = .neutral
     var onClose: (() -> Void)? = nil
 
     var body: some View {
         VStack(spacing: 6) {
             HStack(spacing: 8) {
-                PixelDogSprite(breed: breed, appearance: appearance, size: 44, pose: dogState.pose)
+                PixelDogSprite(breed: breed, appearance: appearance, size: 44, pose: dogState.pose, evolution: evolution, mood: mood)
                     .frame(width: 50, height: 46)
                     .background(Color.dogBgTexture)
                     .overlay {
@@ -2391,7 +2395,7 @@ struct DogChoiceCard: View {
 
             // 标签（紧凑显示）
             HStack(spacing: 3) {
-                ForEach(dog.tags.prefix(3), id: \.self) { tag in
+                ForEach(Array(dog.tags.prefix(3).enumerated()), id: \.offset) { _, tag in
                     Text(tag)
                         .font(.system(size: 9, weight: .medium))
                         .foregroundStyle(Color(hex: 0x6B6B6B))
@@ -2427,7 +2431,7 @@ struct FlowTags: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            ForEach(tags, id: \.self) { tag in
+            ForEach(Array(tags.enumerated()), id: \.offset) { _, tag in
                 Text(tag)
                     .font(.caption.weight(.bold))
                     .foregroundStyle(Color.dogTextSecondary)

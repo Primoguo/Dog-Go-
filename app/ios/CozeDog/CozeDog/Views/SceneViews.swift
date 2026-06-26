@@ -130,11 +130,13 @@ struct YardSceneView: View {
                 DogHouseView(size: min(w, h) * 0.12)
                     .position(x: w * 0.45, y: groundTop + h * 0.2)
                     .onTapGesture { store.interactSceneProp("dogHouse") }
+                    .accessibilityLabel("狗窝，点击休息")
 
                 // 沙发（等距道具，点击放松：心情 +3 精力 +8）
                 SofaView(size: min(w, h) * 0.11)
                     .position(x: w * 0.7, y: groundTop + h * 0.35)
                     .onTapGesture { store.interactSceneProp("sofa") }
+                    .accessibilityLabel("沙发，点击放松")
 
                 // 花朵（等距：可见花茎）
                 if season != .winter {
@@ -307,6 +309,7 @@ struct ParkSceneView: View {
                 TreadmillView(size: min(w, h) * 0.1)
                     .position(x: w * 0.75, y: groundTop + h * 0.22)
                     .onTapGesture { store.interactSceneProp("treadmill") }
+                    .accessibilityLabel("跑步机，点击锻炼")
             }
         }
     }
@@ -491,6 +494,7 @@ struct BeachSceneView: View {
                 WorkDeskView(size: min(w, h) * 0.1)
                     .position(x: w * 0.3, y: groundTop + h * 0.15)
                     .onTapGesture { store.interactSceneProp("workDesk") }
+                    .accessibilityLabel("工作台，点击劳动")
             }
             .onAppear {
                 withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
@@ -643,6 +647,7 @@ struct ForestSceneView: View {
                 StudyDeskView(size: min(w, h) * 0.1)
                     .position(x: w * 0.72, y: groundTop + h * 0.15)
                     .onTapGesture { store.interactSceneProp("studyDesk") }
+                    .accessibilityLabel("学习桌，点击学习")
 
                 // 魔法粒子
                 if timeOfDay == .night || timeOfDay == .evening {

@@ -27,6 +27,7 @@ struct InteractiveItemView: View {
                 .scaleEffect(isAnimating ? 1.3 : 1.0)
                 .rotationEffect(isAnimating ? .degrees(15) : .degrees(0))
         }
+        .accessibilityLabel("使用\(item.itemType.displayName)")
     }
 
     @ViewBuilder

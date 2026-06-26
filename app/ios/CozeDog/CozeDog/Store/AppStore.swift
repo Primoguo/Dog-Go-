@@ -795,7 +795,7 @@ final class AppStore: ObservableObject {
             // 持久化 speechMode
             UserDefaults.standard.set(speechMode, forKey: "zilvgou.speechMode")
         } catch {
-            // 编码失败时静默处理
+            os_log("数据编码失败: %{public}@", log: .default, type: .error, "\(error)")
         }
     }
 
