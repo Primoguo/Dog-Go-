@@ -514,15 +514,6 @@ final class AppStore: ObservableObject {
 
     // MARK: - 专注模式功能
 
-    func startFocusMode(plan: ActionPlan, durationSeconds: Int) {
-        state.isFocusMode = true
-        state.focusStartTime = Date()
-        state.lastEncouragementProgress = 0
-
-        // 安排专注完成通知
-        scheduleFocusNotifications(durationSeconds: durationSeconds)
-    }
-
     func checkAndShowEncouragement(progress: Int) {
         let milestones = [25, 50, 75, 90]
 

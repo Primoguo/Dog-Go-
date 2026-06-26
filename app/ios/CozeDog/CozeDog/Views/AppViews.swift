@@ -1109,12 +1109,16 @@ struct FocusModeView: View {
         .onReceive(timer) { _ in
             if store.state.actionSession.phase == .running && !store.state.isResting {
                 store.tickActionTimer()
-                checkEncouragement()
-                checkRestReminder()
+                // 休息提醒（番茄时间：25分钟）
+                let elapsed = store.state.actionSession.durationSeconds - store.state.actionSession.remainingSeconds
+                if elapsed == 25 * 60 && store.state.actionSession.durationSeconds > 25 * 60 {
+                    showRestReminder = true
+                }
             }
         }
         .onChange(of: store.state.lastEncouragementProgress) { _, newProgress in
             if newProgress > 0 {
+                encouragementText = store.encouragementCopy(progress: newProgress)
                 showEncouragementMessage()
             }
         }
@@ -1124,27 +1128,6 @@ struct FocusModeView: View {
         let minutes = seconds / 60
         let secs = seconds % 60
         return String(format: "%02d:%02d", minutes, secs)
-    }
-
-    private func checkEncouragement() {
-        let elapsed = store.state.actionSession.durationSeconds - store.state.actionSession.remainingSeconds
-        let progress = Int((Double(elapsed) / Double(store.state.actionSession.durationSeconds)) * 100)
-
-        let milestones = [25, 50, 75, 90]
-        for milestone in milestones {
-            if progress >= milestone && store.state.lastEncouragementProgress < milestone {
-                encouragementText = store.encouragementCopy(progress: milestone)
-                break
-            }
-        }
-    }
-
-    private func checkRestReminder() {
-        let elapsed = store.state.actionSession.durationSeconds - store.state.actionSession.remainingSeconds
-        // 番茄时间：25分钟（1500秒）后提醒休息
-        if elapsed == 25 * 60 && store.state.actionSession.durationSeconds > 25 * 60 {
-            showRestReminder = true
-        }
     }
 
     private func showEncouragementMessage() {
