@@ -544,12 +544,6 @@ struct HomeView: View {
                     },
                     smallGoalAction: {
                         store.useSmallGoal()
-                    },
-                    debugMissAction: {
-                        store.simulateMissedDay()
-                    },
-                    debugResetAction: {
-                        store.reset()
                     }
                 )
             }

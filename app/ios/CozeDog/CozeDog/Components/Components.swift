@@ -1817,8 +1817,6 @@ struct TodayActionPanel: View {
     let completeAction: () -> Void
     let enterFocusModeAction: () -> Void
     let smallGoalAction: () -> Void
-    let debugMissAction: () -> Void
-    let debugResetAction: () -> Void
 
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -1902,12 +1900,6 @@ struct TodayActionPanel: View {
                 }
             }
 
-            #if DEBUG
-            HStack(spacing: 8) {
-                PixelDebugButton(title: "漏一天", action: debugMissAction)
-                PixelDebugButton(title: "重置", action: debugResetAction)
-            }
-            #endif
         }
         .padding(12)
         .background {
@@ -2380,25 +2372,6 @@ struct PixelChoiceButton: View {
                 .stroke(isSelected ? Color(hex: 0x1E3D2C) : Color(hex: 0x9BB985), lineWidth: isSelected ? 2 : 1)
         }
         .shadow(color: isSelected ? Color(hex: 0x1E3D2C, alpha: 0.20) : Color.clear, radius: 0, x: 2, y: 2)
-    }
-}
-
-struct PixelDebugButton: View {
-    let title: String
-    let action: () -> Void
-
-    var body: some View {
-        Button(title, action: action)
-            .font(.caption2.weight(.bold))
-            .buttonStyle(.plain)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 5)
-            .background(Color(hex: 0xECE7DA))
-            .foregroundStyle(.secondary)
-            .overlay {
-                Rectangle()
-                    .stroke(Color(hex: 0xC8BDA8), lineWidth: 1)
-            }
     }
 }
 
