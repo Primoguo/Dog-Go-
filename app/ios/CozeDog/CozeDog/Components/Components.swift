@@ -383,31 +383,41 @@ struct DogWorldScene: View {
     }
 
     private var propLabel: String {
-        if store.state.rhythmState.status == .missed || store.state.rhythmState.status == .longBreak { return "恢复小路" }
-        switch activeGoalType {
-        case .fitness: return "运动区"
-        case .study: return "学习角"
-        case .work: return "工作台"
-        case .sleep: return "休闲窝"
-        case .none: return "狗狗小院"
+        if store.state.rhythmState.status == .missed || store.state.rhythmState.status == .longBreak {
+            return "恢复小路"
         }
+        // 只在专注进行中显示具体区域标签，空闲时显示默认"狗狗小院"
+        if store.state.actionSession.phase == .running, let goalType = activeGoalType {
+            switch goalType {
+            case .fitness: return "运动区"
+            case .study: return "学习角"
+            case .work: return "工作台"
+            case .sleep: return "休闲窝"
+            case .none: break
+            }
+        }
+        return "狗狗小院"
     }
 
     private func propLabelPosition(width: CGFloat, height: CGFloat) -> CGPoint {
         if isRecovery { return CGPoint(x: width * 0.28, y: height * 0.20) }
 
-        switch activeGoalType {
-        case .fitness:
-            return CGPoint(x: width * 0.22, y: height * 0.57)
-        case .study:
-            return CGPoint(x: width * 0.66, y: height * 0.28)
-        case .work:
-            return CGPoint(x: width * 0.30, y: height * 0.26)
-        case .sleep:
-            return CGPoint(x: width * 0.78, y: height * 0.34)
-        case .none:
-            return CGPoint(x: width * 0.20, y: height * 0.14)
+        // 只在专注进行中根据目标类型定位，空闲时使用默认位置
+        if store.state.actionSession.phase == .running, let goalType = activeGoalType {
+            switch goalType {
+            case .fitness:
+                return CGPoint(x: width * 0.22, y: height * 0.57)
+            case .study:
+                return CGPoint(x: width * 0.66, y: height * 0.28)
+            case .work:
+                return CGPoint(x: width * 0.30, y: height * 0.26)
+            case .sleep:
+                return CGPoint(x: width * 0.78, y: height * 0.34)
+            case .none:
+                break
+            }
         }
+        return CGPoint(x: width * 0.20, y: height * 0.14)
     }
 
     private func handleItemTap(_ item: PlacedItem) {
