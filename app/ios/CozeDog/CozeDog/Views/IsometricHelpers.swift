@@ -135,27 +135,3 @@ extension Color {
 }
 
 // MARK: - 等距地面纹理线
-
-/// 地面斜线纹理，增加等距感
-struct IsometricGroundLines: View {
-    let color: Color
-    let spacing: CGFloat
-    let lineWidth: CGFloat
-
-    var body: some View {
-        GeometryReader { proxy in
-            ZStack {
-                // 水平等距线（模拟地面网格）
-                let lineCount = Int(proxy.size.height / spacing) + 2
-                ForEach(0..<lineCount, id: \.self) { i in
-                    PixelRect(color: color.opacity(0.15))
-                        .frame(width: proxy.size.width, height: lineWidth)
-                        .position(
-                            x: proxy.size.width / 2,
-                            y: CGFloat(i) * spacing
-                        )
-                }
-            }
-        }
-    }
-}

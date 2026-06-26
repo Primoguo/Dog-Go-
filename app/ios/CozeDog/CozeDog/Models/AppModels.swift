@@ -36,7 +36,7 @@ enum SceneType: String, Codable, CaseIterable {
     }
 
     func isUnlocked(for evolution: DogEvolution) -> Bool {
-        return evolution.rawValue >= requiredEvolution.rawValue
+        return evolution.order >= requiredEvolution.order
     }
 
     var description: String {
@@ -257,6 +257,29 @@ struct PlacedItem: Codable, Identifiable {
         self.itemType = itemType
         self.position = position
     }
+
+    // MARK: - Custom Codable (CGPoint is not Codable by default)
+
+    private enum CodingKeys: String, CodingKey {
+        case id, itemType, positionX, positionY
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        itemType = try container.decode(ItemType.self, forKey: .itemType)
+        let x = try container.decode(CGFloat.self, forKey: .positionX)
+        let y = try container.decode(CGFloat.self, forKey: .positionY)
+        position = CGPoint(x: x, y: y)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(itemType, forKey: .itemType)
+        try container.encode(position.x, forKey: .positionX)
+        try container.encode(position.y, forKey: .positionY)
+    }
 }
 
 enum ItemType: String, Codable, CaseIterable {
@@ -338,6 +361,16 @@ enum DogEvolution: String, Codable, CaseIterable {
     case adult      // 成犬 (10-49 次)
     case complete   // 完全体 (50-99 次)
     case legendary  // 传奇体 (100+ 次)
+
+    /// 进化阶段数值，用于比较（避免 String rawValue 字典序 bug）
+    var order: Int {
+        switch self {
+        case .puppy: return 0
+        case .adult: return 1
+        case .complete: return 2
+        case .legendary: return 3
+        }
+    }
 
     var displayName: String {
         switch self {

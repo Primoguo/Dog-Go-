@@ -128,7 +128,7 @@ struct Particle: Identifiable {
             y: 80 + CGFloat(sin(angle * .pi / 180) * radius)
         )
         self.size = CGFloat.random(in: 3...6)
-        self.color = [Color.dogAccent, Color.dogBrand, Color.dogAccentBright].randomElement()!
+        self.color = [Color.dogAccent, Color.dogBrand, Color.dogAccentBright].randomElement() ?? .dogAccent
         self.opacity = Double.random(in: 0.3...0.7)
         self.targetOpacity = Double.random(in: 0.1...0.3)
         let targetAngle = Double.random(in: 0..<360)
@@ -259,7 +259,7 @@ struct DiaryViewerView: View {
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 LazyVStack(spacing: 16) {
                     if store.state.diaryEntries.isEmpty {

@@ -266,9 +266,7 @@ struct OnboardingView: View {
 }
 
 // MARK: - 预览
-struct OnboardingView_Previews: PreviewProvider {
-    static var previews: some View {
-        OnboardingView()
-            .environmentObject(AppStore())
-    }
+#Preview {
+    OnboardingView()
+        .environmentObject(AppStore())
 }

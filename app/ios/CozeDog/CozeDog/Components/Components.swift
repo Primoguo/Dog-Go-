@@ -413,88 +413,6 @@ struct DogWorldScene: View {
     }
 }
 
-struct PixelYardMap: View {
-    let goalType: GoalType?
-    let isRecovery: Bool
-    let isDone: Bool
-
-    var body: some View {
-        GeometryReader { proxy in
-            let width = proxy.size.width
-            let height = proxy.size.height
-
-            ZStack {
-                PixelGridBackground()
-
-                PixelRect(color: Color(hex: 0x7FB46C))
-                    .frame(width: width * 0.88, height: height * 0.74)
-                    .position(x: width * 0.52, y: height * 0.50)
-
-                PixelRect(color: Color(hex: 0xA9C98A))
-                    .frame(width: width * 0.78, height: height * 0.62)
-                    .position(x: width * 0.52, y: height * 0.50)
-
-                PixelRect(color: Color(hex: 0x95BE77, alpha: 0.75))
-                    .frame(width: width * 0.28, height: height * 0.22)
-                    .position(x: width * 0.70, y: height * 0.60)
-
-                PixelPath()
-                    .stroke(Color(hex: 0xD8C7A4), style: StrokeStyle(lineWidth: max(10, width * 0.028), lineCap: .square, lineJoin: .miter))
-                    .frame(width: width, height: height)
-
-                PixelDetailDots()
-                    .frame(width: width, height: height)
-
-                PixelFence()
-                    .stroke(Color(hex: 0x8D6D46), style: StrokeStyle(lineWidth: 4, lineCap: .square, lineJoin: .miter))
-                    .padding(8)
-
-                PixelDogHouse()
-                    .frame(width: width * 0.11, height: height * 0.13)
-                    .position(x: width * 0.83, y: height * 0.22)
-
-                PixelGate()
-                    .frame(width: width * 0.11, height: height * 0.07)
-                    .position(x: width * 0.20, y: height * 0.14)
-
-                PixelProps(goalType: goalType, isRecovery: isRecovery, isDone: isDone)
-                    .frame(width: width * 0.13, height: height * 0.13)
-                    .position(propPosition(width: width, height: height))
-
-                if isRecovery {
-                    PixelFootprints()
-                        .frame(width: width * 0.13, height: height * 0.16)
-                        .position(x: width * 0.35, y: height * 0.32)
-                }
-            }
-            .overlay {
-                if isRecovery {
-                    Color(hex: 0x6F7D78, alpha: 0.12)
-                } else if isDone {
-                    Color(hex: 0xF7C95C, alpha: 0.10)
-                }
-            }
-        }
-    }
-
-    private func propPosition(width: CGFloat, height: CGFloat) -> CGPoint {
-        if isRecovery { return CGPoint(x: width * 0.28, y: height * 0.28) }
-
-        switch goalType {
-        case .fitness:
-            return CGPoint(x: width * 0.23, y: height * 0.67)
-        case .study:
-            return CGPoint(x: width * 0.69, y: height * 0.39)
-        case .work:
-            return CGPoint(x: width * 0.32, y: height * 0.36)
-        case .sleep:
-            return CGPoint(x: width * 0.69, y: height * 0.69)
-        case .none:
-            return CGPoint(x: width * 0.50, y: height * 0.52)
-        }
-    }
-}
-
 struct PixelGridBackground: View {
     var body: some View {
         GeometryReader { proxy in
@@ -834,15 +752,17 @@ struct DogStatusTray: View {
                 if let onClose {
                     Button(action: onClose) {
                         Image(systemName: "xmark")
-                            .font(.system(size: 10, weight: .heavy))
+                            .font(.system(size: 12, weight: .heavy))
                             .foregroundStyle(Color.dogBorder)
-                            .frame(width: 22, height: 22)
+                            .frame(width: 28, height: 28)
+                            .contentShape(Rectangle())
                             .background(Color.dogBgTexture)
                             .overlay {
                                 Rectangle().stroke(Color.dogBorder, lineWidth: 1)
                             }
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("关闭")
                 }
             }
 

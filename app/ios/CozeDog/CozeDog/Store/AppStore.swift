@@ -7,6 +7,10 @@ final class AppStore: ObservableObject {
     @Published var goalDraftTitle: String = GoalType.fitness.templates[0].title
     @Published var speechMode: String = "pending"
 
+    /// 场景道具冷却追踪（运行时，不持久化）
+    private var lastScenePropInteractions: [String: Date] = [:]
+    private let scenePropCooldown: TimeInterval = 30 // 30秒冷却
+
     private let key = "zilvgou.appState.v1"
 
     init() {
@@ -22,11 +26,14 @@ final class AppStore: ObservableObject {
                     save()
                 }
             } catch {
-                print("⚠️ 解码 AppState 失败: \(error)")
                 state = .initial
             }
         } else {
             state = .initial
+        }
+        // 恢复 speechMode
+        if let savedMode = UserDefaults.standard.string(forKey: "zilvgou.speechMode") {
+            speechMode = savedMode
         }
         // 启动时检测断签：超过 1 天未打卡自动进入 missed/longBreak
         checkStreakOnLaunch()
@@ -35,7 +42,7 @@ final class AppStore: ObservableObject {
     }
 
     /// 启动时检查上次打卡日期，自动标记断签状态
-    private func checkStreakOnLaunch() {
+    func checkStreakOnLaunch() {
         guard let lastDateStr = state.rhythmState.lastCompletedDate else { return }
         let formatter = DateFormatter()
         formatter.calendar = Calendar(identifier: .gregorian)
@@ -201,9 +208,6 @@ final class AppStore: ObservableObject {
         // 检查鼓励时机
         checkAndShowEncouragement(progress: progress)
 
-        // 检查休息提醒（番茄时间：25分钟专注 + 5分钟休息）
-        checkRestReminder(elapsedSeconds: elapsed)
-
         if remaining == 0 {
             state.actionSession.phase = .finished
             state.dogState.mood = .happy
@@ -263,7 +267,7 @@ final class AppStore: ObservableObject {
         state.rhythmState.status = .missed
         state.rhythmState.missedDays = 1
         // 设置 lastActiveDate 为昨天，触发衰减
-        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
+        guard let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Date()) else { return }
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         state.dogState.lastActiveDate = formatter.string(from: yesterday)
@@ -305,8 +309,15 @@ final class AppStore: ObservableObject {
         return true
     }
 
-    /// 场景道具互动：点击场景中的固定道具获得属性加成
+    /// 场景道具互动：点击场景中的固定道具获得属性加成（30秒冷却）
     func interactSceneProp(_ propName: String) {
+        // 冷却检查
+        if let lastTime = lastScenePropInteractions[propName],
+           Date().timeIntervalSince(lastTime) < scenePropCooldown {
+            return
+        }
+        lastScenePropInteractions[propName] = Date()
+
         switch propName {
         case "dogHouse":
             // 狗窝：休息恢复精力，亲密度微增
@@ -621,15 +632,6 @@ final class AppStore: ObservableObject {
         }
     }
 
-    func checkRestReminder(elapsedSeconds: Int) {
-        // 番茄时间：25分钟（1500秒）后提醒休息
-        let pomodoroDuration = 25 * 60
-        if elapsedSeconds == pomodoroDuration {
-            // 休息提醒会在 UI 层通过观察 elapsedSeconds 来显示
-            // 这里可以添加通知或其他逻辑
-        }
-    }
-
     func startRest() {
         state.isResting = true
         state.restStartTime = Date()
@@ -775,12 +777,19 @@ final class AppStore: ObservableObject {
         }
     }
 
+    /// 供外部（如 CozeDogApp scenePhase）调用的保存入口
+    func saveState() {
+        save()
+    }
+
     private func save() {
         do {
             let data = try JSONEncoder().encode(state)
             UserDefaults.standard.set(data, forKey: key)
+            // 持久化 speechMode
+            UserDefaults.standard.set(speechMode, forKey: "zilvgou.speechMode")
         } catch {
-            print("⚠️ 编码 AppState 失败: \(error)")
+            // 编码失败时静默处理
         }
     }
 
@@ -794,7 +803,6 @@ final class AppStore: ObservableObject {
         if newEvolution != oldEvolution {
             state.dogEvolution = newEvolution
             // 进化提示会在 UI 层通过观察 dogEvolution 变化来显示
-            print("🎉 狗狗进化了！\(oldEvolution.displayName) → \(newEvolution.displayName)")
         }
     }
 
@@ -1098,6 +1106,13 @@ final class AppStore: ObservableObject {
 
             // 完成任务推荐给狗狗少量属性奖励（连接主循环）
             state.dogState.intimacy += 2
+            // 检查升级（与 complete() 保持一致）
+            while state.dogState.intimacy >= nextLevelNeed() {
+                state.dogState.intimacy -= nextLevelNeed()
+                state.dogState.level += 1
+                let item = randomRewardItem()
+                state.dogState.inventory.append(item)
+            }
             state.dogState.fullness = clamp(state.dogState.fullness + 3)
             state.dogState.cleanliness = clamp(state.dogState.cleanliness + 3)
             state.dogState.energy = clamp(state.dogState.energy + 3)
@@ -1448,10 +1463,10 @@ final class AppStore: ObservableObject {
             return false
         }
 
-        let goalTypeCounts = Dictionary(grouping: monthRecords.filter { $0.goalType != nil }, by: { $0.goalType! })
+        let goalTypeCounts = Dictionary(grouping: monthRecords.compactMap(\.goalType), by: { $0 })
         let topGoalType = goalTypeCounts.max(by: { $0.value.count < $1.value.count })?.key
 
-        return MonthlyReport(
+        let report = MonthlyReport(
             month: month,
             totalCheckIns: checkInCount,
             completionRate: completionRate,
@@ -1459,6 +1474,16 @@ final class AppStore: ObservableObject {
             totalFocusMinutes: focusMinutes,
             topGoalType: topGoalType
         )
+
+        // 持久化到月度报告列表（去重：同月只保留最新）
+        let calendar2 = Calendar.current
+        state.monthlyReports.removeAll { existing in
+            calendar2.isDate(existing.month, equalTo: month, toGranularity: .month)
+        }
+        state.monthlyReports.append(report)
+        save()
+
+        return report
     }
 
     /// 获取断签恢复激励文案

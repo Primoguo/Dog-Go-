@@ -595,8 +595,8 @@ struct ForestSceneView: View {
 
     @State private var sparklePositions: [CGPoint] = (0..<15).map { _ in
         CGPoint(
-            x: CGFloat.random(in: 0...UIScreen.main.bounds.width),
-            y: CGFloat.random(in: 0...UIScreen.main.bounds.height)
+            x: CGFloat.random(in: 0...390),
+            y: CGFloat.random(in: 0...844)
         )
     }
 
@@ -1070,6 +1070,7 @@ struct WeatherEffectsView: View {
 
 struct CloudsView: View {
     @State private var cloudOffset: CGFloat = -100
+    @State private var cloudYPositions: [CGFloat] = (0..<4).map { _ in CGFloat.random(in: 30...100) }
 
     var body: some View {
         GeometryReader { proxy in
@@ -1078,7 +1079,7 @@ struct CloudsView: View {
                     CloudView()
                         .position(
                             x: cloudOffset + CGFloat(index) * 150,
-                            y: CGFloat.random(in: 30...100)
+                            y: cloudYPositions[index]
                         )
                         .opacity(0.5)
                 }
@@ -1145,7 +1146,7 @@ struct RainDrop: Identifiable {
 
     init() {
         self.position = CGPoint(
-            x: CGFloat.random(in: 0...UIScreen.main.bounds.width),
+            x: CGFloat.random(in: 0...390),
             y: CGFloat.random(in: -100...0)
         )
         self.duration = Double.random(in: 1...2)
@@ -1191,7 +1192,7 @@ struct SnowFlake: Identifiable {
 
     init() {
         self.position = CGPoint(
-            x: CGFloat.random(in: 0...UIScreen.main.bounds.width),
+            x: CGFloat.random(in: 0...390),
             y: CGFloat.random(in: -100...0)
         )
         self.size = CGFloat.random(in: 3...8)

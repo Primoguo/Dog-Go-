@@ -271,7 +271,7 @@ struct SceneSelectorView: View {
 
     private func isSceneUnlocked(_ scene: SceneType) -> Bool {
         let currentEvolution = store.state.dogEvolution
-        return currentEvolution.rawValue >= scene.requiredEvolution.rawValue
+        return currentEvolution.order >= scene.requiredEvolution.order
     }
 }
 
@@ -403,6 +403,7 @@ struct SceneSwitchButton: View {
                     .foregroundColor(Color.dogAccent)
             }
         }
+        .accessibilityLabel("切换场景")
     }
 }
 
@@ -429,6 +430,7 @@ struct TaskSuggestionButton: View {
                     .foregroundColor(Color.dogSuccess)
             }
         }
+        .accessibilityLabel("每日任务")
     }
 }
 
@@ -688,6 +690,11 @@ struct TaskCardView: View {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                 isPressed = true
             }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                    isPressed = false
+                }
+            }
             onAccept()
         }) {
             HStack(spacing: 12) {
@@ -791,10 +798,11 @@ struct CustomTaskSheet: View {
     @State private var estimatedMinutes = 15
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section("任务信息") {
                     TextField("任务名称", text: $title)
+                        .submitLabel(.done)
 
                     Picker("目标类型", selection: $selectedGoalType) {
                         ForEach(GoalType.allCases) { goal in

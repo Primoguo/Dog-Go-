@@ -23,6 +23,7 @@ struct HabitCalendarButton: View {
                     .foregroundColor(Color.dogSuccess)
             }
         }
+        .accessibilityLabel("习惯日历")
     }
 }
 
@@ -383,7 +384,7 @@ struct HabitStatItem: View {
                 .foregroundColor(Color.dogTextPrimary)
 
             Text(label)
-                .font(.system(size: 10, weight: .medium, design: .monospaced))
+                .font(.system(size: 11, weight: .medium, design: .monospaced))
                 .foregroundColor(Color.dogTextTertiary)
         }
         .frame(maxWidth: .infinity)
@@ -414,7 +415,7 @@ struct AchievementBadgeView: View {
             }
 
             Text(type.title)
-                .font(.system(size: 9, weight: .medium, design: .monospaced))
+                .font(.system(size: 11, weight: .medium, design: .monospaced))
                 .foregroundColor(isUnlocked ? Color.dogTextPrimary : Color.dogTextTertiary)
                 .lineLimit(1)
         }
@@ -427,6 +428,7 @@ struct MonthlyReportView: View {
     @EnvironmentObject var store: AppStore
     @Environment(\.dismiss) var dismiss
     let month: Date
+    @State private var report: MonthlyReport?
 
     var body: some View {
         VStack(spacing: 20) {
@@ -448,7 +450,7 @@ struct MonthlyReportView: View {
             .padding(.top, 16)
 
             // 报告内容
-            let report = store.generateMonthlyReport(for: month)
+            if let report {
 
             VStack(spacing: 16) {
                 // 月份标题
@@ -481,6 +483,11 @@ struct MonthlyReportView: View {
                     .padding(.horizontal, 16)
             }
             .padding(16)
+            } else {
+                Spacer()
+                ProgressView()
+                Spacer()
+            }
 
             Spacer()
         }
@@ -493,6 +500,9 @@ struct MonthlyReportView: View {
         .overlay { Rectangle().stroke(Color.dogBorder, lineWidth: 2) }
         .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 4, y: 4)
         .frame(width: 320, height: 480)
+        .task {
+            report = store.generateMonthlyReport(for: month)
+        }
     }
 
     private func reportStatRow(icon: String, label: String, value: String) -> some View {

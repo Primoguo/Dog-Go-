@@ -356,6 +356,7 @@ struct CreateGoalView: View {
 
                             TextField("给目标起个名字", text: $store.goalDraftTitle)
                                 .font(.subheadline)
+                                .submitLabel(.done)
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 12)
                                 .background(Color.dogBgPanel)
@@ -1150,7 +1151,7 @@ struct FocusModeView: View {
                 store.tickActionTimer()
                 // 休息提醒（番茄时间：25分钟）
                 let elapsed = store.state.actionSession.durationSeconds - store.state.actionSession.remainingSeconds
-                if elapsed == 25 * 60 && store.state.actionSession.durationSeconds > 25 * 60 {
+                if elapsed >= 25 * 60 && !showRestReminder {
                     showRestReminder = true
                 }
             }
