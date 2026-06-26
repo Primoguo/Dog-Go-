@@ -72,7 +72,7 @@ struct HabitCalendarView: View {
             .background {
                 ZStack {
                     Color.dogBgPanel
-                    View.dogTexturePattern
+                    PixelTinyGrid(colorA: Color(hex: 0xF4E6C6, alpha: 0.34), colorB: .clear, tile: 14)
                 }
             }
             .frame(width: 340, height: 580)
@@ -412,6 +412,13 @@ struct MonthlyReportView: View {
     @Environment(\.dismiss) var dismiss
     let month: Date
     @State private var report: MonthlyReport?
+
+    private static let monthYearFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy年M月"
+        f.locale = Locale(identifier: "zh_CN")
+        return f
+    }()
 
     var body: some View {
         VStack(spacing: 20) {
