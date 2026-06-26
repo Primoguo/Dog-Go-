@@ -263,20 +263,20 @@ struct DogWorldScene: View {
     }
 
     private func dogMapPosition(width: CGFloat, height: CGFloat) -> CGPoint {
-        if isRecovery { return CGPoint(x: width * 0.30, y: height * 0.25) }
-        if isIdleCompleted { return CGPoint(x: width * 0.78, y: height * 0.28) }
+        if isRecovery { return CGPoint(x: width * 0.30, y: height * 0.55) }
+        if isIdleCompleted { return CGPoint(x: width * 0.78, y: height * 0.58) }
 
         switch activeGoalType {
         case .fitness:
             return CGPoint(x: width * 0.28, y: height * 0.68)
         case .study:
-            return CGPoint(x: width * 0.66, y: height * 0.40)
+            return CGPoint(x: width * 0.66, y: height * 0.55)
         case .work:
-            return CGPoint(x: width * 0.35, y: height * 0.38)
+            return CGPoint(x: width * 0.35, y: height * 0.55)
         case .sleep:
             return CGPoint(x: width * 0.68, y: height * 0.70)
         case .none:
-            return CGPoint(x: width * 0.50, y: height * 0.48)
+            return CGPoint(x: width * 0.50, y: height * 0.60)
         }
     }
 
