@@ -148,10 +148,17 @@ final class AppStore: ObservableObject {
         state.dogState.pose = .focused  // 专注姿态
         speechMode = "pending"
 
-        // 启动专注模式
-        startFocusMode(plan: plan, durationSeconds: seconds)
+        // 记录开始时间并安排通知（但不进入专注模式 UI）
+        state.focusStartTime = Date()
+        state.lastEncouragementProgress = 0
+        scheduleFocusNotifications(durationSeconds: seconds)
 
         save()
+    }
+
+    /// 进入专注模式（用户手动点击按钮后调用）
+    func enterFocusMode() {
+        state.isFocusMode = true
     }
 
     func tickActionTimer() {
@@ -159,18 +166,15 @@ final class AppStore: ObservableObject {
         let remaining = max(0, state.actionSession.remainingSeconds - 1)
         state.actionSession.remainingSeconds = remaining
 
-        // 专注模式逻辑
-        if state.isFocusMode {
-            // 计算进度
-            let elapsed = state.actionSession.durationSeconds - remaining
-            let progress = Int((Double(elapsed) / Double(state.actionSession.durationSeconds)) * 100)
+        // 计算进度
+        let elapsed = state.actionSession.durationSeconds - remaining
+        let progress = Int((Double(elapsed) / Double(state.actionSession.durationSeconds)) * 100)
 
-            // 检查鼓励时机
-            checkAndShowEncouragement(progress: progress)
+        // 检查鼓励时机
+        checkAndShowEncouragement(progress: progress)
 
-            // 检查休息提醒（番茄时间：25分钟专注 + 5分钟休息）
-            checkRestReminder(elapsedSeconds: elapsed)
-        }
+        // 检查休息提醒（番茄时间：25分钟专注 + 5分钟休息）
+        checkRestReminder(elapsedSeconds: elapsed)
 
         if remaining == 0 {
             state.actionSession.phase = .finished
@@ -179,18 +183,14 @@ final class AppStore: ObservableObject {
             speechMode = "done"
 
             // 完成专注会话
-            if state.isFocusMode {
-                completeFocusSession()
-            }
+            completeFocusSession()
         }
         save()
     }
 
     func cancelActionSession() {
-        // 如果正在专注模式，记录放弃
-        if state.isFocusMode {
-            abandonFocusSession()
-        }
+        // 记录放弃的专注会话
+        abandonFocusSession()
 
         state.actionSession = .idle
         state.dogState.mood = .neutral
@@ -396,6 +396,12 @@ final class AppStore: ObservableObject {
                 StateGain(label: "亲密度", amount: 3),
                 StateGain(label: "饱腹", amount: 10),
                 StateGain(label: "精力", amount: 10)
+            ]
+        case .work:
+            return [
+                StateGain(label: "亲密度", amount: 3),
+                StateGain(label: "饱腹", amount: 10),
+                StateGain(label: "精力", amount: 15)
             ]
         case .sleep:
             return [

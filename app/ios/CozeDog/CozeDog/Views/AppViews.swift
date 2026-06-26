@@ -398,6 +398,7 @@ struct GoalTypeButton: View {
         switch type {
         case .fitness: return ""
         case .study: return ""
+        case .work: return ""
         case .sleep: return ""
         }
     }
@@ -537,6 +538,9 @@ struct HomeView: View {
                         } else {
                             isRecovery ? store.completeRecoveryGoal() : store.completeMainGoal()
                         }
+                    },
+                    enterFocusModeAction: {
+                        store.enterFocusMode()
                     },
                     smallGoalAction: {
                         store.useSmallGoal()

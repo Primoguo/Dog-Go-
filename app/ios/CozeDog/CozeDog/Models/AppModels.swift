@@ -764,6 +764,7 @@ private extension DogBreed {
 enum GoalType: String, Codable, CaseIterable, Identifiable {
     case fitness
     case study
+    case work
     case sleep
 
     var id: String { rawValue }
@@ -772,6 +773,7 @@ enum GoalType: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .fitness: return "健身"
         case .study: return "学习"
+        case .work: return "工作"
         case .sleep: return "作息"
         }
     }
@@ -788,6 +790,11 @@ enum GoalType: String, Codable, CaseIterable, Identifiable {
                 GoalTemplate(title: "学习 30 分钟", recoveryTitle: "看 1 页"),
                 GoalTemplate(title: "背单词 20 个", recoveryTitle: "背 5 个单词")
             ]
+        case .work:
+            return [
+                GoalTemplate(title: "专注工作 45 分钟", recoveryTitle: "休息 5 分钟"),
+                GoalTemplate(title: "完成一项工作任务", recoveryTitle: "整理工作笔记")
+            ]
         case .sleep:
             return [
                 GoalTemplate(title: "23:30 前睡觉", recoveryTitle: "睡前放下手机 5 分钟"),
@@ -800,6 +807,7 @@ enum GoalType: String, Codable, CaseIterable, Identifiable {
 enum ActionPlan: String, Codable, CaseIterable, Identifiable {
     case fitness
     case study
+    case work
     case leisure
 
     var id: String { rawValue }
@@ -808,6 +816,7 @@ enum ActionPlan: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .fitness: return "健身"
         case .study: return "学习"
+        case .work: return "工作"
         case .leisure: return "休闲"
         }
     }
@@ -816,6 +825,7 @@ enum ActionPlan: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .fitness: return "健身中"
         case .study: return "学习中"
+        case .work: return "工作中"
         case .leisure: return "休闲中"
         }
     }
@@ -824,6 +834,7 @@ enum ActionPlan: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .fitness: return "狗狗也在动起来"
         case .study: return "狗狗也在专注"
+        case .work: return "狗狗也在认真工作"
         case .leisure: return "狗狗也在放松"
         }
     }
@@ -832,6 +843,7 @@ enum ActionPlan: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .fitness: return .fitness
         case .study: return .study
+        case .work: return .work
         case .leisure: return .sleep
         }
     }
@@ -1486,18 +1498,31 @@ struct PresetTaskLibrary {
         TaskTemplate(title: "调暗灯光准备入睡", goalType: .sleep, estimatedMinutes: 3, timeSlots: [.night], tags: ["环境", "入睡"]),
     ]
 
+    /// 工作类任务
+    static let workTasks: [TaskTemplate] = [
+        TaskTemplate(title: "完成一项重要工作任务", goalType: .work, estimatedMinutes: 45, timeSlots: [.morning, .afternoon], tags: ["专注", "高效"]),
+        TaskTemplate(title: "整理工作笔记", goalType: .work, estimatedMinutes: 15, timeSlots: [.afternoon], tags: ["总结", "复盘"]),
+        TaskTemplate(title: "回复工作邮件", goalType: .work, estimatedMinutes: 20, timeSlots: [.morning, .afternoon], tags: ["沟通", "效率"]),
+        TaskTemplate(title: "规划下周工作", goalType: .work, estimatedMinutes: 30, timeSlots: [.afternoon], tags: ["规划", "目标"]),
+        TaskTemplate(title: "学习一项工作技能", goalType: .work, estimatedMinutes: 30, timeSlots: [.morning, .afternoon], tags: ["成长", "学习"]),
+        TaskTemplate(title: "完成工作报告", goalType: .work, estimatedMinutes: 60, timeSlots: [.afternoon], tags: ["汇报", "总结"]),
+        TaskTemplate(title: "整理工作文件", goalType: .work, estimatedMinutes: 20, timeSlots: [.morning], tags: ["整理", "效率"]),
+        TaskTemplate(title: "团队沟通协作", goalType: .work, estimatedMinutes: 30, timeSlots: [.morning, .afternoon], tags: ["协作", "沟通"]),
+    ]
+
     /// 根据目标类型获取对应任务库
     static func tasks(for goalType: GoalType) -> [TaskTemplate] {
         switch goalType {
         case .fitness: return fitnessTasks
         case .study: return studyTasks
+        case .work: return workTasks
         case .sleep: return sleepTasks
         }
     }
 
     /// 所有预设任务
     static var allTasks: [TaskTemplate] {
-        fitnessTasks + studyTasks + sleepTasks
+        fitnessTasks + studyTasks + workTasks + sleepTasks
     }
 }
 

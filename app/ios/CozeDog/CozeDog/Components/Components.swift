@@ -260,6 +260,8 @@ struct DogWorldScene: View {
             return CGPoint(x: width * 0.28, y: height * 0.68)
         case .study:
             return CGPoint(x: width * 0.66, y: height * 0.40)
+        case .work:
+            return CGPoint(x: width * 0.35, y: height * 0.38)
         case .sleep:
             return CGPoint(x: width * 0.68, y: height * 0.70)
         case .none:
@@ -368,6 +370,7 @@ struct DogWorldScene: View {
         switch activeGoalType {
         case .fitness: return "运动区"
         case .study: return "学习角"
+        case .work: return "工作台"
         case .sleep: return "休闲窝"
         case .none: return "狗狗小院"
         }
@@ -381,6 +384,8 @@ struct DogWorldScene: View {
             return CGPoint(x: width * 0.22, y: height * 0.57)
         case .study:
             return CGPoint(x: width * 0.66, y: height * 0.28)
+        case .work:
+            return CGPoint(x: width * 0.30, y: height * 0.26)
         case .sleep:
             return CGPoint(x: width * 0.78, y: height * 0.34)
         case .none:
@@ -481,6 +486,8 @@ struct PixelYardMap: View {
             return CGPoint(x: width * 0.23, y: height * 0.67)
         case .study:
             return CGPoint(x: width * 0.69, y: height * 0.39)
+        case .work:
+            return CGPoint(x: width * 0.32, y: height * 0.36)
         case .sleep:
             return CGPoint(x: width * 0.69, y: height * 0.69)
         case .none:
@@ -634,6 +641,16 @@ struct PixelProps: View {
                         PixelRect(color: Color(hex: 0xF4E8C7))
                             .frame(width: width * 0.42, height: height * 0.22)
                             .position(x: width * 0.44, y: height * 0.36)
+                    case .work:
+                        PixelRect(color: Color(hex: 0x5C4033))
+                            .frame(width: width * 0.70, height: height * 0.20)
+                            .position(x: width * 0.52, y: height * 0.52)
+                        PixelRect(color: Color(hex: 0x8B7355))
+                            .frame(width: width * 0.50, height: height * 0.24)
+                            .position(x: width * 0.44, y: height * 0.36)
+                        PixelRect(color: Color(hex: 0xA0A0A0))
+                            .frame(width: width * 0.12, height: height * 0.10)
+                            .position(x: width * 0.62, y: height * 0.32)
                     case .sleep:
                         PixelRect(color: Color(hex: 0x7F93BC))
                             .frame(width: width * 0.66, height: height * 0.38)
@@ -689,6 +706,7 @@ struct PixelDogActivityCue: View {
         switch goalType {
         case .fitness: return ["figure.run", "dumbbell.fill", "flame.fill"][idx]
         case .study: return ["book.fill", "pencil", "lightbulb.fill"][idx]
+        case .work: return ["briefcase.fill", "laptopcomputer", "hammer.fill"][idx]
         case .sleep: return ["moon.fill", "play.rectangle.fill", "cloud.fill"][idx]
         case .none: return ["pawprint.fill", "music.note", "leaf.fill"][idx]
         }
@@ -1797,6 +1815,7 @@ struct TodayActionPanel: View {
     let tickTimerAction: () -> Void
     let cancelSessionAction: () -> Void
     let completeAction: () -> Void
+    let enterFocusModeAction: () -> Void
     let smallGoalAction: () -> Void
     let debugMissAction: () -> Void
     let debugResetAction: () -> Void
@@ -1924,6 +1943,7 @@ struct TodayActionPanel: View {
                 HStack(spacing: 8) {
                     planChoiceButton(plan: .fitness, icon: "figure.run")
                     planChoiceButton(plan: .study, icon: "book.fill")
+                    planChoiceButton(plan: .work, icon: "briefcase.fill")
                     planChoiceButton(plan: .leisure, icon: "cup.and.saucer.fill")
                 }
                 PixelSecondaryButton(title: "取消") {
@@ -1958,6 +1978,9 @@ struct TodayActionPanel: View {
                     runningDogCompanion
                 }
                 runningProgressBar
+                PixelPrimaryButton(title: "进入专注模式") {
+                    enterFocusModeAction()
+                }
                 PixelSecondaryButton(title: "取消本次") {
                     cancelSessionAction()
                 }

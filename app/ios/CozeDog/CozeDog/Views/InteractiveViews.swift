@@ -760,6 +760,7 @@ struct TaskCardView: View {
         switch task.goalType {
         case .fitness: return .orange
         case .study: return .blue
+        case .work: return .green
         case .sleep: return .purple
         }
     }
@@ -768,6 +769,7 @@ struct TaskCardView: View {
         switch task.goalType {
         case .fitness: return "figure.run"
         case .study: return "book.fill"
+        case .work: return "briefcase.fill"
         case .sleep: return "moon.fill"
         }
     }
