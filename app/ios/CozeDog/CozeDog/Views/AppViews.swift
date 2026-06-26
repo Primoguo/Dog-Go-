@@ -790,9 +790,15 @@ struct DogDogView: View {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(companion.nickname)
                                             .font(.headline)
-                                        Text("正在陪伴你")
-                                            .font(.caption)
-                                            .foregroundStyle(Color.dogTextSecondary)
+                                        if companion.breed == store.state.selectedDog {
+                                            Text("与主狗狗同品种，不会显示在场景中")
+                                                .font(.caption)
+                                                .foregroundStyle(Color.dogTextTertiary)
+                                        } else {
+                                            Text("正在陪伴你")
+                                                .font(.caption)
+                                                .foregroundStyle(Color.dogTextSecondary)
+                                        }
                                     }
 
                                     Spacer()
@@ -807,7 +813,7 @@ struct DogDogView: View {
                                     .buttonStyle(.plain)
                                 }
                             } else {
-                                Text("选择一只狗狗陪伴你完成计划")
+                                Text("选择一只不同品种的狗狗陪伴你完成计划")
                                     .font(.caption)
                                     .foregroundStyle(Color.dogTextSecondary)
                             }

@@ -130,8 +130,10 @@ struct DogWorldScene: View {
                 )
 
                 // 陪伴狗狗（独立位置和动画）
+                // 如果陪伴狗狗和主狗狗是同品种，不显示（避免看起来像两条一样的狗）
                 if let companionId = store.state.activeCompanionId,
-                   let companion = store.state.dogCollection.dog(with: companionId) {
+                   let companion = store.state.dogCollection.dog(with: companionId),
+                   companion.breed != store.state.selectedDog {
                     let companionSize = dogSize * 0.85
                     let companionPosition = dogMapPosition(width: width, height: height)
                         .applying(offset: companionWanderOffset)
