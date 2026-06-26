@@ -275,7 +275,7 @@ struct DogWorldScene: View {
             return CGPoint(x: width * 0.35, y: height * 0.55)
         case .sleep:
             return CGPoint(x: width * 0.68, y: height * 0.70)
-        case .none:
+        case nil:
             return CGPoint(x: width * 0.50, y: height * 0.60)
         }
     }
