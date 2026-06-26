@@ -138,15 +138,6 @@ enum TimeOfDay: String, Codable {
         }
     }
 
-    var skyColor: String {
-        switch self {
-        case .morning: return "#FFE5B4"
-        case .daytime: return "#87CEEB"
-        case .evening: return "#FF6B6B"
-        case .night: return "#191970"
-        }
-    }
-
     var ambientLight: Double {
         switch self {
         case .morning: return 0.9
@@ -386,7 +377,7 @@ enum DogEvolution: String, Codable, CaseIterable {
         case .puppy: return 0.8
         case .adult: return 1.0
         case .complete: return 1.2
-        case .legendary: return 1.2
+        case .legendary: return 1.4
         }
     }
 
@@ -458,8 +449,11 @@ enum DogMood: String, Codable, CaseIterable {
     }
 
     static func from(fullness: Int, cleanliness: Int, energy: Int) -> DogMood {
-        // 基于三项属性总和派生心情（避免整数除法截断偏差）
-        let sum = fullness + cleanliness + energy
+        // 先钳制输入到 0-100，避免溢出导致心情计算错误
+        let f = max(0, min(100, fullness))
+        let c = max(0, min(100, cleanliness))
+        let e = max(0, min(100, energy))
+        let sum = f + c + e
         if sum >= 225 { return .ecstatic }    // avg >= 75
         if sum >= 165 { return .excited }    // avg >= 55
         if sum >= 105 { return .happy }      // avg >= 35

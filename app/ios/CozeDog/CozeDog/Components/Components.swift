@@ -280,11 +280,6 @@ struct DogWorldScene: View {
 
     @MainActor
     private func runDogWorldLoop(width: CGFloat, height: CGFloat) async {
-        let config = store.state.sceneSettings.currentScene.movementConfig
-        let mood = store.state.dogMood
-        let moodModifiers = mood.movementModifiers
-        let placedItems = store.state.sceneSettings.placedItems
-
         // 圆形移动的当前角度
         var circularAngle: Double = 0
 
@@ -294,6 +289,12 @@ struct DogWorldScene: View {
                 try? await Task.sleep(nanoseconds: 500_000_000)
                 continue
             }
+
+            // 每次循环重新读取最新状态，避免捕获过期数据
+            let config = store.state.sceneSettings.currentScene.movementConfig
+            let mood = store.state.dogMood
+            let moodModifiers = mood.movementModifiers
+            let placedItems = store.state.sceneSettings.placedItems
 
             // 应用心情影响因子
             let baseMaxX = width * config.wanderRange.width
@@ -331,13 +332,20 @@ struct DogWorldScene: View {
                     // 随机漫游：随机方向，速度变化
                     let speedVariation = Double.random(in: 0.5...1.5)
                     wanderOffset = CGSize(
-                        width: CGFloat.random(in: -maxX * speedVariation...maxX * speedVariation),
-                        height: CGFloat.random(in: -maxY * speedVariation...maxY * speedVariation)
+                        width: CGFloat.random(in: -maxX...maxX) * CGFloat(speedVariation),
+                        height: CGFloat.random(in: -maxY...maxY) * CGFloat(speedVariation)
                     )
+                    // 钳制到边界，避免超出场景
+                    wanderOffset.width = max(-maxX, min(maxX, wanderOffset.width))
+                    wanderOffset.height = max(-maxY, min(maxY, wanderOffset.height))
 
                 case .circular:
                     // 圆形绕圈：沿圆形轨迹移动
                     circularAngle += Double.random(in: 0.3...0.8) * moodModifiers.speedMultiplier
+                    // 防止角度无限增长
+                    if circularAngle > .pi * 2 {
+                        circularAngle -= .pi * 2
+                    }
                     let radius = min(maxX, maxY) * (shouldJump ? 1.3 : 1.0)
                     wanderOffset = CGSize(
                         width: CGFloat(cos(circularAngle)) * radius,
@@ -2345,7 +2353,7 @@ struct Panel<Content: View>: View {
             .background {
                 ZStack {
                     Color.dogBgPanel
-                    PixelTinyGrid(colorA: Color(hex: 0xF4E6C6, alpha: 0.34), colorB: .clear, tile: 14)
+                    Color.dogTexturePattern
                 }
             }
             .overlay {

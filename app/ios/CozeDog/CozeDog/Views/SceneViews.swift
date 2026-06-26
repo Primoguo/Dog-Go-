@@ -58,7 +58,7 @@ struct SceneBackgroundView: View {
         switch timeOfDay {
         case .morning:
             return [Color(hex: 0xFFB347), Color(hex: 0x87CEEB)]
-        case .afternoon:
+        case .daytime:
             return [Color(hex: 0x87CEEB), Color(hex: 0xB0E0E6)]
         case .evening:
             return [Color(hex: 0xFF6B6B), Color(hex: 0xFFB347)]
@@ -1267,7 +1267,7 @@ struct PixelFlowerView: View {
 
             // 花心
             Circle()
-                .fill(Color.yellow)
+                .fill(Color(hex: 0xFFD700))
                 .frame(width: 3, height: 3)
                 .offset(y: -12)
         }
@@ -1296,7 +1296,7 @@ struct MagicSparkleView: View {
         Circle()
             .fill(
                 RadialGradient(
-                    colors: [Color.yellow, Color.purple.opacity(0.5), Color.clear],
+                    colors: [Color(hex: 0xFFD700), Color(hex: 0x9370DB).opacity(0.5), Color.clear],
                     center: .center,
                     startRadius: 0,
                     endRadius: 8

@@ -203,7 +203,7 @@ struct EvolutionProgressBar: View {
         .background {
             ZStack {
                 Color.dogBgPanel
-                PixelTinyGrid(colorA: Color(hex: 0xF4E6C6, alpha: 0.34), colorB: .clear, tile: 14)
+                Color.dogTexturePattern
             }
         }
         .overlay { Rectangle().stroke(Color.dogBorder, lineWidth: 2) }
@@ -345,7 +345,7 @@ struct DiaryEntryCard: View {
         .background {
             ZStack {
                 Color.dogBgPanel
-                PixelTinyGrid(colorA: Color(hex: 0xF4E6C6, alpha: 0.34), colorB: .clear, tile: 14)
+                Color.dogTexturePattern
             }
         }
         .overlay { Rectangle().stroke(Color.dogBorder, lineWidth: 2) }

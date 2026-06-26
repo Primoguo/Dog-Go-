@@ -766,7 +766,7 @@ struct TaskCardView: View {
             .background {
                 ZStack {
                     Color.dogBgPanel
-                    PixelTinyGrid(colorA: Color(hex: 0xF4E6C6, alpha: 0.34), colorB: .clear, tile: 14)
+                    Color.dogTexturePattern
                 }
             }
             .overlay { Rectangle().stroke(Color.dogBorder, lineWidth: 2) }
@@ -781,7 +781,7 @@ struct TaskCardView: View {
         case .fitness: return Color.dogAccent
         case .study: return Color.dogBrand
         case .work: return Color.dogSuccess
-        case .sleep: return Color.dogAccent
+        case .sleep: return Color.dogInfo
         }
     }
 

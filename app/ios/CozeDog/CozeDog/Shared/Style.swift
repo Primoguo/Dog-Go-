@@ -47,6 +47,9 @@ extension Color {
     static let dogDanger = Color(hex: 0x8B6A5D) // 放弃按钮文本/边框、未完成指示
     static let dogDangerBg = Color(hex: 0xF5E5E0) // 放弃按钮背景
 
+    // Texture pattern (像素网格纹理)
+    static let dogTexturePattern = PixelTinyGrid(colorA: Color(hex: 0xF4E6C6, alpha: 0.34), colorB: .clear, tile: 14)
+
     // Status (状态色 — §2.6)
     static let dogError = Color(hex: 0xC65B44) // 错误/健康红
     static let dogInfo = Color(hex: 0x4C7FA6) // 信息/精力蓝
@@ -105,7 +108,7 @@ struct PixelCardStyle: ViewModifier {
             .background {
                 ZStack {
                     bg
-                    PixelTinyGrid(colorA: Color(hex: 0xF4E6C6, alpha: 0.34), colorB: .clear, tile: 14)
+                    Color.dogTexturePattern
                 }
             }
             .overlay { Rectangle().stroke(borderColor, lineWidth: borderWidth) }

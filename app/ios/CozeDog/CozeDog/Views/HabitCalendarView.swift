@@ -34,6 +34,7 @@ struct HabitCalendarView: View {
     @Binding var isPresented: Bool
     @State private var selectedMonth: Date = Date()
     @State private var showsMonthlyReport = false
+    @State private var cachedCalendarDays: [Date?] = []
 
     var body: some View {
         ZStack {
@@ -71,7 +72,7 @@ struct HabitCalendarView: View {
             .background {
                 ZStack {
                     Color.dogBgPanel
-                    PixelTinyGrid(colorA: Color(hex: 0xF4E6C6, alpha: 0.34), colorB: .clear, tile: 14)
+                    Color.dogTexturePattern
                 }
             }
             .frame(width: 340, height: 580)
@@ -81,6 +82,12 @@ struct HabitCalendarView: View {
         .sheet(isPresented: $showsMonthlyReport) {
             MonthlyReportView(month: selectedMonth)
                 .environmentObject(store)
+        }
+        .onAppear {
+            updateCalendarDaysCache()
+        }
+        .onChange(of: selectedMonth) { _, _ in
+            updateCalendarDaysCache()
         }
     }
 
@@ -311,10 +318,15 @@ struct HabitCalendarView: View {
     }
 
     private func generateCalendarDays() -> [Date?] {
+        return cachedCalendarDays
+    }
+
+    private func updateCalendarDaysCache() {
         let calendar = Calendar.current
         guard let monthInterval = calendar.dateInterval(of: .month, for: selectedMonth),
               let daysRange = calendar.range(of: .day, in: .month, for: selectedMonth) else {
-            return []
+            cachedCalendarDays = []
+            return
         }
 
         let firstDayOfMonth = monthInterval.start
@@ -328,7 +340,7 @@ struct HabitCalendarView: View {
             }
         }
 
-        return days
+        cachedCalendarDays = days
     }
 }
 

@@ -34,6 +34,7 @@ struct RootView: View {
         }
         .onChange(of: store.state.dogEvolution) { _, newEvolution in
             if newEvolution != previousEvolution {
+                previousEvolution = newEvolution
                 showEvolutionPopup = true
             }
         }
@@ -570,10 +571,11 @@ struct HomeView: View {
     }
 
     private func greeting() -> String {
-        let hour = Calendar.current.component(.hour, from: Date())
-        if hour < 11 { return "早上好" }
-        if hour < 18 { return "下午好" }
-        return "晚上好"
+        switch TimeOfDay.current {
+        case .morning: return "早上好"
+        case .daytime: return "下午好"
+        case .evening, .night: return "晚上好"
+        }
     }
 }
 
@@ -881,6 +883,7 @@ struct DogHomeView: View {
     @EnvironmentObject private var store: AppStore
     @State private var selectedItem: PixelRewardItem?
     @State private var showUsedToast = false
+    @State private var toastDismissTask: Task<Void, Never>?
     @State private var usedItemName = ""
 
     private var currentScene: SceneType {
@@ -1008,7 +1011,8 @@ struct DogHomeView: View {
                             if store.useItem(at: idx) {
                                 usedItemName = "\(item.label) 已使用！"
                                 withAnimation { showUsedToast = true }
-                                Task {
+                                toastDismissTask?.cancel()
+                                toastDismissTask = Task {
                                     try? await Task.sleep(nanoseconds: 1_500_000_000)
                                     guard !Task.isCancelled else { return }
                                     withAnimation { showUsedToast = false }
@@ -1038,6 +1042,7 @@ struct FocusModeView: View {
     @State private var encouragementText = ""
     @State private var showRestReminder = false
     @State private var showAbandonConfirm = false
+    @State private var encouragementDismissTask: Task<Void, Never>?
 
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -1174,7 +1179,8 @@ struct FocusModeView: View {
         }
 
         // 3秒后自动消失
-        Task {
+        encouragementDismissTask?.cancel()
+        encouragementDismissTask = Task {
             try? await Task.sleep(nanoseconds: 3_000_000_000)
             guard !Task.isCancelled else { return }
             withAnimation(.easeOut(duration: 0.3)) {

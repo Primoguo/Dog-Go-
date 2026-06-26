@@ -48,7 +48,10 @@ final class AppStore: ObservableObject {
         guard let lastDateStr = state.rhythmState.lastCompletedDate else { return }
         guard let lastDate = Self.assignedDateFormatter.date(from: lastDateStr) else { return }
 
-        let days = Calendar.current.dateComponents([.day], from: lastDate, to: Date()).day ?? 0
+        // 使用 assignedDate() 保持 4AM  rollover 一致性
+        let todayStr = assignedDate()
+        let today = Self.assignedDateFormatter.date(from: todayStr) ?? Date()
+        let days = Calendar.current.dateComponents([.day], from: lastDate, to: today).day ?? 0
         guard days > 0 else { return }
 
         // 已经处于 longBreak 则不重复设置（允许 missed → longBreak 升级）
@@ -287,6 +290,7 @@ final class AppStore: ObservableObject {
                 while state.dogState.intimacy >= nextLevelNeed() {
                     state.dogState.intimacy -= nextLevelNeed()
                     state.dogState.level += 1
+                    state.dogState.inventory.append(randomRewardItem())
                 }
             case "心情": state.dogState.moodScore = clampToTen(state.dogState.moodScore + gain.amount)
             case "饱腹": state.dogState.fullness = clamp(state.dogState.fullness + gain.amount)
@@ -321,6 +325,7 @@ final class AppStore: ObservableObject {
             while state.dogState.intimacy >= nextLevelNeed() {
                 state.dogState.intimacy -= nextLevelNeed()
                 state.dogState.level += 1
+                state.dogState.inventory.append(randomRewardItem())
             }
         case "sofa":
             // 沙发：放松恢复心情和精力
@@ -337,6 +342,7 @@ final class AppStore: ObservableObject {
             while state.dogState.intimacy >= nextLevelNeed() {
                 state.dogState.intimacy -= nextLevelNeed()
                 state.dogState.level += 1
+                state.dogState.inventory.append(randomRewardItem())
             }
         case "studyDesk":
             // 学习桌：学习提升精力和心情
@@ -417,9 +423,6 @@ final class AppStore: ObservableObject {
             checkAndUnlockAchievements()
         }
 
-        // 生成日记（如果今天还没有）
-        generateDailyDiaryIfNeeded()
-
         var leveledUp = false
         var rewardItem: PixelRewardItem?
 
@@ -448,6 +451,10 @@ final class AppStore: ObservableObject {
 
         // 属性变化后重新派生心情
         updateDogMood()
+
+        // 生成日记（在属性更新后，确保日记记录最新心情）
+        generateDailyDiaryIfNeeded()
+
         state.dogState.pose = .happy
         state.rhythmState.status = type == .recovery ? .recovering : .stable
         if type == .main {
@@ -806,7 +813,7 @@ final class AppStore: ObservableObject {
         state.checkIns = state.checkIns.filter { $0.completedAt >= cutoff }
         state.focusSessions = state.focusSessions.filter { $0.startedAt >= cutoff }
         state.diaryEntries = state.diaryEntries.filter { $0.date >= cutoff }
-        state.taskHistory = state.taskHistory.filter { $0.date >= cutoff }
+        state.taskHistory = state.taskHistory.filter { $0.acceptedDate >= cutoff }
         // 月报保留最近 12 个月
         if state.monthlyReports.count > 12 {
             state.monthlyReports = Array(state.monthlyReports.suffix(12))
@@ -863,7 +870,9 @@ final class AppStore: ObservableObject {
 
         guard let lastDate = Self.assignedDateFormatter.date(from: lastActive) else { return }
 
-        let today = Date()
+        // 使用 assignedDate() 保持 4AM rollover 一致性
+        let todayStr = assignedDate()
+        let today = Self.assignedDateFormatter.date(from: todayStr) ?? Date()
         let days = Calendar.current.dateComponents([.day], from: lastDate, to: today).day ?? 0
         guard days > 0 else { return }
 
@@ -1281,23 +1290,31 @@ final class AppStore: ObservableObject {
     /// 计算当前连续打卡天数（仅统计主打卡）
     func calculateCurrentStreak() -> Int {
         let calendar = Calendar.current
+
+        // 预先构建主打卡日期集合，避免 O(365*n) 线性扫描
+        let mainCheckInDates = Set(
+            state.checkIns
+                .filter { $0.type == .main }
+                .map { calendar.startOfDay(for: $0.completedAt) }
+        )
+
         var streak = 0
-        var currentDate = Date()
+        var currentDate = calendar.startOfDay(for: Date())
 
         // 如果今天没有主打卡，从昨天开始计算
-        if !hasMainCheckIn(on: currentDate) {
+        if !mainCheckInDates.contains(currentDate) {
             guard let yesterday = calendar.date(byAdding: .day, value: -1, to: currentDate) else {
                 return 0
             }
-            if !hasMainCheckIn(on: yesterday) {
+            if !mainCheckInDates.contains(yesterday) {
                 return 0 // 昨天也没主打卡
             }
             currentDate = yesterday
         }
 
-        // 向前回溯计算连续天数
-        for _ in 0..<365 { // 最多回溯一年
-            if hasMainCheckIn(on: currentDate) {
+        // 向前回溯计算连续天数（最多回溯 90 天，与 pruneOldData 保持一致）
+        for _ in 0..<90 {
+            if mainCheckInDates.contains(currentDate) {
                 streak += 1
                 guard let previousDate = calendar.date(byAdding: .day, value: -1, to: currentDate) else {
                     break
