@@ -37,7 +37,7 @@ struct HabitCalendarView: View {
     var body: some View {
         ZStack {
             // 背景遮罩
-            Color.black.opacity(0.4)
+            Color.dogScrim.opacity(0.4)
                 .ignoresSafeArea()
                 .onTapGesture {
                     withAnimation(.spring(response: 0.3)) {

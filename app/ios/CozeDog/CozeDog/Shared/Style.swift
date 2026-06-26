@@ -41,6 +41,14 @@ extension Color {
     static let dogTextTertiary = Color(hex: 0x6B715F)
     static let dogTextPlaceholder = Color(hex: 0x8B8B8B)
     static let dogSecondaryButtonText = Color(hex: 0x3E3323)
+    static let dogTextOnDark = Color(hex: 0xFFF8E8) // 深色背景上的浅色文本
+
+    // Danger (放弃/危险操作)
+    static let dogDanger = Color(hex: 0x8B6A5D) // 放弃按钮文本/边框、未完成指示
+    static let dogDangerBg = Color(hex: 0xF5E5E0) // 放弃按钮背景
+
+    // Overlay
+    static let dogScrim = Color(hex: 0x26382B) // 遮罩/半透明覆盖层
 
     // Accent
     static let dogAccent = Color(hex: 0xC69A3E)

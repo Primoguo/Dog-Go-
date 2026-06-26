@@ -720,7 +720,7 @@ struct SceneThumbnailView: View {
             // 锁定遮罩
             if isLocked {
                 Rectangle()
-                    .fill(Color.black.opacity(0.45))
+                    .fill(Color.dogScrim.opacity(0.45))
                 Image(systemName: "lock.fill")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(.white.opacity(0.8))

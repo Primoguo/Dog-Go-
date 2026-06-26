@@ -218,7 +218,7 @@ struct DogWorldScene: View {
                 Rectangle()
                     .stroke(Color(hex: 0x7C9B64), lineWidth: 2)
             }
-            .shadow(color: Color(hex: 0x3E4F38).opacity(0.16), radius: 0, x: 4, y: 4)
+            .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 4, y: 4)
             .onTapGesture {
                 showsDogStatus = false
             }
@@ -758,7 +758,7 @@ struct PixelDogCountdownBadge: View {
             Rectangle()
                 .stroke(Color(hex: 0xC69A3E), lineWidth: 2)
         }
-        .shadow(color: Color(hex: 0x4B3327, alpha: 0.14), radius: 0, x: 3, y: 3)
+        .shadow(color: Color.dogPixelShadow.opacity(0.14), radius: 0, x: 3, y: 3)
     }
 
     private var formattedTime: String {
@@ -2206,7 +2206,7 @@ struct BottomBarItem: View {
                 Rectangle()
                     .stroke(border, lineWidth: isSelected ? 2 : 1)
             }
-            .shadow(color: isSelected ? Color(hex: 0x1E3D2C, alpha: 0.22) : Color.clear, radius: 0, x: 2, y: 2)
+            .shadow(color: isSelected ? Color.dogBrandDark.opacity(0.22) : Color.clear, radius: 0, x: 2, y: 2)
         }
         .buttonStyle(.plain)
     }
@@ -2309,12 +2309,12 @@ struct PixelPrimaryButton: View {
                 PixelTinyGrid(colorA: Color(hex: 0xFFF8E8, alpha: disabled ? 0.08 : 0.10), colorB: Color.clear, tile: 9)
             }
         }
-        .foregroundStyle(disabled ? Color(hex: 0x6B715F) : .white)
+        .foregroundStyle(disabled ? Color(hex: 0x6B715F) : Color.dogTextOnDark)
         .overlay {
             Rectangle()
                 .stroke(disabled ? Color(hex: 0xA4AA96) : Color(hex: 0x1E3D2C), lineWidth: 3)
         }
-        .shadow(color: disabled ? Color.clear : Color(hex: 0x1E3D2C, alpha: 0.25), radius: 0, x: 3, y: 3)
+        .shadow(color: disabled ? Color.clear : Color.dogBrandDark.opacity(0.25), radius: 0, x: 3, y: 3)
         .disabled(disabled)
     }
 }
@@ -2341,7 +2341,7 @@ struct PixelSecondaryButton: View {
             Rectangle()
                 .stroke(Color(hex: 0xC7A76D), lineWidth: 2)
         }
-        .shadow(color: Color(hex: 0x8D6D46, alpha: 0.18), radius: 0, x: 2, y: 2)
+        .shadow(color: Color.dogPixelShadow.opacity(0.18), radius: 0, x: 2, y: 2)
     }
 }
 
@@ -2370,7 +2370,7 @@ struct PixelChoiceButton: View {
             Rectangle()
                 .stroke(isSelected ? Color(hex: 0x1E3D2C) : Color(hex: 0x9BB985), lineWidth: isSelected ? 2 : 1)
         }
-        .shadow(color: isSelected ? Color(hex: 0x1E3D2C, alpha: 0.20) : Color.clear, radius: 0, x: 2, y: 2)
+        .shadow(color: isSelected ? Color.dogBrandDark.opacity(0.20) : Color.clear, radius: 0, x: 2, y: 2)
     }
 }
 
@@ -2571,7 +2571,7 @@ struct PrimaryButton: View {
         }
         .buttonStyle(.plain)
         .background(disabled ? Color(hex: 0xD5D8C7) : Color.dogBrand)
-        .foregroundStyle(disabled ? Color.dogTextTertiary : .white)
+        .foregroundStyle(disabled ? Color.dogTextTertiary : Color.dogTextOnDark)
         .overlay {
             Rectangle()
                 .stroke(disabled ? Color(hex: 0xA4AA96) : Color.dogBrandDark, lineWidth: 3)

@@ -1,6 +1,6 @@
 # Dog Go 视觉风格优化手册
 
-> 版本：v1.1 | 更新日期：2026-06-26
+> 版本：v1.2 | 更新日期：2026-06-26
 > 定位：像素风 2.5D 等距宠物养成 × 自律工具
 
 ---
@@ -53,6 +53,7 @@
 | 辅助文本 `textTertiary` | `#6B715F` | 说明文案、禁用态文本、次要信息 |
 | 弱文本 `textPlaceholder` | `#8B8B8B` | 占位符、最弱层级文本 |
 | 次按钮文本 `secondaryButtonText` | `#3E3323` | 次要按钮（SecondaryButton）专用文本色 |
+| 深色底文本 `textOnDark` | `#FFF8E8` | 深色背景（品牌绿/遮罩等）上的浅色文本，与 bgPanel 同色但语义不同 |
 
 ### 2.5 点缀色
 
@@ -69,6 +70,9 @@
 | 禁用 | `#D5D8C7` | `#6B715F` | `#A4AA96` |
 | 错误/健康 | `#C65B44`（红） | — | — |
 | 信息/精力 | `#4C7FA6`（蓝） | — | — |
+| 危险/放弃 `danger` | `#F5E5E0` (dangerBg) | `#8B6A5D` (danger) | `#8B6A5D` (danger) |
+
+**危险色用途**：放弃按钮（文本/边框用 `dogDanger`，背景用 `dogDangerBg`）、未完成会话指示器。
 
 ### 2.7 像素阴影色
 
@@ -76,7 +80,26 @@
 |------|------|------|
 | 像素阴影 `pixelShadow` | `#3E4F38` | 所有像素组件的偏移硬阴影，alpha 0.16 |
 
-### 2.8 色彩使用规则
+### 2.9 遮罩/覆盖层（Overlay & Scrim）
+
+| 名称 | 色值 | 用途 |
+|------|------|------|
+| 遮罩色 `scrim` | `#26382B` | 模态弹窗/覆盖层的背景遮罩，与 textPrimary 同色但语义不同 |
+
+**用法**：`Color.dogScrim.opacity(N)`，根据场景选择透明度：
+
+| 场景 | 透明度 | 说明 |
+|------|--------|------|
+| 轻量弹窗 | 0.4 | 习惯日历、休息提醒等半透背景 |
+| 标准弹窗 | 0.45 | 场景锁定遮罩 |
+| 强调弹窗 | 0.6 | 进化弹窗、场景选择器、任务建议等深背景 |
+
+```
+❌ 禁止使用 Color.black.opacity(N) 作为遮罩
+✅ 统一使用 Color.dogScrim.opacity(N)
+```
+
+### 2.10 色彩使用规则
 
 ```
 ✅ 正确：
@@ -196,7 +219,7 @@ Text("习惯日历")
 | 属性 | 值 |
 |------|-----|
 | 背景 | `#356247` (brand) |
-| 文本 | 白色 |
+| 文本 | `#FFF8E8` (textOnDark) |
 | 边框 | `#1E3D2C` (brandDark), 3px |
 | 圆角 | 8pt |
 | 最小高度 | 50pt |
@@ -254,7 +277,7 @@ Text("习惯日历")
 |------|-----|
 | 背景 | `#FFF8E8` (bgPanel) 纯色 + `#EAF1DA` 网格纹理（无 opacity） |
 | 顶边框 | `#7C9B64`, 2px |
-| 选中项 | fg `#FFF8E8`, bg `#356247`, border `#1E3D2C` |
+| 选中项 | fg `#FFF8E8` (textOnDark), bg `#356247`, border `#1E3D2C` |
 | 未选中项 | fg `#41573E`, bg `#EAF1DA`, border `#9BB985` |
 
 ### 5.7 状态徽章（PixelStatusBadge）
@@ -271,6 +294,30 @@ Text("习惯日历")
 |------|------|------|
 | 已完成 | `#5D8B6A` | `#356247` |
 | 未完成 | `#D9CFB9` | `#BCA98B` |
+
+### 5.9 形状使用规则
+
+**直角矩形（Rectangle / RoundedRectangle(cornerRadius: 0)）**：所有面板、卡片、按钮、容器的默认形状。
+
+**圆角 8pt（RoundedRectangle(cornerRadius: 8)）**：仅用于按钮（PixelPrimaryButton / PixelSecondaryButton）。
+
+**胶囊形（Capsule）**：仅用于以下场景，不得用于面板或卡片：
+- 控件轨道：Toggle 开关、Slider 滑轨、ProgressView 进度条轨道
+- 心情徽章：MoodDisplayView 的心情胶囊
+- 小型状态指示器：如在线状态点、小标签
+
+```
+✅ 正确：
+- 面板/卡片 → Rectangle (cornerRadius: 0)
+- 按钮 → RoundedRectangle(cornerRadius: 8)
+- Toggle 轨道 → Capsule()
+- 心情徽章 → Capsule()
+
+❌ 错误：
+- 面板用 Capsule()（面板必须直角）
+- 卡片用 RoundedRectangle(12)（卡片必须直角）
+- 按钮用 RoundedRectangle(16)（按钮统一 8pt）
+```
 
 ---
 
@@ -417,7 +464,7 @@ VStack(alignment: .leading, spacing: 12) {
 Button(action: action) {
     Text(title)
         .font(.headline.weight(.heavy))
-        .foregroundColor(.white)
+        .foregroundColor(Color.dogTextOnDark)
         .frame(maxWidth: .infinity)
         .frame(minHeight: 50)
         .background(Color(hex: 0x356247))
@@ -458,6 +505,14 @@ extension Color {
     static let dogTextTertiary = Color(hex: 0x6B715F)
     static let dogTextPlaceholder = Color(hex: 0x8B8B8B)
     static let dogSecondaryButtonText = Color(hex: 0x3E3323)
+    static let dogTextOnDark = Color(hex: 0xFFF8E8)
+
+    // 危险
+    static let dogDanger = Color(hex: 0x8B6A5D)
+    static let dogDangerBg = Color(hex: 0xF5E5E0)
+
+    // 遮罩
+    static let dogScrim = Color(hex: 0x26382B)
 
     // 点缀
     static let dogAccent = Color(hex: 0xC69A3E)
@@ -471,7 +526,66 @@ extension Color {
 
 ---
 
-## 十、检查清单
+## 十、像素画调色板附录
+
+场景、道具、狗狗渲染使用的颜色，供绘制像素精灵时参考。
+
+### 10.1 场景地面色
+
+| 场景 | 色值 | 说明 |
+|------|------|------|
+| 温馨小院 | `#7CCD7C` | 草地绿 |
+| 阳光公园 | `#6BBF6B` | 深草绿 |
+| 海边沙滩 | `#F4D03F` | 沙黄 |
+| 神秘森林 | `#3D6B3D` | 暗林绿 |
+
+### 10.2 自然元素
+
+| 元素 | 色值 | 说明 |
+|------|------|------|
+| 树干 | `#8B6A5D` | 棕色 |
+| 树冠（浅） | `#4CAF50` | 受光面 |
+| 树冠（深） | `#2E7D32` | 背光面 |
+| 海水 | `#4C9BEA` | 蓝色 |
+| 海浪泡沫 | `#FFFFFF` | 白色 |
+| 花朵（红） | `#E85D75` | 红色花瓣 |
+| 花朵（黄） | `#F4D03F` | 黄色花瓣 |
+| 蘑菇帽 | `#C65B44` | 红色 |
+| 蘑菇杆 | `#F5E5E0` | 米白 |
+| 石头 | `#8B8B7A` | 灰绿 |
+
+### 10.3 建筑/道具
+
+| 元素 | 色值 | 说明 |
+|------|------|------|
+| 屋顶 | `#A0522D` | 赭石 |
+| 墙壁 | `#D2B48C` | 浅棕 |
+| 窗户 | `#87CEEB` | 天蓝 |
+| 门 | `#6B4226` | 深棕 |
+| 长椅 | `#8B6A5D` | 棕色 |
+
+### 10.4 狗狗基础色（随机系统）
+
+| 部位 | 可选色值 | 说明 |
+|------|----------|------|
+| 身体 | `#F5DEB3`, `#D2B48C`, `#8B6914`, `#4A4A4A`, `#F5F5DC`, `#C4A882`, `#E8D5B7` | 7 色 |
+| 耳朵 | 同身体色 | 与身体同色系 |
+| 眼睛 | `#2C1810`, `#4A3728`, `#1A1A1A` | 深色系 |
+| 鼻子 | `#1A1A1A`, `#2C1810` | 黑色/深棕 |
+| 舌头 | `#E85D75` | 粉红 |
+
+### 10.5 特效色
+
+| 特效 | 色值 | 说明 |
+|------|------|------|
+| 进化发光 | `#FFF1B8` (accentBright) | 金色光晕 |
+| 传奇皇冠 | `#C69A3E` (accent) | 琥珀金 |
+| 魔法粒子 | `#B39DDB` | 紫色 |
+| 像素硬阴影 | `#3E4F38` (pixelShadow) | alpha 0.16 |
+
+---
+
+## 十一、检查清单
 
 新页面/组件开发时，逐项检查：
 

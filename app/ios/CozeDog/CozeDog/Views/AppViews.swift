@@ -417,7 +417,7 @@ struct GoalTypeButton: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, 10)
             .background(isSelected ? Color.dogBrand : Color.dogBgPanel)
-            .foregroundStyle(isSelected ? .white : Color.dogTextTertiary)
+            .foregroundStyle(isSelected ? Color.dogTextOnDark : Color.dogTextTertiary)
             .overlay {
                 Rectangle()
                     .stroke(isSelected ? Color.dogBrandDark : Color.dogBorder, lineWidth: isSelected ? 2 : 1)
@@ -477,7 +477,7 @@ struct TemplateCard: View {
                     .overlay {
                         Image(systemName: "checkmark")
                             .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.dogTextOnDark)
                     }
             }
         }
@@ -763,7 +763,7 @@ struct DogDogView: View {
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 10)
                                     .background(Color.dogBrand)
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(Color.dogTextOnDark)
                                     .clipShape(Capsule())
                             }
                             .buttonStyle(.plain)
@@ -847,7 +847,7 @@ struct DogDogView: View {
                                                 if store.state.activeCompanionId == dog.id {
                                                     Image(systemName: "checkmark.circle.fill")
                                                         .font(.caption)
-                                                        .foregroundStyle(.white)
+                                                        .foregroundStyle(Color.dogTextOnDark)
                                                         .background(Color.dogBrand)
                                                         .clipShape(Circle())
                                                         .offset(x: 20, y: -20)
@@ -1099,13 +1099,13 @@ struct FocusModeView: View {
                 } label: {
                     Text("放弃")
                         .font(.headline)
-                        .foregroundStyle(Color(hex: 0x8B6A5D))
+                        .foregroundStyle(Color.dogDanger)
                         .padding(.horizontal, 32)
                         .padding(.vertical, 12)
-                        .background(Color(hex: 0xF5E5E0))
+                        .background(Color.dogDangerBg)
                         .overlay {
                             Rectangle()
-                                .stroke(Color(hex: 0x8B6A5D), lineWidth: 2)
+                                .stroke(Color.dogDanger, lineWidth: 2)
                         }
                 }
                 .padding(.bottom, 30)
@@ -1236,7 +1236,7 @@ struct RestReminderView: View {
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.4)
+            Color.dogScrim.opacity(0.4)
                 .ignoresSafeArea()
 
             VStack(spacing: 20) {
@@ -1260,7 +1260,7 @@ struct RestReminderView: View {
                     } label: {
                         Text("继续专注")
                             .font(.headline)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.dogTextOnDark)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
                             .background(Color.dogSuccess)
@@ -1350,7 +1350,7 @@ struct RestModeView: View {
                 } label: {
                     Text("结束休息，继续专注")
                         .font(.headline)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Color.dogTextOnDark)
                         .padding(.horizontal, 32)
                         .padding(.vertical, 12)
                         .background(Color.dogSuccess)
@@ -1390,7 +1390,7 @@ struct AbandonConfirmView: View {
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.4)
+            Color.dogScrim.opacity(0.4)
                 .ignoresSafeArea()
 
             VStack(spacing: 20) {
@@ -1413,10 +1413,10 @@ struct AbandonConfirmView: View {
                     } label: {
                         Text("确定放弃")
                             .font(.headline)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.dogTextOnDark)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
-                            .background(Color(hex: 0x8B6A5D))
+                            .background(Color.dogDanger)
                     }
 
                     Button {
@@ -1567,7 +1567,7 @@ struct FocusSessionRow: View {
         HStack(spacing: 12) {
             Image(systemName: session.completed ? "checkmark.circle.fill" : "xmark.circle.fill")
                 .font(.title3)
-                .foregroundStyle(session.completed ? Color.dogSuccess : Color(hex: 0x8B6A5D))
+                .foregroundStyle(session.completed ? Color.dogSuccess : Color.dogDanger)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(session.plan.label)

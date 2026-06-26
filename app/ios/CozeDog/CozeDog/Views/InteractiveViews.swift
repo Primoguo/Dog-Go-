@@ -193,7 +193,7 @@ struct SceneSelectorView: View {
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.6)
+            Color.dogScrim.opacity(0.6)
                 .ignoresSafeArea()
                 .onTapGesture {
                     withAnimation {
@@ -327,6 +327,7 @@ struct SceneCardView: View {
             }
             .padding()
             .background(
+                // NOTE: 场景选择弹窗内的卡片，保留圆角作为特殊视觉语言（符合风格指南 3.1）
                 RoundedRectangle(cornerRadius: 16)
                     .fill(isSelected ? Color.dogBgPanel.opacity(0.3) : Color.dogBgPanel.opacity(0.1))
             )
@@ -439,7 +440,7 @@ struct TaskSuggestionView: View {
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.6)
+            Color.dogScrim.opacity(0.6)
                 .ignoresSafeArea()
                 .onTapGesture {
                     withAnimation {
