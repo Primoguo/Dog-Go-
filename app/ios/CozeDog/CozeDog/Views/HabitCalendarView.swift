@@ -20,7 +20,7 @@ struct HabitCalendarButton: View {
 
                 Image(systemName: "calendar")
                     .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(Color.dogSuccess)
+                    .foregroundStyle(Color.dogSuccess)
             }
         }
         .accessibilityLabel("习惯日历")
@@ -90,7 +90,7 @@ struct HabitCalendarView: View {
         HStack {
             Text("📅 习惯追踪")
                 .font(.system(size: 18, weight: .bold, design: .monospaced))
-                .foregroundColor(Color.dogTextPrimary)
+                .foregroundStyle(Color.dogTextPrimary)
 
             Spacer()
 
@@ -103,7 +103,7 @@ struct HabitCalendarView: View {
                     Text("月度报告")
                         .font(.system(size: 12, weight: .bold, design: .monospaced))
                 }
-                .foregroundColor(Color.dogBgPanel)
+                .foregroundStyle(Color.dogBgPanel)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
                 .background(
@@ -119,7 +119,7 @@ struct HabitCalendarView: View {
             }) {
                 Image(systemName: "xmark")
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(Color.dogTextTertiary)
+                    .foregroundStyle(Color.dogTextTertiary)
             }
         }
         .padding(16)
@@ -185,12 +185,12 @@ struct HabitCalendarView: View {
                 }) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(Color.dogBrand)
+                        .foregroundStyle(Color.dogBrand)
                 }
 
                 Text(monthYearString(from: selectedMonth))
                     .font(.system(size: 16, weight: .bold, design: .monospaced))
-                    .foregroundColor(Color.dogTextPrimary)
+                    .foregroundStyle(Color.dogTextPrimary)
 
                 Spacer()
 
@@ -200,7 +200,7 @@ struct HabitCalendarView: View {
                     }) {
                         Text("今天")
                             .font(.system(size: 12, weight: .bold, design: .monospaced))
-                            .foregroundColor(Color.dogBrand)
+                            .foregroundStyle(Color.dogBrand)
                     }
                 }
 
@@ -211,7 +211,7 @@ struct HabitCalendarView: View {
                 }) {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(Color.dogBrand)
+                        .foregroundStyle(Color.dogBrand)
                 }
             }
 
@@ -220,7 +220,7 @@ struct HabitCalendarView: View {
                 ForEach(["日", "一", "二", "三", "四", "五", "六"], id: \.self) { day in
                     Text(day)
                         .font(.system(size: 12, weight: .bold, design: .monospaced))
-                        .foregroundColor(Color.dogTextTertiary)
+                        .foregroundStyle(Color.dogTextTertiary)
                         .frame(maxWidth: .infinity)
                 }
             }
@@ -258,7 +258,7 @@ struct HabitCalendarView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("🏆 成就徽章")
                 .font(.system(size: 14, weight: .bold, design: .monospaced))
-                .foregroundColor(Color.dogTextPrimary)
+                .foregroundStyle(Color.dogTextPrimary)
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4), spacing: 8) {
                 ForEach(AchievementType.allCases, id: \.self) { type in
@@ -282,11 +282,11 @@ struct HabitCalendarView: View {
         VStack(spacing: 8) {
             Text("📊 断签恢复激励")
                 .font(.system(size: 14, weight: .bold, design: .monospaced))
-                .foregroundColor(Color.dogTextPrimary)
+                .foregroundStyle(Color.dogTextPrimary)
 
             Text(store.getStreakRecoveryMessage())
                 .font(.system(size: 13, weight: .medium, design: .monospaced))
-                .foregroundColor(Color.dogTextTertiary)
+                .foregroundStyle(Color.dogTextTertiary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 8)
         }
@@ -299,11 +299,15 @@ struct HabitCalendarView: View {
 
     // MARK: - Helpers
 
+    private static let monthYearFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy年M月"
+        f.locale = Locale(identifier: "zh_CN")
+        return f
+    }()
+
     private func monthYearString(from date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy年M月"
-        formatter.locale = Locale(identifier: "zh_CN")
-        return formatter.string(from: date)
+        Self.monthYearFormatter.string(from: date)
     }
 
     private func generateCalendarDays() -> [Date?] {
@@ -340,7 +344,7 @@ struct CalendarDayCell: View {
         VStack(spacing: 2) {
             Text("\(Calendar.current.component(.day, from: date))")
                 .font(.system(size: 12, weight: isToday ? .bold : .regular, design: .monospaced))
-                .foregroundColor(isCurrentMonth ? Color.dogTextPrimary : Color.dogTextPlaceholder.opacity(0.5))
+                .foregroundStyle(isCurrentMonth ? Color.dogTextPrimary : Color.dogTextPlaceholder.opacity(0.5))
 
             if hasCheckIn {
                 Circle()
@@ -365,37 +369,6 @@ struct CalendarDayCell: View {
     }
 }
 
-// MARK: - Stat Item
-
-struct HabitStatItem: View {
-    let icon: String
-    let value: String
-    let label: String
-    let color: Color
-
-    var body: some View {
-        VStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.system(size: 20, weight: .bold))
-                .foregroundColor(color)
-
-            Text(value)
-                .font(.system(size: 18, weight: .bold, design: .monospaced))
-                .foregroundColor(Color.dogTextPrimary)
-
-            Text(label)
-                .font(.system(size: 11, weight: .medium, design: .monospaced))
-                .foregroundColor(Color.dogTextTertiary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
-        .background(
-            Rectangle()
-                .fill(color.opacity(0.1))
-        )
-    }
-}
-
 // MARK: - Achievement Badge View
 
 struct AchievementBadgeView: View {
@@ -411,12 +384,12 @@ struct AchievementBadgeView: View {
 
                 Image(systemName: type.icon)
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(isUnlocked ? Color.dogBgPanel : Color.dogTextTertiary)
+                    .foregroundStyle(isUnlocked ? Color.dogBgPanel : Color.dogTextTertiary)
             }
 
             Text(type.title)
                 .font(.system(size: 11, weight: .medium, design: .monospaced))
-                .foregroundColor(isUnlocked ? Color.dogTextPrimary : Color.dogTextTertiary)
+                .foregroundStyle(isUnlocked ? Color.dogTextPrimary : Color.dogTextTertiary)
                 .lineLimit(1)
         }
     }
@@ -436,14 +409,14 @@ struct MonthlyReportView: View {
             HStack {
                 Text("📊 月度报告")
                     .font(.system(size: 18, weight: .bold, design: .monospaced))
-                    .foregroundColor(Color.dogTextPrimary)
+                    .foregroundStyle(Color.dogTextPrimary)
 
                 Spacer()
 
                 Button(action: { dismiss() }) {
                     Image(systemName: "xmark")
                         .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(Color.dogTextTertiary)
+                        .foregroundStyle(Color.dogTextTertiary)
                 }
             }
             .padding(.horizontal, 16)
@@ -456,7 +429,7 @@ struct MonthlyReportView: View {
                 // 月份标题
                 Text(monthString(from: month))
                     .font(.system(size: 16, weight: .bold, design: .monospaced))
-                    .foregroundColor(Color.dogBrand)
+                    .foregroundStyle(Color.dogBrand)
 
                 // 统计数据
                 VStack(spacing: 12) {
@@ -478,7 +451,7 @@ struct MonthlyReportView: View {
                 // 鼓励文案
                 Text(encouragementMessage(for: report))
                     .font(.system(size: 14, weight: .medium, design: .monospaced))
-                    .foregroundColor(Color.dogTextTertiary)
+                    .foregroundStyle(Color.dogTextTertiary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 16)
             }
@@ -501,7 +474,9 @@ struct MonthlyReportView: View {
         .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 4, y: 4)
         .frame(width: 320, height: 480)
         .task {
-            report = store.generateMonthlyReport(for: month)
+            let r = store.generateMonthlyReport(for: month)
+            store.persistMonthlyReport(r)
+            report = r
         }
     }
 
@@ -509,26 +484,30 @@ struct MonthlyReportView: View {
         HStack {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .bold))
-                .foregroundColor(Color.dogBrand)
+                .foregroundStyle(Color.dogBrand)
                 .frame(width: 24)
 
             Text(label)
                 .font(.system(size: 14, weight: .medium, design: .monospaced))
-                .foregroundColor(Color.dogTextPrimary)
+                .foregroundStyle(Color.dogTextPrimary)
 
             Spacer()
 
             Text(value)
                 .font(.system(size: 14, weight: .bold, design: .monospaced))
-                .foregroundColor(Color.dogBrand)
+                .foregroundStyle(Color.dogBrand)
         }
     }
 
+    private static let monthReportFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy年M月"
+        f.locale = Locale(identifier: "zh_CN")
+        return f
+    }()
+
     private func monthString(from date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy年M月"
-        formatter.locale = Locale(identifier: "zh_CN")
-        return formatter.string(from: date)
+        Self.monthReportFormatter.string(from: date)
     }
 
     private func encouragementMessage(for report: MonthlyReport) -> String {

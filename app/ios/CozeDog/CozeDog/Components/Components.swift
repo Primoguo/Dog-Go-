@@ -12,6 +12,7 @@ struct DogWorldScene: View {
     @State private var isDragging: Bool = false
     @State private var isJumping: Bool = false
     @State private var isWaggingTail: Bool = false
+    @State private var animationResetTask: Task<Void, Never>?
     @State private var companionWanderOffset = CGSize.zero
     @State private var companionPose: DogPose = .idle
 
@@ -54,13 +55,16 @@ struct DogWorldScene: View {
                         isWaggingTail = true
                     }
 
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    // 用 Task 替代 asyncAfter，视图消失时自动取消
+                    animationResetTask?.cancel()
+                    animationResetTask = Task {
+                        try? await Task.sleep(nanoseconds: 300_000_000)
+                        guard !Task.isCancelled else { return }
                         withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
                             isJumping = false
                         }
-                    }
-
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        try? await Task.sleep(nanoseconds: 200_000_000)
+                        guard !Task.isCancelled else { return }
                         withAnimation {
                             isWaggingTail = false
                         }
@@ -148,9 +152,13 @@ struct DogWorldScene: View {
                         withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
                             companionWanderOffset = CGSize(width: 30, height: 20)
                         }
-                        // 独立 pose 切换
-                        Timer.scheduledTimer(withTimeInterval: 2.5, repeats: true) { _ in
-                            let poses: [DogPose] = [.idle, .happy, .waiting]
+                    }
+                    .task {
+                        // 独立 pose 切换（.task 在视图消失时自动取消）
+                        let poses: [DogPose] = [.idle, .happy, .waiting]
+                        while !Task.isCancelled {
+                            try? await Task.sleep(nanoseconds: 2_500_000_000)
+                            guard !Task.isCancelled else { break }
                             withAnimation(.easeInOut(duration: 0.5)) {
                                 companionPose = poses.randomElement() ?? .idle
                             }
@@ -1994,12 +2002,6 @@ struct TodayActionPanel: View {
         }
     }
 
-    private func formattedTime(_ seconds: Int) -> String {
-        let minutes = max(0, seconds) / 60
-        let seconds = max(0, seconds) % 60
-        return String(format: "%02d:%02d", minutes, seconds)
-    }
-
     private var displayTitle: String {
         switch actionSession.phase {
         case .idle:
@@ -2497,7 +2499,6 @@ struct PrimaryButton: View {
                 .stroke(disabled ? Color.dogDisabledBorder : Color.dogBrandDark, lineWidth: 3)
         }
         .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 0, y: 4)
-        .cornerRadius(8)
         .disabled(disabled)
     }
 }
@@ -2520,6 +2521,5 @@ struct SecondaryButton: View {
                 .stroke(Color.dogAccentLight, lineWidth: 2)
         }
         .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 0, y: 4)
-        .cornerRadius(8)
     }
 }

@@ -1006,7 +1006,9 @@ struct DogHomeView: View {
                             if store.useItem(at: idx) {
                                 usedItemName = "\(item.label) 已使用！"
                                 withAnimation { showUsedToast = true }
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                Task {
+                                    try? await Task.sleep(nanoseconds: 1_500_000_000)
+                                    guard !Task.isCancelled else { return }
                                     withAnimation { showUsedToast = false }
                                 }
                             }
@@ -1164,19 +1166,15 @@ struct FocusModeView: View {
         }
     }
 
-    private func formattedTime(_ seconds: Int) -> String {
-        let minutes = seconds / 60
-        let secs = seconds % 60
-        return String(format: "%02d:%02d", minutes, secs)
-    }
-
     private func showEncouragementMessage() {
         withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
             showEncouragement = true
         }
 
         // 3秒后自动消失
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+        Task {
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            guard !Task.isCancelled else { return }
             withAnimation(.easeOut(duration: 0.3)) {
                 showEncouragement = false
             }
@@ -1376,11 +1374,6 @@ struct RestModeView: View {
         return max(0, restDuration - elapsed)
     }
 
-    private func formattedTime(_ seconds: Int) -> String {
-        let minutes = seconds / 60
-        let secs = seconds % 60
-        return String(format: "%02d:%02d", minutes, secs)
-    }
 }
 
 // MARK: - 放弃确认视图
@@ -1521,19 +1514,6 @@ struct FocusStatsView: View {
         }
     }
 
-    private func formatMinutes(_ minutes: Int) -> String {
-        if minutes < 60 {
-            return "\(minutes)分钟"
-        } else {
-            let hours = minutes / 60
-            let mins = minutes % 60
-            if mins == 0 {
-                return "\(hours)小时"
-            } else {
-                return "\(hours)小时\(mins)分钟"
-            }
-        }
-    }
 }
 
 struct FocusStatCard: View {
@@ -1589,25 +1569,15 @@ struct FocusSessionRow: View {
         .padding(.vertical, 4)
     }
 
+    private static let sessionDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateStyle = .short
+        f.timeStyle = .short
+        return f
+    }()
+
     private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        formatter.timeStyle = .short
-        return formatter.string(from: date)
+        Self.sessionDateFormatter.string(from: date)
     }
 
-    private func formatDuration(_ seconds: Int) -> String {
-        let minutes = seconds / 60
-        if minutes < 60 {
-            return "\(minutes)分钟"
-        } else {
-            let hours = minutes / 60
-            let mins = minutes % 60
-            if mins == 0 {
-                return "\(hours)小时"
-            } else {
-                return "\(hours)小时\(mins)分钟"
-            }
-        }
-    }
 }

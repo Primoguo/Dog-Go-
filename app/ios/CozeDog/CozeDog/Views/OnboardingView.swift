@@ -45,7 +45,7 @@ struct OnboardingView: View {
                             currentPage -= 1
                         }
                     }
-                    .foregroundColor(Color.dogBrand)
+                    .foregroundStyle(Color.dogBrand)
                     .padding(.horizontal, 20)
                 }
 
@@ -57,14 +57,14 @@ struct OnboardingView: View {
                             currentPage += 1
                         }
                     }
-                    .foregroundColor(Color.dogBrand)
+                    .foregroundStyle(Color.dogBrand)
                     .padding(.horizontal, 20)
                 } else {
                     Button("Dog Go！") {
                         hasSeenOnboarding = true
                     }
                     .font(.headline)
-                    .foregroundColor(Color.dogBgPanel)
+                    .foregroundStyle(Color.dogBgPanel)
                     .padding(.horizontal, 30)
                     .padding(.vertical, 12)
                     .background(Color.dogBrand)
@@ -107,11 +107,11 @@ struct OnboardingView: View {
 
             Text("欢迎来到自律狗")
                 .font(.system(size: 32, weight: .bold))
-                .foregroundColor(Color.dogTextPrimary)
+                .foregroundStyle(Color.dogTextPrimary)
 
             Text("让你的像素柴犬\n陪你一起养成好习惯")
                 .font(.system(size: 18))
-                .foregroundColor(Color.dogTextSecondary)
+                .foregroundStyle(Color.dogTextSecondary)
                 .multilineTextAlignment(.center)
 
             Spacer()
@@ -136,7 +136,7 @@ struct OnboardingView: View {
 
             Text("简单三步，开始你的自律之旅")
                 .font(.system(size: 16))
-                .foregroundColor(Color.dogTextSecondary)
+                .foregroundStyle(Color.dogTextSecondary)
                 .multilineTextAlignment(.center)
 
             Spacer()
@@ -173,7 +173,7 @@ struct OnboardingView: View {
 
             Text("领养你的专属狗狗")
                 .font(.system(size: 28, weight: .bold))
-                .foregroundColor(Color.dogTextPrimary)
+                .foregroundStyle(Color.dogTextPrimary)
 
             VStack(spacing: 15) {
                 featureRow(icon: "🐕", text: "6 种品种可选")
@@ -203,23 +203,23 @@ struct OnboardingView: View {
 
             Text("准备好了吗？")
                 .font(.system(size: 32, weight: .bold))
-                .foregroundColor(Color.dogTextPrimary)
+                .foregroundStyle(Color.dogTextPrimary)
 
             Text("你的第一只柴犬\n正在等待你领养")
                 .font(.system(size: 18))
-                .foregroundColor(Color.dogTextSecondary)
+                .foregroundStyle(Color.dogTextSecondary)
                 .multilineTextAlignment(.center)
 
             // 小星星装饰（像素风配色）
             HStack(spacing: 40) {
                 Image(systemName: "star.fill")
-                    .foregroundColor(Color.dogAccent)
+                    .foregroundStyle(Color.dogAccent)
                     .font(.title2)
                 Image(systemName: "star.fill")
-                    .foregroundColor(Color.dogBrand)
+                    .foregroundStyle(Color.dogBrand)
                     .font(.title)
                 Image(systemName: "star.fill")
-                    .foregroundColor(Color.dogAccent)
+                    .foregroundStyle(Color.dogAccent)
                     .font(.title2)
             }
             .padding(.top, 20)
@@ -240,11 +240,11 @@ struct OnboardingView: View {
             VStack(alignment: .leading, spacing: 5) {
                 Text(title)
                     .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(Color.dogTextPrimary)
+                    .foregroundStyle(Color.dogTextPrimary)
 
                 Text(description)
                     .font(.system(size: 15))
-                    .foregroundColor(Color.dogTextSecondary)
+                    .foregroundStyle(Color.dogTextSecondary)
             }
 
             Spacer()
@@ -258,7 +258,7 @@ struct OnboardingView: View {
 
             Text(text)
                 .font(.system(size: 17))
-                .foregroundColor(Color.dogTextPrimary)
+                .foregroundStyle(Color.dogTextPrimary)
 
             Spacer()
         }

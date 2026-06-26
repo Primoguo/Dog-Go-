@@ -1,5 +1,6 @@
 import SwiftUI
 import UserNotifications
+import os
 
 final class AppStore: ObservableObject {
     @Published private(set) var state: AppState
@@ -26,6 +27,7 @@ final class AppStore: ObservableObject {
                     save()
                 }
             } catch {
+                os_log("数据解码失败，重置为初始状态: %{public}@", log: .default, type: .error, "\(error)")
                 state = .initial
             }
         } else {
@@ -44,17 +46,13 @@ final class AppStore: ObservableObject {
     /// 启动时检查上次打卡日期，自动标记断签状态
     func checkStreakOnLaunch() {
         guard let lastDateStr = state.rhythmState.lastCompletedDate else { return }
-        let formatter = DateFormatter()
-        formatter.calendar = Calendar(identifier: .gregorian)
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd"
-        guard let lastDate = formatter.date(from: lastDateStr) else { return }
+        guard let lastDate = Self.assignedDateFormatter.date(from: lastDateStr) else { return }
 
         let days = Calendar.current.dateComponents([.day], from: lastDate, to: Date()).day ?? 0
         guard days > 0 else { return }
 
-        // 已经处于断签/恢复状态则不重复设置
-        guard state.rhythmState.status == .stable || state.rhythmState.status == .recovering else { return }
+        // 已经处于 longBreak 则不重复设置（允许 missed → longBreak 升级）
+        guard state.rhythmState.status != .longBreak else { return }
 
         state.rhythmState.missedDays = days
         if days >= 3 {
@@ -216,8 +214,11 @@ final class AppStore: ObservableObject {
 
             // 完成专注会话
             completeFocusSession()
+            save()
+        } else if remaining % 10 == 0 {
+            // 每 10 秒持久化一次，而非每秒
+            save()
         }
-        save()
     }
 
     func cancelActionSession() {
@@ -244,12 +245,6 @@ final class AppStore: ObservableObject {
             state.goal = Goal(id: UUID(), type: plan?.rewardGoalType ?? .study, title: "\(plan?.label ?? "学习")行动", createdAt: Date(), updatedAt: Date())
         }
 
-        guard state.goal != nil else {
-            state.screen = .feedback
-            save()
-            return
-        }
-
         complete(type: .main, message: copy(for: "done"), gains: dogGoGains(durationSeconds: session.durationSeconds), completedPlanTitle: completedPlanTitle(for: session))
     }
 
@@ -263,20 +258,20 @@ final class AppStore: ObservableObject {
         complete(type: .recovery, message: copy(for: "recoveryDone"), gains: gains)
     }
 
+    #if DEBUG
     func simulateMissedDay() {
         state.rhythmState.status = .missed
         state.rhythmState.missedDays = 1
         // 设置 lastActiveDate 为昨天，触发衰减
         guard let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Date()) else { return }
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        state.dogState.lastActiveDate = formatter.string(from: yesterday)
+        state.dogState.lastActiveDate = Self.assignedDateFormatter.string(from: yesterday)
         state.dogState.pose = .waiting
         speechMode = "pending"
         save()
         // 重新触发衰减
         applyDailyDecay()
     }
+    #endif
 
     /// 使用背包道具，消耗道具并获得对应属性加成
     @discardableResult
@@ -323,6 +318,10 @@ final class AppStore: ObservableObject {
             // 狗窝：休息恢复精力，亲密度微增
             state.dogState.energy = clamp(state.dogState.energy + 15)
             state.dogState.intimacy += 3
+            while state.dogState.intimacy >= nextLevelNeed() {
+                state.dogState.intimacy -= nextLevelNeed()
+                state.dogState.level += 1
+            }
         case "sofa":
             // 沙发：放松恢复心情和精力
             state.dogState.moodScore = clampToTen(state.dogState.moodScore + 3)
@@ -335,6 +334,10 @@ final class AppStore: ObservableObject {
             // 工作台：劳动获得成就感，提升心情
             state.dogState.moodScore = clampToTen(state.dogState.moodScore + 3)
             state.dogState.intimacy += 2
+            while state.dogState.intimacy >= nextLevelNeed() {
+                state.dogState.intimacy -= nextLevelNeed()
+                state.dogState.level += 1
+            }
         case "studyDesk":
             // 学习桌：学习提升精力和心情
             state.dogState.energy = clamp(state.dogState.energy + 10)
@@ -348,10 +351,7 @@ final class AppStore: ObservableObject {
     }
 
     func useSmallGoal() {
-        guard var goal = state.goal else { return }
-        goal.title = recoveryTitle()
-        goal.updatedAt = Date()
-        state.goal = goal
+        // 不修改 goal.title —— UI 已通过 isRecovery 判断显示 recoveryTitle()
         // 只重置连续打卡计数，保留 lastCompletedDate 以便后续追踪
         state.rhythmState.currentStreak = 0
         state.rhythmState.missedDays = 0
@@ -392,7 +392,7 @@ final class AppStore: ObservableObject {
             return assignedDate(for: date)
         }
         return dates.map { date in
-            state.checkIns.contains { $0.assignedDate == date }
+            state.checkIns.contains { $0.assignedDate == date && $0.type == .mainCheckIn }
         }
     }
 
@@ -518,75 +518,78 @@ final class AppStore: ObservableObject {
         }
     }
 
+    /// 各品种狗狗的鼓励文案（静态缓存，避免每次调用创建字典）
+    private static let copyTable: [DogBreed: [String: String]] = [
+        .shiba: [
+            "pending": "来吧，先动一下。",
+            "tap": "看见你了，准备好没？",
+            "done": "好，今天拿下。",
+            "recovery": "断一下不算输。",
+            "recoveryDone": "好，回来了。",
+            "longBreak": "目标太重就拆小。"
+        ],
+        .golden: [
+            "pending": "今天先做一点点就好。",
+            "tap": "你来了，我很开心。",
+            "done": "你做到了，我看见了。",
+            "recovery": "昨天没关系，今天还在。",
+            "recoveryDone": "欢迎回来。",
+            "longBreak": "我们把目标调轻一点吧。"
+        ],
+        .borderCollie: [
+            "pending": "今天只看下一步。",
+            "tap": "我在，目标还清楚。",
+            "done": "完成，记录有效。",
+            "recovery": "昨天偏离，今天恢复。",
+            "recoveryDone": "恢复动作完成。",
+            "longBreak": "当前目标阻力偏高。"
+        ],
+        .native: [
+            "pending": "今天咱先做一点。",
+            "tap": "来啦，我看见你了。",
+            "done": "好，今天接住了。",
+            "recovery": "没事，我还在这儿。",
+            "recoveryDone": "门又打开了。",
+            "longBreak": "目标大了，咱就改小。"
+        ],
+        .bulldog: [
+            "pending": "慢慢来，不着急。",
+            "tap": "我在，稳住。",
+            "done": "好，又完成一个。",
+            "recovery": "没事，继续走。",
+            "recoveryDone": "回来了，很好。",
+            "longBreak": "目标太重就拆小步。"
+        ],
+        .teddy: [
+            "pending": "来玩个游戏吧！",
+            "tap": "你来了！好开心！",
+            "done": "太棒了！你做到了！",
+            "recovery": "没关系，我还在等你。",
+            "recoveryDone": "欢迎回来！继续加油！",
+            "longBreak": "累了就休息一下下。"
+        ]
+    ]
+
     private func copy(for event: String) -> String {
-        switch state.selectedDog {
-        case .shiba:
-            return [
-                "pending": "来吧，先动一下。",
-                "tap": "看见你了，准备好没？",
-                "done": "好，今天拿下。",
-                "recovery": "断一下不算输。",
-                "recoveryDone": "好，回来了。",
-                "longBreak": "目标太重就拆小。"
-            ][event] ?? "来吧，先动一下。"
-        case .golden:
-            return [
-                "pending": "今天先做一点点就好。",
-                "tap": "你来了，我很开心。",
-                "done": "你做到了，我看见了。",
-                "recovery": "昨天没关系，今天还在。",
-                "recoveryDone": "欢迎回来。",
-                "longBreak": "我们把目标调轻一点吧。"
-            ][event] ?? "今天先做一点点就好。"
-        case .borderCollie:
-            return [
-                "pending": "今天只看下一步。",
-                "tap": "我在，目标还清楚。",
-                "done": "完成，记录有效。",
-                "recovery": "昨天偏离，今天恢复。",
-                "recoveryDone": "恢复动作完成。",
-                "longBreak": "当前目标阻力偏高。"
-            ][event] ?? "今天只看下一步。"
-        case .native:
-            return [
-                "pending": "今天咱先做一点。",
-                "tap": "来啦，我看见你了。",
-                "done": "好，今天接住了。",
-                "recovery": "没事，我还在这儿。",
-                "recoveryDone": "门又打开了。",
-                "longBreak": "目标大了，咱就改小。"
-            ][event] ?? "今天咱先做一点。"
-        case .bulldog:
-            return [
-                "pending": "慢慢来，不着急。",
-                "tap": "我在，稳住。",
-                "done": "好，又完成一个。",
-                "recovery": "没事，继续走。",
-                "recoveryDone": "回来了，很好。",
-                "longBreak": "目标太重就拆小步。"
-            ][event] ?? "慢慢来，不着急。"
-        case .teddy:
-            return [
-                "pending": "来玩个游戏吧！",
-                "tap": "你来了！好开心！",
-                "done": "太棒了！你做到了！",
-                "recovery": "没关系，我还在等你。",
-                "recoveryDone": "欢迎回来！继续加油！",
-                "longBreak": "累了就休息一下下。"
-            ][event] ?? "来玩个游戏吧！"
-        }
+        let table = Self.copyTable[state.selectedDog] ?? Self.copyTable[.shiba]!
+        return table[event] ?? table["pending"]!
     }
+
+    /// 缓存 DateFormatter（创建开销大，全局复用）
+    private static let assignedDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.calendar = Calendar(identifier: .gregorian)
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "yyyy-MM-dd"
+        return f
+    }()
 
     private func assignedDate(for date: Date = Date()) -> String {
         var target = date
         if Calendar.current.component(.hour, from: target) < 4 {
             target = Calendar.current.date(byAdding: .day, value: -1, to: target) ?? target
         }
-        let formatter = DateFormatter()
-        formatter.calendar = Calendar(identifier: .gregorian)
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: target)
+        return Self.assignedDateFormatter.string(from: target)
     }
 
     private func clamp(_ value: Int) -> Int {
@@ -690,6 +693,7 @@ final class AppStore: ObservableObject {
                 completed: false
             )
             state.focusSessions.append(session)
+            state.focusSessionsCount += 1
         }
 
         // 重置专注模式状态
@@ -783,6 +787,8 @@ final class AppStore: ObservableObject {
     }
 
     private func save() {
+        _aggregateCache = nil // 数据变更，失效聚合缓存
+        pruneOldData()
         do {
             let data = try JSONEncoder().encode(state)
             UserDefaults.standard.set(data, forKey: key)
@@ -790,6 +796,20 @@ final class AppStore: ObservableObject {
             UserDefaults.standard.set(speechMode, forKey: "zilvgou.speechMode")
         } catch {
             // 编码失败时静默处理
+        }
+    }
+
+    /// 清理超过 90 天的历史数据，防止数组无限增长
+    private func pruneOldData() {
+        let cutoff = Calendar.current.date(byAdding: .day, value: -90, to: Date()) ?? Date()
+
+        state.checkIns = state.checkIns.filter { $0.date >= cutoff }
+        state.focusSessions = state.focusSessions.filter { $0.startTime >= cutoff }
+        state.diaryEntries = state.diaryEntries.filter { $0.date >= cutoff }
+        state.taskHistory = state.taskHistory.filter { $0.date >= cutoff }
+        // 月报保留最近 12 个月
+        if state.monthlyReports.count > 12 {
+            state.monthlyReports = Array(state.monthlyReports.suffix(12))
         }
     }
 
@@ -841,11 +861,7 @@ final class AppStore: ObservableObject {
             return
         }
 
-        let formatter = DateFormatter()
-        formatter.calendar = Calendar(identifier: .gregorian)
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd"
-        guard let lastDate = formatter.date(from: lastActive) else { return }
+        guard let lastDate = Self.assignedDateFormatter.date(from: lastActive) else { return }
 
         let today = Date()
         let days = Calendar.current.dateComponents([.day], from: lastDate, to: today).day ?? 0
@@ -1069,10 +1085,10 @@ final class AppStore: ObservableObject {
         let diversityScore = recentGoalTypes.contains(task.goalType) ? 0.5 : 1.0
         score += 0.20 * diversityScore
 
-        // 5. 收藏任务加权
+        // 5. 收藏任务加权（乘法加成，避免权重溢出 100%）
         if let customTask = state.customTasks.first(where: { $0.title == task.title }),
            customTask.isFavorite {
-            score += 0.15
+            score *= 1.15
         }
 
         return score
@@ -1166,36 +1182,31 @@ final class AppStore: ObservableObject {
     /// 获取连续完成任务天数
     func getTaskStreak() -> Int {
         let calendar = Calendar.current
-        let sortedHistory = state.taskHistory
-            .filter(\.completed)
-            .sorted { $0.completedDate ?? $0.acceptedDate < $1.completedDate ?? $1.acceptedDate }
 
-        guard let lastDate = sortedHistory.last?.completedDate ?? sortedHistory.last?.acceptedDate else {
-            return 0
-        }
+        // 预计算已完成日期集合（O(n)），避免回溯时每次 O(n) 扫描
+        let completedDays: Set<Date> = Set(
+            state.taskHistory
+                .filter(\.completed)
+                .compactMap { entry -> Date? in
+                    let d = entry.completedDate ?? entry.acceptedDate
+                    return calendar.startOfDay(for: d)
+                }
+        )
 
-        // 如果今天没有完成任何任务，检查昨天
-        if !calendar.isDateInToday(lastDate) {
-            if calendar.isDateInYesterday(lastDate) {
-                // 昨天完成了，继续计算
-            } else {
-                return 0 // 超过一天没完成
-            }
-        }
+        guard let lastDay = completedDays.max() else { return 0 }
+
+        // 如果最新完成不在今天也不在昨天，连续已断
+        let today = calendar.startOfDay(for: Date())
+        let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
+        guard lastDay == today || lastDay == yesterday else { return 0 }
 
         var streak = 0
-        var currentDate = Date()
+        var checkDate = today
 
-        for _ in 0..<365 { // 最多回溯一年
-            let hasCompletedOnDate = sortedHistory.contains { entry in
-                let date = entry.completedDate ?? entry.acceptedDate
-                return calendar.isDate(date, inSameDayAs: currentDate)
-            }
-
-            if hasCompletedOnDate {
+        for _ in 0..<365 {
+            if completedDays.contains(checkDate) {
                 streak += 1
-                guard let previousDate = calendar.date(byAdding: .day, value: -1, to: currentDate) else { break }
-                currentDate = previousDate
+                checkDate = calendar.date(byAdding: .day, value: -1, to: checkDate)!
             } else {
                 break
             }
@@ -1206,8 +1217,12 @@ final class AppStore: ObservableObject {
 
     // MARK: - 习惯追踪日历系统
 
+    /// 聚合记录缓存（save() 时失效，同一渲染周期内多次调用只计算一次）
+    private var _aggregateCache: [CheckInRecord]?
+
     /// 聚合所有打卡记录（从现有数据源）
     func aggregateCheckInRecords() -> [CheckInRecord] {
+        if let cached = _aggregateCache { return cached }
         var records: [CheckInRecord] = []
 
         // 1. 聚合主打卡记录（从 checkIns 数组）
@@ -1240,8 +1255,10 @@ final class AppStore: ObservableObject {
             }
         }
 
-        // 按日期排序（最新在前）
-        return records.sorted { $0.date > $1.date }
+        // 按日期排序（最新在前），缓存结果
+        let result = records.sorted { $0.date > $1.date }
+        _aggregateCache = result
+        return result
     }
 
     /// 获取指定日期的打卡记录
@@ -1250,31 +1267,37 @@ final class AppStore: ObservableObject {
         return records.filter { Calendar.current.isDate($0.date, inSameDayAs: date) }
     }
 
-    /// 检查指定日期是否有打卡
+    /// 检查指定日期是否有打卡（包含所有类型）
     func hasCheckIn(on date: Date) -> Bool {
         return !getCheckIns(for: date).isEmpty
     }
 
-    /// 计算当前连续打卡天数
+    /// 检查指定日期是否有主打卡（仅 mainCheckIn，用于连续打卡统计）
+    private func hasMainCheckIn(on date: Date) -> Bool {
+        let calendar = Calendar.current
+        return state.checkIns.contains { calendar.isDate($0.date, inSameDayAs: date) && $0.type == .mainCheckIn }
+    }
+
+    /// 计算当前连续打卡天数（仅统计主打卡）
     func calculateCurrentStreak() -> Int {
         let calendar = Calendar.current
         var streak = 0
         var currentDate = Date()
 
-        // 如果今天没有打卡，从昨天开始计算
-        if !hasCheckIn(on: currentDate) {
+        // 如果今天没有主打卡，从昨天开始计算
+        if !hasMainCheckIn(on: currentDate) {
             guard let yesterday = calendar.date(byAdding: .day, value: -1, to: currentDate) else {
                 return 0
             }
-            if !hasCheckIn(on: yesterday) {
-                return 0 // 昨天也没打卡
+            if !hasMainCheckIn(on: yesterday) {
+                return 0 // 昨天也没主打卡
             }
             currentDate = yesterday
         }
 
         // 向前回溯计算连续天数
         for _ in 0..<365 { // 最多回溯一年
-            if hasCheckIn(on: currentDate) {
+            if hasMainCheckIn(on: currentDate) {
                 streak += 1
                 guard let previousDate = calendar.date(byAdding: .day, value: -1, to: currentDate) else {
                     break
@@ -1288,14 +1311,13 @@ final class AppStore: ObservableObject {
         return streak
     }
 
-    /// 计算历史最长连续打卡天数
+    /// 计算历史最长连续打卡天数（仅统计主打卡）
     func calculateLongestStreak() -> Int {
         let calendar = Calendar.current
-        let records = aggregateCheckInRecords()
 
-        // 获取所有有打卡的日期（去重）
+        // 仅使用主打卡记录计算连续天数
         var uniqueDates: Set<Date> = []
-        for record in records {
+        for record in state.checkIns where record.type == .mainCheckIn {
             let startOfDay = calendar.startOfDay(for: record.date)
             uniqueDates.insert(startOfDay)
         }
@@ -1437,6 +1459,7 @@ final class AppStore: ObservableObject {
     }
 
     /// 生成月度报告
+    /// 生成月度报告（纯计算，无副作用）
     func generateMonthlyReport(for month: Date = Date()) -> MonthlyReport {
         let calendar = Calendar.current
         let checkInCount = getMonthlyCheckInCount(for: month)
@@ -1466,7 +1489,7 @@ final class AppStore: ObservableObject {
         let goalTypeCounts = Dictionary(grouping: monthRecords.compactMap(\.goalType), by: { $0 })
         let topGoalType = goalTypeCounts.max(by: { $0.value.count < $1.value.count })?.key
 
-        let report = MonthlyReport(
+        return MonthlyReport(
             month: month,
             totalCheckIns: checkInCount,
             completionRate: completionRate,
@@ -1474,16 +1497,15 @@ final class AppStore: ObservableObject {
             totalFocusMinutes: focusMinutes,
             topGoalType: topGoalType
         )
+    }
 
-        // 持久化到月度报告列表（去重：同月只保留最新）
-        let calendar2 = Calendar.current
+    /// 持久化月度报告（去重：同月只保留最新）
+    func persistMonthlyReport(_ report: MonthlyReport) {
         state.monthlyReports.removeAll { existing in
-            calendar2.isDate(existing.month, equalTo: month, toGranularity: .month)
+            Calendar.current.isDate(existing.month, equalTo: report.month, toGranularity: .month)
         }
         state.monthlyReports.append(report)
         save()
-
-        return report
     }
 
     /// 获取断签恢复激励文案

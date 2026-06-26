@@ -125,6 +125,35 @@ extension View {
     }
 }
 
+// MARK: - 时间格式化工具
+
+/// 将秒数格式化为 MM:SS 格式
+func formattedTime(_ seconds: Int) -> String {
+    let minutes = seconds / 60
+    let secs = seconds % 60
+    return String(format: "%02d:%02d", minutes, secs)
+}
+
+/// 将分钟数格式化为中文时长（如 "30分钟"、"1小时20分钟"）
+func formatMinutes(_ minutes: Int) -> String {
+    if minutes < 60 {
+        return "\(minutes)分钟"
+    } else {
+        let hours = minutes / 60
+        let mins = minutes % 60
+        if mins == 0 {
+            return "\(hours)小时"
+        } else {
+            return "\(hours)小时\(mins)分钟"
+        }
+    }
+}
+
+/// 将秒数格式化为中文时长
+func formatDuration(_ seconds: Int) -> String {
+    formatMinutes(seconds / 60)
+}
+
 // MARK: - CGPoint helpers
 
 extension CGPoint {

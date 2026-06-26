@@ -151,15 +151,15 @@ struct EvolutionProgressBar: View {
             // 当前阶段
             HStack {
                 Image(systemName: "pawprint.fill")
-                    .foregroundColor(Color.dogAccent)
+                    .foregroundStyle(Color.dogAccent)
                 Text(currentEvolution.displayName)
                     .font(.headline)
-                    .foregroundColor(Color.dogTextPrimary)
+                    .foregroundStyle(Color.dogTextPrimary)
                 Spacer()
                 if let nextStage = currentEvolution.nextStage {
                     Text("→ \(nextStage.displayName)")
                         .font(.caption)
-                        .foregroundColor(Color.dogTextSecondary)
+                        .foregroundStyle(Color.dogTextSecondary)
                 }
             }
 
@@ -185,17 +185,17 @@ struct EvolutionProgressBar: View {
             HStack {
                 Text("已完成 \(totalCheckIns) 次")
                     .font(.caption)
-                    .foregroundColor(Color.dogTextSecondary)
+                    .foregroundStyle(Color.dogTextSecondary)
                 Spacer()
                 if let nextRequired = currentEvolution.nextStageRequiredCheckIns {
                     let remaining = max(0, nextRequired - totalCheckIns)
                     Text("还需 \(remaining) 次")
                         .font(.caption)
-                        .foregroundColor(Color.dogAccent)
+                        .foregroundStyle(Color.dogAccent)
                 } else {
                     Text("已达最高阶段！")
                         .font(.caption)
-                        .foregroundColor(Color.dogAccent)
+                        .foregroundStyle(Color.dogAccent)
                 }
             }
         }
@@ -226,7 +226,7 @@ struct MoodDisplayView: View {
                 .font(.title2)
             Text(mood.displayName)
                 .font(.subheadline)
-                .foregroundColor(Color.dogTextPrimary)
+                .foregroundStyle(Color.dogTextPrimary)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
@@ -288,13 +288,13 @@ struct DiaryViewerView: View {
         VStack(spacing: 16) {
             Image(systemName: "book.closed")
                 .font(.system(size: 60))
-                .foregroundColor(Color.dogTextTertiary)
+                .foregroundStyle(Color.dogTextTertiary)
             Text("还没有日记")
                 .font(.headline)
-                .foregroundColor(Color.dogTextPrimary)
+                .foregroundStyle(Color.dogTextPrimary)
             Text("完成计划后，狗狗会自动写日记哦")
                 .font(.subheadline)
-                .foregroundColor(Color.dogTextSecondary)
+                .foregroundStyle(Color.dogTextSecondary)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
@@ -311,7 +311,7 @@ struct DiaryEntryCard: View {
             HStack {
                 Text(entry.date, style: .date)
                     .font(.caption)
-                    .foregroundColor(Color.dogTextSecondary)
+                    .foregroundStyle(Color.dogTextSecondary)
                 Spacer()
                 MoodDisplayView(mood: entry.mood)
             }
@@ -319,7 +319,7 @@ struct DiaryEntryCard: View {
             // 日记内容
             Text(entry.content)
                 .font(.body)
-                .foregroundColor(Color.dogTextPrimary)
+                .foregroundStyle(Color.dogTextPrimary)
                 .fixedSize(horizontal: false, vertical: true)
 
             // 统计数据
@@ -327,17 +327,17 @@ struct DiaryEntryCard: View {
                 if entry.completions > 0 {
                     Label("\(entry.completions) 次完成", systemImage: "checkmark.circle.fill")
                         .font(.caption)
-                        .foregroundColor(Color.dogSuccess)
+                        .foregroundStyle(Color.dogSuccess)
                 }
                 if entry.focusMinutes > 0 {
                     Label("\(entry.focusMinutes) 分钟专注", systemImage: "clock.fill")
                         .font(.caption)
-                        .foregroundColor(Color.dogBrand)
+                        .foregroundStyle(Color.dogBrand)
                 }
                 if entry.streakDays > 0 {
                     Label("连续 \(entry.streakDays) 天", systemImage: "flame.fill")
                         .font(.caption)
-                        .foregroundColor(Color.dogAccent)
+                        .foregroundStyle(Color.dogAccent)
                 }
             }
         }
@@ -373,30 +373,30 @@ struct EvolutionPopupView: View {
                 Text("🎉 进化成功！")
                     .font(.title)
                     .fontWeight(.bold)
-                    .foregroundColor(Color.dogBgPanel)
+                    .foregroundStyle(Color.dogBgPanel)
 
                 // 进化前后对比
                 HStack(spacing: 32) {
                     VStack(spacing: 8) {
                         Text(oldEvolution.displayName)
                             .font(.headline)
-                            .foregroundColor(Color.dogBgPanel.opacity(0.7))
+                            .foregroundStyle(Color.dogBgPanel.opacity(0.7))
                         Image(systemName: "pawprint")
                             .font(.system(size: 40))
-                            .foregroundColor(Color.dogBgPanel.opacity(0.7))
+                            .foregroundStyle(Color.dogBgPanel.opacity(0.7))
                     }
 
                     Image(systemName: "arrow.right")
                         .font(.title2)
-                        .foregroundColor(Color.dogAccentBright)
+                        .foregroundStyle(Color.dogAccentBright)
 
                     VStack(spacing: 8) {
                         Text(newEvolution.displayName)
                             .font(.headline)
-                            .foregroundColor(Color.dogAccent)
+                            .foregroundStyle(Color.dogAccent)
                         Image(systemName: "pawprint.fill")
                             .font(.system(size: 50))
-                            .foregroundColor(Color.dogAccent)
+                            .foregroundStyle(Color.dogAccent)
                             .scaleEffect(showContent ? 1.2 : 0.8)
                             .opacity(showContent ? 1.0 : 0.0)
                     }
@@ -405,7 +405,7 @@ struct EvolutionPopupView: View {
                 // 描述
                 Text(evolutionDescription)
                     .font(.subheadline)
-                    .foregroundColor(Color.dogBgPanel)
+                    .foregroundStyle(Color.dogBgPanel)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
 
@@ -413,7 +413,7 @@ struct EvolutionPopupView: View {
                 Button(action: onDismiss) {
                     Text("太棒了！")
                         .font(.headline)
-                        .foregroundColor(Color.dogBrand)
+                        .foregroundStyle(Color.dogBrand)
                         .padding(.horizontal, 32)
                         .padding(.vertical, 12)
                         .background(

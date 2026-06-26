@@ -599,6 +599,9 @@ struct ForestSceneView: View {
             y: CGFloat.random(in: 0...844)
         )
     }
+    @State private var sparkleOpacities: [Double] = (0..<15).map { _ in
+        Double.random(in: 0.3...0.8)
+    }
 
     var body: some View {
         GeometryReader { proxy in
@@ -646,7 +649,7 @@ struct ForestSceneView: View {
                     ForEach(0..<sparklePositions.count, id: \.self) { index in
                         MagicSparkleView()
                             .position(sparklePositions[index])
-                            .opacity(Double.random(in: 0.3...0.8))
+                            .opacity(sparkleOpacities[index])
                     }
                 }
 

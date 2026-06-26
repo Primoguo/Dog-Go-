@@ -7,6 +7,7 @@ struct InteractiveItemView: View {
     let onTap: () -> Void
 
     @State private var isAnimating = false
+    @State private var animResetTask: Task<Void, Never>?
 
     var body: some View {
         Button(action: {
@@ -15,10 +16,11 @@ struct InteractiveItemView: View {
             }
             onTap()
 
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                withAnimation {
-                    isAnimating = false
-                }
+            animResetTask?.cancel()
+            animResetTask = Task {
+                try? await Task.sleep(nanoseconds: 300_000_000)
+                guard !Task.isCancelled else { return }
+                withAnimation { isAnimating = false }
             }
         }) {
             itemIcon
@@ -206,7 +208,7 @@ struct SceneSelectorView: View {
                 Text("选择场景")
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundColor(Color.dogBgPanel)
+                    .foregroundStyle(Color.dogBgPanel)
                     .padding(.top, 20)
 
                 // 场景列表
@@ -243,7 +245,7 @@ struct SceneSelectorView: View {
                 }) {
                     Text("关闭")
                         .font(.headline)
-                        .foregroundColor(Color.dogBrand)
+                        .foregroundStyle(Color.dogBrand)
                         .padding(.horizontal, 32)
                         .padding(.vertical, 12)
                         .background(
@@ -292,7 +294,7 @@ struct SceneCardView: View {
 
                     Image(systemName: scene.icon)
                         .font(.system(size: 28))
-                        .foregroundColor(isUnlocked ? Color.dogBgPanel : Color.dogTextPlaceholder)
+                        .foregroundStyle(isUnlocked ? Color.dogBgPanel : Color.dogTextPlaceholder)
                 }
 
                 // 信息
@@ -300,17 +302,17 @@ struct SceneCardView: View {
                     HStack {
                         Text(scene.displayName)
                             .font(.headline)
-                            .foregroundColor(isUnlocked ? Color.dogBgPanel : Color.dogTextPlaceholder)
+                            .foregroundStyle(isUnlocked ? Color.dogBgPanel : Color.dogTextPlaceholder)
 
                         if isSelected {
                             Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(Color.dogSuccess)
+                                .foregroundStyle(Color.dogSuccess)
                         }
                     }
 
                     Text(scene.description)
                         .font(.caption)
-                        .foregroundColor(isUnlocked ? Color.dogBgPanel.opacity(0.8) : Color.dogTextPlaceholder)
+                        .foregroundStyle(isUnlocked ? Color.dogBgPanel.opacity(0.8) : Color.dogTextPlaceholder)
 
                     if !isUnlocked {
                         HStack(spacing: 4) {
@@ -319,7 +321,7 @@ struct SceneCardView: View {
                             Text("需要 \(scene.requiredEvolution.displayName)")
                                 .font(.caption2)
                         }
-                        .foregroundColor(Color.dogAccent)
+                        .foregroundStyle(Color.dogAccent)
                     }
                 }
 
@@ -347,28 +349,28 @@ struct EnvironmentInfoView: View {
                 // 时间
                 HStack(spacing: 4) {
                     Image(systemName: "clock.fill")
-                        .foregroundColor(Color.dogBgPanel)
+                        .foregroundStyle(Color.dogBgPanel)
                     Text(TimeOfDay.current.displayName)
                         .font(.caption)
-                        .foregroundColor(Color.dogBgPanel)
+                        .foregroundStyle(Color.dogBgPanel)
                 }
 
                 // 天气
                 HStack(spacing: 4) {
                     Image(systemName: Weather.current.icon)
-                        .foregroundColor(Color.dogBgPanel)
+                        .foregroundStyle(Color.dogBgPanel)
                     Text(Weather.current.displayName)
                         .font(.caption)
-                        .foregroundColor(Color.dogBgPanel)
+                        .foregroundStyle(Color.dogBgPanel)
                 }
 
                 // 季节
                 HStack(spacing: 4) {
                     Image(systemName: "leaf.fill")
-                        .foregroundColor(Color.dogBgPanel)
+                        .foregroundStyle(Color.dogBgPanel)
                     Text(Season.current.displayName)
                         .font(.caption)
-                        .foregroundColor(Color.dogBgPanel)
+                        .foregroundStyle(Color.dogBgPanel)
                 }
             }
             .padding(.horizontal, 16)
@@ -400,7 +402,7 @@ struct SceneSwitchButton: View {
 
                 Image(systemName: "map.fill")
                     .font(.system(size: 20))
-                    .foregroundColor(Color.dogAccent)
+                    .foregroundStyle(Color.dogAccent)
             }
         }
         .accessibilityLabel("切换场景")
@@ -427,7 +429,7 @@ struct TaskSuggestionButton: View {
 
                 Image(systemName: "checklist")
                     .font(.system(size: 20))
-                    .foregroundColor(Color.dogSuccess)
+                    .foregroundStyle(Color.dogSuccess)
             }
         }
         .accessibilityLabel("每日任务")
@@ -511,14 +513,14 @@ struct TaskSuggestionView: View {
                     Image(systemName: TaskTimeSlot.current.emoji == "🌅" ? "sunrise.fill" :
                                     TaskTimeSlot.current.emoji == "☀️" ? "sun.max.fill" :
                                     TaskTimeSlot.current.emoji == "🌆" ? "sunset.fill" : "moon.fill")
-                        .foregroundColor(Color.dogAccent)
+                        .foregroundStyle(Color.dogAccent)
                     Text("\(TaskTimeSlot.current.label)推荐")
                         .font(.headline)
-                        .foregroundColor(Color.dogTextPrimary)
+                        .foregroundStyle(Color.dogTextPrimary)
                 }
                 Text("根据你的习惯，为你精选的任务")
                     .font(.caption)
-                    .foregroundColor(Color.dogTextSecondary)
+                    .foregroundStyle(Color.dogTextSecondary)
             }
 
             Spacer()
@@ -528,11 +530,11 @@ struct TaskSuggestionView: View {
             if streak > 0 {
                 HStack(spacing: 4) {
                     Image(systemName: "flame.fill")
-                        .foregroundColor(Color.dogAccent)
+                        .foregroundStyle(Color.dogAccent)
                     Text("\(streak)天")
                         .font(.caption)
                         .fontWeight(.bold)
-                        .foregroundColor(Color.dogAccent)
+                        .foregroundStyle(Color.dogAccent)
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
@@ -592,15 +594,15 @@ struct TaskSuggestionView: View {
         VStack(spacing: 12) {
             Image(systemName: "checkmark.seal.fill")
                 .font(.system(size: 48))
-                .foregroundColor(Color.dogSuccess.opacity(0.6))
+                .foregroundStyle(Color.dogSuccess.opacity(0.6))
 
             Text("今日任务已全部完成！")
                 .font(.headline)
-                .foregroundColor(Color.dogTextPrimary)
+                .foregroundStyle(Color.dogTextPrimary)
 
             Text("太棒了，休息一下吧～")
                 .font(.subheadline)
-                .foregroundColor(Color.dogTextSecondary)
+                .foregroundStyle(Color.dogTextSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 40)
@@ -618,7 +620,7 @@ struct TaskSuggestionView: View {
                 }
                 .font(.subheadline)
                 .fontWeight(.medium)
-                .foregroundColor(Color.dogSuccess)
+                .foregroundStyle(Color.dogSuccess)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
                 .background(
@@ -638,7 +640,7 @@ struct TaskSuggestionView: View {
                 Text("关闭")
                     .font(.subheadline)
                     .fontWeight(.medium)
-                    .foregroundColor(Color.dogTextSecondary)
+                    .foregroundStyle(Color.dogTextSecondary)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
                     .background(
@@ -664,15 +666,15 @@ struct StatItem: View {
             HStack(spacing: 4) {
                 Image(systemName: icon)
                     .font(.caption)
-                    .foregroundColor(iconColor)
+                    .foregroundStyle(iconColor)
                 Text(value)
                     .font(.headline)
                     .fontWeight(.bold)
-                    .foregroundColor(Color.dogTextPrimary)
+                    .foregroundStyle(Color.dogTextPrimary)
             }
             Text(label)
                 .font(.caption2)
-                .foregroundColor(Color.dogTextSecondary)
+                .foregroundStyle(Color.dogTextSecondary)
         }
         .frame(maxWidth: .infinity)
     }
@@ -684,13 +686,17 @@ struct TaskCardView: View {
     let onAccept: () -> Void
 
     @State private var isPressed = false
+    @State private var pressResetTask: Task<Void, Never>?
 
     var body: some View {
         Button(action: {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                 isPressed = true
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            pressResetTask?.cancel()
+            pressResetTask = Task {
+                try? await Task.sleep(nanoseconds: 200_000_000)
+                guard !Task.isCancelled else { return }
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                     isPressed = false
                 }
@@ -706,7 +712,7 @@ struct TaskCardView: View {
 
                     Image(systemName: goalTypeIcon)
                         .font(.system(size: 20))
-                        .foregroundColor(goalTypeColor)
+                        .foregroundStyle(goalTypeColor)
                 }
 
                 // 任务信息
@@ -714,7 +720,7 @@ struct TaskCardView: View {
                     Text(task.title)
                         .font(.subheadline)
                         .fontWeight(.medium)
-                        .foregroundColor(Color.dogTextPrimary)
+                        .foregroundStyle(Color.dogTextPrimary)
                         .lineLimit(1)
 
                     HStack(spacing: 8) {
@@ -725,7 +731,7 @@ struct TaskCardView: View {
                             Text("\(task.estimatedMinutes)分钟")
                                 .font(.caption2)
                         }
-                        .foregroundColor(Color.dogTextSecondary)
+                        .foregroundStyle(Color.dogTextSecondary)
 
                         // 标签
                         if !task.tags.isEmpty {
@@ -737,7 +743,7 @@ struct TaskCardView: View {
                                     Capsule()
                                         .fill(goalTypeColor.opacity(0.15))
                                 )
-                                .foregroundColor(goalTypeColor)
+                                .foregroundStyle(goalTypeColor)
                         }
                     }
                 }
@@ -752,7 +758,7 @@ struct TaskCardView: View {
 
                     Image(systemName: "checkmark")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(Color.dogBgPanel)
+                        .foregroundStyle(Color.dogBgPanel)
                 }
             }
             .padding(12)
