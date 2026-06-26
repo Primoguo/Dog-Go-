@@ -80,6 +80,7 @@ struct SceneBackgroundView: View {
 // MARK: - 温馨小院场景（2.5D 等距）
 
 struct YardSceneView: View {
+    @EnvironmentObject var store: AppStore
     let timeOfDay: TimeOfDay
     let weather: Weather
     let season: Season
@@ -125,13 +126,15 @@ struct YardSceneView: View {
                 YardTreeView(season: season)
                     .position(x: w * 0.85, y: groundTop + h * 0.18)
 
-                // 狗窝（等距道具）
+                // 狗窝（等距道具，点击休息：精力 +15 亲密度 +3）
                 DogHouseView(size: min(w, h) * 0.12)
                     .position(x: w * 0.45, y: groundTop + h * 0.2)
+                    .onTapGesture { store.interactSceneProp("dogHouse") }
 
-                // 沙发（等距道具）
+                // 沙发（等距道具，点击放松：心情 +3 精力 +8）
                 SofaView(size: min(w, h) * 0.11)
                     .position(x: w * 0.7, y: groundTop + h * 0.35)
+                    .onTapGesture { store.interactSceneProp("sofa") }
 
                 // 花朵（等距：可见花茎）
                 if season != .winter {
@@ -259,6 +262,7 @@ struct YardTreeView: View {
 // MARK: - 阳光公园场景（2.5D 等距）
 
 struct ParkSceneView: View {
+    @EnvironmentObject var store: AppStore
     let timeOfDay: TimeOfDay
     let weather: Weather
     let season: Season
@@ -299,9 +303,10 @@ struct ParkSceneView: View {
                 FlowerBedView()
                     .position(x: w * 0.12, y: groundTop + h * 0.35)
 
-                // 跑步机（等距道具）
+                // 跑步机（等距道具，点击锻炼：心情 +4 饱腹 -5）
                 TreadmillView(size: min(w, h) * 0.1)
                     .position(x: w * 0.75, y: groundTop + h * 0.22)
+                    .onTapGesture { store.interactSceneProp("treadmill") }
             }
         }
     }
@@ -432,6 +437,7 @@ struct FlowerBedView: View {
 // MARK: - 海边沙滩场景（2.5D 等距）
 
 struct BeachSceneView: View {
+    @EnvironmentObject var store: AppStore
     let timeOfDay: TimeOfDay
     let weather: Weather
     let season: Season
@@ -481,9 +487,10 @@ struct BeachSceneView: View {
                         )
                 }
 
-                // 工作台（等距道具）
+                // 工作台（等距道具，点击劳动：心情 +3 亲密度 +2）
                 WorkDeskView(size: min(w, h) * 0.1)
                     .position(x: w * 0.3, y: groundTop + h * 0.15)
+                    .onTapGesture { store.interactSceneProp("workDesk") }
             }
             .onAppear {
                 withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
@@ -581,6 +588,7 @@ struct BeachUmbrellaView: View {
 // MARK: - 神秘森林场景（2.5D 等距）
 
 struct ForestSceneView: View {
+    @EnvironmentObject var store: AppStore
     let timeOfDay: TimeOfDay
     let weather: Weather
     let season: Season
@@ -628,9 +636,10 @@ struct ForestSceneView: View {
                         )
                 }
 
-                // 学习桌（等距道具）
+                // 学习桌（等距道具，点击学习：精力 +10 心情 +2）
                 StudyDeskView(size: min(w, h) * 0.1)
                     .position(x: w * 0.72, y: groundTop + h * 0.15)
+                    .onTapGesture { store.interactSceneProp("studyDesk") }
 
                 // 魔法粒子
                 if timeOfDay == .night || timeOfDay == .evening {

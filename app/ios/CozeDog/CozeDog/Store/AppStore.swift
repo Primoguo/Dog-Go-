@@ -28,8 +28,33 @@ final class AppStore: ObservableObject {
         } else {
             state = .initial
         }
+        // 启动时检测断签：超过 1 天未打卡自动进入 missed/longBreak
+        checkStreakOnLaunch()
         // 每日属性衰减
         applyDailyDecay()
+    }
+
+    /// 启动时检查上次打卡日期，自动标记断签状态
+    private func checkStreakOnLaunch() {
+        guard let lastDateStr = state.rhythmState.lastCompletedDate else { return }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        guard let lastDate = formatter.date(from: lastDateStr) else { return }
+
+        let days = Calendar.current.dateComponents([.day], from: lastDate, to: Date()).day ?? 0
+        guard days > 0 else { return }
+
+        // 已经处于断签/恢复状态则不重复设置
+        guard state.rhythmState.status == .stable || state.rhythmState.status == .recovering else { return }
+
+        state.rhythmState.missedDays = days
+        if days >= 3 {
+            state.rhythmState.status = .longBreak
+        } else {
+            state.rhythmState.status = .missed
+        }
+        speechMode = "pending"
+        save()
     }
 
     func selectDog(_ dog: DogBreed) {
@@ -244,6 +269,68 @@ final class AppStore: ObservableObject {
         save()
         // 重新触发衰减
         applyDailyDecay()
+    }
+
+    /// 使用背包道具，消耗道具并获得对应属性加成
+    @discardableResult
+    func useItem(at index: Int) -> Bool {
+        guard index >= 0, index < state.dogState.inventory.count else { return false }
+        let item = state.dogState.inventory[index]
+        state.dogState.inventory.remove(at: index)
+
+        for gain in item.useEffect {
+            switch gain.label {
+            case "亲密度":
+                state.dogState.intimacy += gain.amount
+                while state.dogState.intimacy >= nextLevelNeed() {
+                    state.dogState.intimacy -= nextLevelNeed()
+                    state.dogState.level += 1
+                }
+            case "心情": state.dogState.moodScore = clampToTen(state.dogState.moodScore + gain.amount)
+            case "饱腹": state.dogState.fullness = clamp(state.dogState.fullness + gain.amount)
+            case "清洁": state.dogState.cleanliness = clamp(state.dogState.cleanliness + gain.amount)
+            case "精力": state.dogState.energy = clamp(state.dogState.energy + gain.amount)
+            default: break
+            }
+        }
+
+        // 更新活跃日期并重新派生心情
+        state.dogState.lastActiveDate = assignedDate()
+        updateDogMood()
+        state.dogState.pose = .happy
+        save()
+        return true
+    }
+
+    /// 场景道具互动：点击场景中的固定道具获得属性加成
+    func interactSceneProp(_ propName: String) {
+        switch propName {
+        case "dogHouse":
+            // 狗窝：休息恢复精力，亲密度微增
+            state.dogState.energy = clamp(state.dogState.energy + 15)
+            state.dogState.intimacy += 3
+        case "sofa":
+            // 沙发：放松恢复心情和精力
+            state.dogState.moodScore = clampToTen(state.dogState.moodScore + 3)
+            state.dogState.energy = clamp(state.dogState.energy + 8)
+        case "treadmill":
+            // 跑步机：锻炼提升心情，消耗饱腹
+            state.dogState.moodScore = clampToTen(state.dogState.moodScore + 4)
+            state.dogState.fullness = max(10, state.dogState.fullness - 5)
+        case "workDesk":
+            // 工作台：劳动获得成就感，提升心情
+            state.dogState.moodScore = clampToTen(state.dogState.moodScore + 3)
+            state.dogState.intimacy += 2
+        case "studyDesk":
+            // 学习桌：学习提升精力和心情
+            state.dogState.energy = clamp(state.dogState.energy + 10)
+            state.dogState.moodScore = clampToTen(state.dogState.moodScore + 2)
+        default: return
+        }
+        state.dogState.lastActiveDate = assignedDate()
+        updateDogMood()
+        state.dogState.pose = .happy
+        save()
     }
 
     func useSmallGoal() {
@@ -995,6 +1082,18 @@ final class AppStore: ObservableObject {
         if let index = state.taskHistory.lastIndex(where: { $0.title == taskTitle && !$0.completed }) {
             state.taskHistory[index].completed = true
             state.taskHistory[index].completedDate = Date()
+
+            // 完成任务推荐给狗狗少量属性奖励（连接主循环）
+            state.dogState.intimacy += 2
+            state.dogState.fullness = clamp(state.dogState.fullness + 3)
+            state.dogState.cleanliness = clamp(state.dogState.cleanliness + 3)
+            state.dogState.energy = clamp(state.dogState.energy + 3)
+            state.dogState.moodScore = clampToTen(state.dogState.moodScore + 1)
+
+            // 更新活跃日期并重新派生心情
+            state.dogState.lastActiveDate = assignedDate()
+            updateDogMood()
+            state.dogState.pose = .happy
             save()
         }
     }

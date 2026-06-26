@@ -35,9 +35,8 @@ enum SceneType: String, Codable, CaseIterable {
         }
     }
 
-    var isUnlocked: Bool {
-        // 这里会根据当前进化阶段判断是否解锁
-        return true
+    func isUnlocked(for evolution: DogEvolution) -> Bool {
+        return evolution.rawValue >= requiredEvolution.rawValue
     }
 
     var description: String {
@@ -1059,6 +1058,34 @@ enum PixelRewardItem: String, Codable, CaseIterable, Identifiable {
         case .pixelTv: return 0x2F3A34
         case .studyLamp: return 0xE8B75C
         case .miniDumbbell: return 0x6A5D9E
+        }
+    }
+
+    /// 使用道具的效果
+    var useEffect: [StateGain] {
+        switch self {
+        case .redBall:       return [StateGain(label: "亲密度", amount: 10)]
+        case .blueBandana:   return [StateGain(label: "清洁", amount: 15)]
+        case .tinyCrown:     return [StateGain(label: "亲密度", amount: 15)]
+        case .starBone:      return [StateGain(label: "饱腹", amount: 20)]
+        case .cozyBlanket:   return [StateGain(label: "精力", amount: 20)]
+        case .pixelTv:       return [StateGain(label: "心情", amount: 5)]
+        case .studyLamp:     return [StateGain(label: "心情", amount: 3), StateGain(label: "精力", amount: 5)]
+        case .miniDumbbell:  return [StateGain(label: "精力", amount: 15)]
+        }
+    }
+
+    /// 使用道具时的描述
+    var useDescription: String {
+        switch self {
+        case .redBall:       return "和狗狗玩球，亲密度 +10"
+        case .blueBandana:   return "给狗狗打扮，清洁 +15"
+        case .tinyCrown:     return "给狗狗戴上王冠，亲密度 +15"
+        case .starBone:      return "喂狗狗星星骨头，饱腹 +20"
+        case .cozyBlanket:   return "盖上舒服小毯，精力 +20"
+        case .pixelTv:       return "一起看电视，心情 +5"
+        case .studyLamp:     return "打开学习台灯，心情 +3 精力 +5"
+        case .miniDumbbell:  return "一起锻炼，精力 +15"
         }
     }
 }

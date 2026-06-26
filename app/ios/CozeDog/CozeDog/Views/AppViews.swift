@@ -885,6 +885,9 @@ struct DogDogView: View {
 
 struct DogHomeView: View {
     @EnvironmentObject private var store: AppStore
+    @State private var selectedItem: PixelRewardItem?
+    @State private var showUsedToast = false
+    @State private var usedItemName = ""
 
     private var currentScene: SceneType {
         store.state.sceneSettings.currentScene
@@ -899,7 +902,7 @@ struct DogHomeView: View {
     var body: some View {
         ScreenScaffold {
             VStack(alignment: .leading, spacing: 18) {
-                Header(eyebrow: "道具仓库", title: "狗狗世界", subtitle: "收集道具，布置你的狗狗世界场景。")
+                Header(eyebrow: "道具仓库", title: "狗狗世界", subtitle: "点击道具可以使用，给狗狗加成。")
 
                 Panel {
                     VStack(alignment: .leading, spacing: 12) {
@@ -956,7 +959,7 @@ struct DogHomeView: View {
                             .padding(.vertical, 20)
                         } else {
                             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                                ForEach(store.state.dogState.inventory) { item in
+                                ForEach(Array(store.state.dogState.inventory.enumerated()), id: \.offset) { index, item in
                                     VStack(spacing: 6) {
                                         Image(systemName: item.symbolName)
                                             .font(.title)
@@ -973,6 +976,9 @@ struct DogHomeView: View {
                                     .padding(.vertical, 8)
                                     .background(Color.white.opacity(0.6))
                                     .clipShape(RoundedRectangle(cornerRadius: 6))
+                                    .onTapGesture {
+                                        selectedItem = item
+                                    }
                                 }
                             }
                         }
@@ -980,6 +986,49 @@ struct DogHomeView: View {
                 }
 
                 Spacer()
+            }
+            .overlay(alignment: .top) {
+                if showUsedToast {
+                    Text("✅ \(usedItemName)")
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(Color(hex: 0x356247))
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(Color.white.opacity(0.95))
+                        .clipShape(Capsule())
+                        .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                }
+            }
+            .confirmationDialog(
+                selectedItem.map { $0.label } ?? "",
+                isPresented: Binding(
+                    get: { selectedItem != nil },
+                    set: { if !$0 { selectedItem = nil } }
+                ),
+                titleVisibility: .visible
+            ) {
+                if let item = selectedItem {
+                    Button("使用：\(item.useDescription)") {
+                        if let idx = store.state.dogState.inventory.firstIndex(of: item) {
+                            if store.useItem(at: idx) {
+                                usedItemName = "\(item.label) 已使用！"
+                                withAnimation { showUsedToast = true }
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                    withAnimation { showUsedToast = false }
+                                }
+                            }
+                        }
+                        selectedItem = nil
+                    }
+                    Button("取消", role: .cancel) {
+                        selectedItem = nil
+                    }
+                }
+            } message: {
+                if let item = selectedItem {
+                    Text(item.useDescription)
+                }
             }
         }
     }
