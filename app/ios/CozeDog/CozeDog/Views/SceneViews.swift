@@ -57,22 +57,22 @@ struct SceneBackgroundView: View {
     private var skyColors: [Color] {
         switch timeOfDay {
         case .morning:
-            return [Color(hex: "#FFB347"), Color(hex: "#87CEEB")]
+            return [Color(hex: 0xFFB347), Color(hex: 0x87CEEB)]
         case .afternoon:
-            return [Color(hex: "#87CEEB"), Color(hex: "#B0E0E6")]
+            return [Color(hex: 0x87CEEB), Color(hex: 0xB0E0E6)]
         case .evening:
-            return [Color(hex: "#FF6B6B"), Color(hex: "#FFB347")]
+            return [Color(hex: 0xFF6B6B), Color(hex: 0xFFB347)]
         case .night:
-            return [Color(hex: "#1A1A2E"), Color(hex: "#16213E")]
+            return [Color(hex: 0x1A1A2E), Color(hex: 0x16213E)]
         }
     }
 
     private var groundColor: Color {
         switch scene {
-        case .yard: return Color(hex: "#7CCD7C")
-        case .park: return Color(hex: "#6BBF6B")
-        case .beach: return Color(hex: "#F4D03F")
-        case .forest: return Color(hex: "#3D6B3D")
+        case .yard: return Color(hex: 0x7CCD7C)
+        case .park: return Color(hex: 0x6BBF6B)
+        case .beach: return Color(hex: 0xF4D03F)
+        case .forest: return Color(hex: 0x3D6B3D)
         }
     }
 }
@@ -97,14 +97,14 @@ struct YardSceneView: View {
                     let xPos = CGFloat(index) * w / 11
                     ZStack(alignment: .topLeading) {
                         // 栅栏柱正面
-                        PixelRect(color: Color(hex: "#8B4513"))
+                        PixelRect(color: Color(hex: 0x8B4513))
                             .frame(width: 5, height: 18)
                         // 栅栏柱侧面
-                        PixelRect(color: Color(hex: "#6B3510"))
+                        PixelRect(color: Color(hex: 0x6B3510))
                             .frame(width: 3, height: 18)
                             .offset(x: 5, y: 0)
                         // 栅栏柱顶面
-                        PixelRect(color: Color(hex: "#A0522D"))
+                        PixelRect(color: Color(hex: 0xA0522D))
                             .frame(width: 8, height: 3)
                             .offset(x: 0, y: -3)
                     }
@@ -112,7 +112,7 @@ struct YardSceneView: View {
                 }
 
                 // 栅栏横杆
-                PixelRect(color: Color(hex: "#A0522D"))
+                PixelRect(color: Color(hex: 0xA0522D))
                     .frame(width: w * 0.9, height: 3)
                     .position(x: w * 0.5, y: groundTop + 4)
 
@@ -152,9 +152,9 @@ struct YardSceneView: View {
                     width: w * 0.5,
                     height: 6,
                     depth: 12,
-                    topColor: Color(hex: "#D2B48C"),
-                    frontColor: Color(hex: "#C4A882"),
-                    sideColor: Color(hex: "#B89B72")
+                    topColor: Color(hex: 0xD2B48C),
+                    frontColor: Color(hex: 0xC4A882),
+                    sideColor: Color(hex: 0xB89B72)
                 )
                 .position(x: w * 0.4, y: groundTop + h * 0.42)
             }
@@ -171,35 +171,35 @@ struct YardHouseView: View {
 
         ZStack(alignment: .bottom) {
             // 墙体正面
-            PixelRect(color: Color(hex: "#DEB887"))
+            PixelRect(color: Color(hex: 0xDEB887))
                 .frame(width: wallW, height: wallH)
                 .offset(x: 0, y: wallD)
 
             // 墙体侧面
-            PixelRect(color: Color(hex: "#C4A06A"))
+            PixelRect(color: Color(hex: 0xC4A06A))
                 .frame(width: wallD, height: wallH)
                 .offset(x: wallW, y: wallD)
 
             // 门（正面）
-            PixelRect(color: Color(hex: "#8B4513"))
+            PixelRect(color: Color(hex: 0x8B4513))
                 .frame(width: 14, height: 22)
                 .offset(x: wallW * 0.15, y: wallD + wallH - 22)
 
             // 窗户（正面）
-            PixelRect(color: Color(hex: "#87CEEB"))
+            PixelRect(color: Color(hex: 0x87CEEB))
                 .frame(width: 12, height: 10)
                 .offset(x: wallW * 0.6, y: wallD + wallH * 0.35)
 
             // 窗框
-            PixelRect(color: Color(hex: "#654321"))
+            PixelRect(color: Color(hex: 0x654321))
                 .frame(width: 14, height: 2)
                 .offset(x: wallW * 0.6, y: wallD + wallH * 0.35 - 5)
-            PixelRect(color: Color(hex: "#654321"))
+            PixelRect(color: Color(hex: 0x654321))
                 .frame(width: 14, height: 2)
                 .offset(x: wallW * 0.6, y: wallD + wallH * 0.35 + 5)
 
             // 窗户（侧面）
-            PixelRect(color: Color(hex: "#6BB8D6"))
+            PixelRect(color: Color(hex: 0x6BB8D6))
                 .frame(width: 8, height: 10)
                 .offset(x: wallW + wallD * 0.4, y: wallD + wallH * 0.35)
 
@@ -208,9 +208,9 @@ struct YardHouseView: View {
                 width: wallW + 8,
                 height: 8,
                 depth: wallD + 8,
-                topColor: Color(hex: "#8B0000"),
-                frontColor: Color(hex: "#A52A2A"),
-                sideColor: Color(hex: "#6B0000")
+                topColor: Color(hex: 0x8B0000),
+                frontColor: Color(hex: 0xA52A2A),
+                sideColor: Color(hex: 0x6B0000)
             )
             .offset(y: -(wallH))
 
@@ -219,7 +219,7 @@ struct YardHouseView: View {
                 width: 8,
                 height: 14,
                 depth: 6,
-                baseColor: Color(hex: "#654321")
+                baseColor: Color(hex: 0x654321)
             )
             .offset(x: wallW * 0.6, y: -(wallH + 14))
         }
@@ -242,7 +242,7 @@ struct YardTreeView: View {
                 width: trunkW,
                 height: trunkH,
                 depth: trunkD,
-                color: Color(hex: "#8B4513")
+                color: Color(hex: 0x8B4513)
             )
 
             // 树冠（多层递缩矩形）
@@ -279,9 +279,9 @@ struct ParkSceneView: View {
                     width: w * 0.8,
                     height: 8,
                     depth: 14,
-                    topColor: Color(hex: "#D2B48C"),
-                    frontColor: Color(hex: "#C4A882"),
-                    sideColor: Color(hex: "#B89B72")
+                    topColor: Color(hex: 0xD2B48C),
+                    frontColor: Color(hex: 0xC4A882),
+                    sideColor: Color(hex: 0xB89B72)
                 )
                 .position(x: w * 0.5, y: groundTop + h * 0.25)
 
@@ -328,7 +328,7 @@ struct ParkTreeView: View {
                 width: trunkW,
                 height: trunkH,
                 depth: trunkD,
-                color: Color(hex: "#8B4513")
+                color: Color(hex: 0x8B4513)
             )
 
             // 树冠
@@ -356,13 +356,13 @@ struct ParkBenchView: View {
 
         ZStack(alignment: .bottom) {
             // 椅腿
-            PixelRect(color: Color(hex: "#654321"))
+            PixelRect(color: Color(hex: 0x654321))
                 .frame(width: 3, height: legH)
                 .offset(x: 2, y: 0)
-            PixelRect(color: Color(hex: "#654321"))
+            PixelRect(color: Color(hex: 0x654321))
                 .frame(width: 3, height: legH)
                 .offset(x: seatW - 5, y: 0)
-            PixelRect(color: Color(hex: "#553818"))
+            PixelRect(color: Color(hex: 0x553818))
                 .frame(width: 3, height: legH)
                 .offset(x: seatW + seatD - 5, y: -seatD * 0.2)
 
@@ -371,9 +371,9 @@ struct ParkBenchView: View {
                 width: seatW,
                 height: seatH,
                 depth: seatD,
-                topColor: Color(hex: "#A0522D"),
-                frontColor: Color(hex: "#8B4513"),
-                sideColor: Color(hex: "#6B3510")
+                topColor: Color(hex: 0xA0522D),
+                frontColor: Color(hex: 0x8B4513),
+                sideColor: Color(hex: 0x6B3510)
             )
             .offset(y: -legH)
 
@@ -382,9 +382,9 @@ struct ParkBenchView: View {
                 width: seatW,
                 height: backH,
                 depth: 3,
-                topColor: Color(hex: "#A0522D"),
-                frontColor: Color(hex: "#8B4513"),
-                sideColor: Color(hex: "#6B3510")
+                topColor: Color(hex: 0xA0522D),
+                frontColor: Color(hex: 0x8B4513),
+                sideColor: Color(hex: 0x6B3510)
             )
             .offset(y: -(legH + seatH + seatD + backH * 0.3))
         }
@@ -405,13 +405,13 @@ struct FlowerBedView: View {
                 width: bedW,
                 height: bedH,
                 depth: bedD,
-                topColor: Color(hex: "#A0522D"),
-                frontColor: Color(hex: "#8B4513"),
-                sideColor: Color(hex: "#6B3510")
+                topColor: Color(hex: 0xA0522D),
+                frontColor: Color(hex: 0x8B4513),
+                sideColor: Color(hex: 0x6B3510)
             )
 
             // 泥土顶面
-            PixelRect(color: Color(hex: "#5C4033"))
+            PixelRect(color: Color(hex: 0x5C4033))
                 .frame(width: bedW - 4, height: bedD - 4)
                 .offset(x: 2, y: 2)
 
@@ -421,7 +421,7 @@ struct FlowerBedView: View {
                 let fx = CGFloat(index % 3) * 8 + 4
                 let fy = CGFloat(index / 3) * 6 - 4
                 // 花茎
-                PixelRect(color: Color(hex: "#228B22"))
+                PixelRect(color: Color(hex: 0x228B22))
                     .frame(width: 2, height: 8)
                     .offset(x: fx, y: -(bedH + bedD + 4))
                 // 花朵
@@ -456,15 +456,15 @@ struct BeachSceneView: View {
                     width: w,
                     height: 15,
                     depth: 20,
-                    topColor: Color(hex: "#4682B4").opacity(0.6),
-                    frontColor: Color(hex: "#3A6E9E").opacity(0.7),
-                    sideColor: Color(hex: "#2E5A82").opacity(0.5)
+                    topColor: Color(hex: 0x4682B4).opacity(0.6),
+                    frontColor: Color(hex: 0x3A6E9E).opacity(0.7),
+                    sideColor: Color(hex: 0x2E5A82).opacity(0.5)
                 )
                 .position(x: w * 0.5, y: groundTop + 5)
 
                 // 海浪边缘动画
                 WaveShape(offset: waveOffset)
-                    .fill(Color(hex: "#87CEEB").opacity(0.5))
+                    .fill(Color(hex: 0x87CEEB).opacity(0.5))
                     .frame(height: 12)
                     .position(x: w * 0.5, y: groundTop + 22)
 
@@ -514,12 +514,12 @@ struct PalmTreeView: View {
                 width: trunkW,
                 height: trunkH,
                 depth: trunkD,
-                color: Color(hex: "#8B6914")
+                color: Color(hex: 0x8B6914)
             )
 
             // 树干纹理（横向条纹）
             ForEach(0..<4) { i in
-                PixelRect(color: Color(hex: "#7A5A10").opacity(0.5))
+                PixelRect(color: Color(hex: 0x7A5A10).opacity(0.5))
                     .frame(width: trunkW, height: 2)
                     .offset(x: 0, y: -CGFloat(i) * 10 - 5)
             }
@@ -528,7 +528,7 @@ struct PalmTreeView: View {
             ForEach(0..<6) { index in
                 let angle = Double(index) * 60
                 Ellipse()
-                    .fill(Color(hex: "#228B22"))
+                    .fill(Color(hex: 0x228B22))
                     .frame(width: 28, height: 8)
                     .rotationEffect(.degrees(angle))
                     .offset(
@@ -538,7 +538,7 @@ struct PalmTreeView: View {
             }
 
             // 椰子
-            PixelRect(color: Color(hex: "#8B4513"))
+            PixelRect(color: Color(hex: 0x8B4513))
                 .frame(width: 5, height: 5)
                 .offset(x: 2, y: -trunkH - trunkD + 2)
         }
@@ -555,7 +555,7 @@ struct BeachUmbrellaView: View {
 
         ZStack(alignment: .bottom) {
             // 伞柄
-            PixelRect(color: Color(hex: "#8B4513"))
+            PixelRect(color: Color(hex: 0x8B4513))
                 .frame(width: poleW, height: poleH)
 
             // 伞面（用等距盒体模拟扁平圆盘）
@@ -563,9 +563,9 @@ struct BeachUmbrellaView: View {
                 width: umbrellaR * 2,
                 height: 4,
                 depth: 10,
-                topColor: Color(hex: "#FF6347"),
-                frontColor: Color(hex: "#E5553A"),
-                sideColor: Color(hex: "#CC4830")
+                topColor: Color(hex: 0xFF6347),
+                frontColor: Color(hex: 0xE5553A),
+                sideColor: Color(hex: 0xCC4830)
             )
             .offset(y: -poleH)
 
@@ -577,7 +577,7 @@ struct BeachUmbrellaView: View {
             }
 
             // 伞尖
-            PixelRect(color: Color(hex: "#FFD700"))
+            PixelRect(color: Color(hex: 0xFFD700))
                 .frame(width: 4, height: 4)
                 .offset(y: -poleH - 6)
         }
@@ -655,9 +655,9 @@ struct ForestSceneView: View {
                     width: w * 0.6,
                     height: 6,
                     depth: 10,
-                    topColor: Color(hex: "#5D4E37"),
-                    frontColor: Color(hex: "#4E4030"),
-                    sideColor: Color(hex: "#3F3328")
+                    topColor: Color(hex: 0x5D4E37),
+                    frontColor: Color(hex: 0x4E4030),
+                    sideColor: Color(hex: 0x3F3328)
                 )
                 .position(x: w * 0.45, y: groundTop + h * 0.2)
             }
@@ -680,7 +680,7 @@ struct ForestTreeView: View {
                 width: trunkW,
                 height: trunkH,
                 depth: trunkD,
-                color: Color(hex: "#654321")
+                color: Color(hex: 0x654321)
             )
 
             // 树冠（3 层，更大）
@@ -689,7 +689,7 @@ struct ForestTreeView: View {
                 layers: 3,
                 layerHeight: size * 0.2,
                 depth: size * 0.18,
-                baseColor: Color(hex: "#006400")
+                baseColor: Color(hex: 0x006400)
             )
             .offset(y: -trunkH)
         }
@@ -708,7 +708,7 @@ struct SceneThumbnailView: View {
     var body: some View {
         ZStack {
             // 背景
-            RoundedRectangle(cornerRadius: 6)
+            Rectangle()
                 .fill(baseColor)
                 .frame(width: 80, height: 56)
 
@@ -719,7 +719,7 @@ struct SceneThumbnailView: View {
 
             // 锁定遮罩
             if isLocked {
-                RoundedRectangle(cornerRadius: 6)
+                Rectangle()
                     .fill(Color.black.opacity(0.45))
                 Image(systemName: "lock.fill")
                     .font(.system(size: 14, weight: .bold))
@@ -727,7 +727,7 @@ struct SceneThumbnailView: View {
             }
 
             // 选中边框
-            RoundedRectangle(cornerRadius: 6)
+            Rectangle()
                 .strokeBorder(isSelected ? Color(hex: 0x356247) : Color.clear, lineWidth: 2)
         }
         .frame(width: 80, height: 56)
@@ -735,10 +735,10 @@ struct SceneThumbnailView: View {
 
     private var baseColor: Color {
         switch scene {
-        case .yard: return Color(hex: "#7EC850")
-        case .park: return Color(hex: "#A8D86E")
-        case .beach: return Color(hex: "#F0D878")
-        case .forest: return Color(hex: "#3A7D44")
+        case .yard: return Color(hex: 0x7EC850)
+        case .park: return Color(hex: 0xA8D86E)
+        case .beach: return Color(hex: 0xF0D878)
+        case .forest: return Color(hex: 0x3A7D44)
         }
     }
 
@@ -760,26 +760,26 @@ struct SceneThumbnailView: View {
     private var yardThumbnail: some View {
         ZStack {
             // 地面纹理线
-            PixelRect(color: Color(hex: "#6AB840"))
+            PixelRect(color: Color(hex: 0x6AB840))
                 .frame(width: 80, height: 1)
                 .offset(y: 12)
-            PixelRect(color: Color(hex: "#6AB840"))
+            PixelRect(color: Color(hex: 0x6AB840))
                 .frame(width: 80, height: 1)
                 .offset(y: 24)
 
             // 小狗窝（等距盒体）
             ZStack(alignment: .topLeading) {
-                PixelRect(color: Color(hex: "#A0782C"))
+                PixelRect(color: Color(hex: 0xA0782C))
                     .frame(width: 18, height: 12)
                     .offset(x: 0, y: 6)
-                PixelRect(color: Color(hex: "#8B6914"))
+                PixelRect(color: Color(hex: 0x8B6914))
                     .frame(width: 4, height: 12)
                     .offset(x: 18, y: 6)
-                PixelRect(color: Color(hex: "#C49A3C"))
+                PixelRect(color: Color(hex: 0xC49A3C))
                     .frame(width: 22, height: 4)
                     .offset(x: 0, y: 2)
                 // 门洞
-                PixelRect(color: Color(hex: "#4A3000"))
+                PixelRect(color: Color(hex: 0x4A3000))
                     .frame(width: 6, height: 7)
                     .offset(x: 6, y: 11)
             }
@@ -787,16 +787,16 @@ struct SceneThumbnailView: View {
 
             // 小树（等距）
             ZStack(alignment: .bottom) {
-                PixelRect(color: Color(hex: "#6B4226"))
+                PixelRect(color: Color(hex: 0x6B4226))
                     .frame(width: 3, height: 10)
                 IsometricBoxSimple(
                     width: 14, height: 8, depth: 3,
-                    baseColor: Color(hex: "#2D8B2D")
+                    baseColor: Color(hex: 0x2D8B2D)
                 )
                 .offset(y: -10)
                 IsometricBoxSimple(
                     width: 10, height: 6, depth: 2,
-                    baseColor: Color(hex: "#3AA63A")
+                    baseColor: Color(hex: 0x3AA63A)
                 )
                 .offset(y: -18)
             }
@@ -804,17 +804,17 @@ struct SceneThumbnailView: View {
 
             // 小沙发
             ZStack(alignment: .topLeading) {
-                PixelRect(color: Color(hex: "#4A6FA5"))
+                PixelRect(color: Color(hex: 0x4A6FA5))
                     .frame(width: 14, height: 6)
                     .offset(x: 0, y: 3)
-                PixelRect(color: Color(hex: "#3A5F95"))
+                PixelRect(color: Color(hex: 0x3A5F95))
                     .frame(width: 3, height: 6)
                     .offset(x: 14, y: 3)
-                PixelRect(color: Color(hex: "#5A7FB5"))
+                PixelRect(color: Color(hex: 0x5A7FB5))
                     .frame(width: 17, height: 3)
                     .offset(x: 0, y: 0)
                 // 靠背
-                PixelRect(color: Color(hex: "#3A5F95"))
+                PixelRect(color: Color(hex: 0x3A5F95))
                     .frame(width: 14, height: 3)
                     .offset(x: 0, y: -3)
             }
@@ -826,35 +826,35 @@ struct SceneThumbnailView: View {
     private var parkThumbnail: some View {
         ZStack {
             // 地面纹理
-            PixelRect(color: Color(hex: "#98C85E"))
+            PixelRect(color: Color(hex: 0x98C85E))
                 .frame(width: 80, height: 1)
                 .offset(y: 14)
-            PixelRect(color: Color(hex: "#98C85E"))
+            PixelRect(color: Color(hex: 0x98C85E))
                 .frame(width: 80, height: 1)
                 .offset(y: 28)
 
             // 小路
-            PixelRect(color: Color(hex: "#D4C49A"))
+            PixelRect(color: Color(hex: 0xD4C49A))
                 .frame(width: 12, height: 56)
                 .offset(x: 0)
 
             // 跑步机（等距盒体）
             ZStack(alignment: .topLeading) {
-                PixelRect(color: Color(hex: "#808080"))
+                PixelRect(color: Color(hex: 0x808080))
                     .frame(width: 16, height: 8)
                     .offset(x: 0, y: 4)
-                PixelRect(color: Color(hex: "#606060"))
+                PixelRect(color: Color(hex: 0x606060))
                     .frame(width: 3, height: 8)
                     .offset(x: 16, y: 4)
-                PixelRect(color: Color(hex: "#A0A0A0"))
+                PixelRect(color: Color(hex: 0xA0A0A0))
                     .frame(width: 19, height: 4)
                     .offset(x: 0, y: 0)
                 // 扶手
-                PixelRect(color: Color(hex: "#505050"))
+                PixelRect(color: Color(hex: 0x505050))
                     .frame(width: 2, height: 8)
                     .offset(x: 16, y: -4)
                 // 跑带纹理
-                PixelRect(color: Color(hex: "#404040"))
+                PixelRect(color: Color(hex: 0x404040))
                     .frame(width: 12, height: 1)
                     .offset(x: 2, y: 7)
             }
@@ -862,27 +862,27 @@ struct SceneThumbnailView: View {
 
             // 等距长椅
             ZStack(alignment: .topLeading) {
-                PixelRect(color: Color(hex: "#8B6914"))
+                PixelRect(color: Color(hex: 0x8B6914))
                     .frame(width: 14, height: 5)
                     .offset(x: 0, y: 3)
-                PixelRect(color: Color(hex: "#6B4226"))
+                PixelRect(color: Color(hex: 0x6B4226))
                     .frame(width: 3, height: 5)
                     .offset(x: 14, y: 3)
-                PixelRect(color: Color(hex: "#A0782C"))
+                PixelRect(color: Color(hex: 0xA0782C))
                     .frame(width: 17, height: 3)
                     .offset(x: 0, y: 0)
                 // 靠背
-                PixelRect(color: Color(hex: "#6B4226"))
+                PixelRect(color: Color(hex: 0x6B4226))
                     .frame(width: 14, height: 4)
                     .offset(x: 0, y: -4)
             }
             .offset(x: 14, y: 6)
 
             // 小花
-            PixelRect(color: Color(hex: "#FF6B8A"))
+            PixelRect(color: Color(hex: 0xFF6B8A))
                 .frame(width: 4, height: 4)
                 .offset(x: -10, y: 16)
-            PixelRect(color: Color(hex: "#FFD700"))
+            PixelRect(color: Color(hex: 0xFFD700))
                 .frame(width: 3, height: 3)
                 .offset(x: 26, y: 18)
         }
@@ -892,39 +892,39 @@ struct SceneThumbnailView: View {
     private var beachThumbnail: some View {
         ZStack {
             // 海水条
-            PixelRect(color: Color(hex: "#4AAFE0"))
+            PixelRect(color: Color(hex: 0x4AAFE0))
                 .frame(width: 80, height: 10)
                 .offset(y: -23)
             // 海浪边
-            PixelRect(color: Color(hex: "#6BC5F0"))
+            PixelRect(color: Color(hex: 0x6BC5F0))
                 .frame(width: 80, height: 3)
                 .offset(y: -16)
 
             // 沙滩纹理
-            PixelRect(color: Color(hex: "#E0C868"))
+            PixelRect(color: Color(hex: 0xE0C868))
                 .frame(width: 80, height: 1)
                 .offset(y: 4)
-            PixelRect(color: Color(hex: "#E0C868"))
+            PixelRect(color: Color(hex: 0xE0C868))
                 .frame(width: 80, height: 1)
                 .offset(y: 16)
 
             // 棕榈树
             ZStack(alignment: .bottom) {
                 // 弯曲树干
-                PixelRect(color: Color(hex: "#8B6914"))
+                PixelRect(color: Color(hex: 0x8B6914))
                     .frame(width: 3, height: 18)
                     .offset(x: 1, y: 0)
-                PixelRect(color: Color(hex: "#8B6914"))
+                PixelRect(color: Color(hex: 0x8B6914))
                     .frame(width: 3, height: 6)
                     .offset(x: -1, y: -16)
                 // 棕榈叶
-                PixelRect(color: Color(hex: "#2D8B2D"))
+                PixelRect(color: Color(hex: 0x2D8B2D))
                     .frame(width: 16, height: 4)
                     .offset(x: -4, y: -22)
-                PixelRect(color: Color(hex: "#3AA63A"))
+                PixelRect(color: Color(hex: 0x3AA63A))
                     .frame(width: 12, height: 3)
                     .offset(x: 2, y: -20)
-                PixelRect(color: Color(hex: "#228B22"))
+                PixelRect(color: Color(hex: 0x228B22))
                     .frame(width: 10, height: 3)
                     .offset(x: -6, y: -19)
             }
@@ -932,13 +932,13 @@ struct SceneThumbnailView: View {
 
             // 工作台（小等距盒体）
             ZStack(alignment: .topLeading) {
-                PixelRect(color: Color(hex: "#5C4033"))
+                PixelRect(color: Color(hex: 0x5C4033))
                     .frame(width: 14, height: 7)
                     .offset(x: 0, y: 3)
-                PixelRect(color: Color(hex: "#4A3020"))
+                PixelRect(color: Color(hex: 0x4A3020))
                     .frame(width: 3, height: 7)
                     .offset(x: 14, y: 3)
-                PixelRect(color: Color(hex: "#7A5A43"))
+                PixelRect(color: Color(hex: 0x7A5A43))
                     .frame(width: 17, height: 3)
                     .offset(x: 0, y: 0)
             }
@@ -946,22 +946,22 @@ struct SceneThumbnailView: View {
 
             // 沙滩伞
             ZStack {
-                PixelRect(color: Color(hex: "#8B6914"))
+                PixelRect(color: Color(hex: 0x8B6914))
                     .frame(width: 2, height: 12)
-                PixelRect(color: Color(hex: "#FF4444"))
+                PixelRect(color: Color(hex: 0xFF4444))
                     .frame(width: 12, height: 3)
                     .offset(y: -6)
-                PixelRect(color: Color(hex: "#FFFFFF"))
+                PixelRect(color: Color(hex: 0xFFFFFF))
                     .frame(width: 4, height: 3)
                     .offset(x: -2, y: -6)
-                PixelRect(color: Color(hex: "#FFFFFF"))
+                PixelRect(color: Color(hex: 0xFFFFFF))
                     .frame(width: 4, height: 3)
                     .offset(x: 4, y: -6)
             }
             .offset(x: 24, y: -4)
 
             // 贝壳
-            PixelRect(color: Color(hex: "#FFB6C1"))
+            PixelRect(color: Color(hex: 0xFFB6C1))
                 .frame(width: 3, height: 2)
                 .offset(x: -6, y: 18)
         }
@@ -971,30 +971,30 @@ struct SceneThumbnailView: View {
     private var forestThumbnail: some View {
         ZStack {
             // 地面纹理
-            PixelRect(color: Color(hex: "#2D6B34"))
+            PixelRect(color: Color(hex: 0x2D6B34))
                 .frame(width: 80, height: 1)
                 .offset(y: 10)
-            PixelRect(color: Color(hex: "#2D6B34"))
+            PixelRect(color: Color(hex: 0x2D6B34))
                 .frame(width: 80, height: 1)
                 .offset(y: 22)
 
             // 大树（等距，多层树冠）
             ZStack(alignment: .bottom) {
-                PixelRect(color: Color(hex: "#4A3020"))
+                PixelRect(color: Color(hex: 0x4A3020))
                     .frame(width: 5, height: 16)
                 IsometricBoxSimple(
                     width: 22, height: 10, depth: 5,
-                    baseColor: Color(hex: "#006400")
+                    baseColor: Color(hex: 0x006400)
                 )
                 .offset(y: -14)
                 IsometricBoxSimple(
                     width: 16, height: 8, depth: 4,
-                    baseColor: Color(hex: "#228B22")
+                    baseColor: Color(hex: 0x228B22)
                 )
                 .offset(y: -24)
                 IsometricBoxSimple(
                     width: 10, height: 6, depth: 3,
-                    baseColor: Color(hex: "#006400")
+                    baseColor: Color(hex: 0x006400)
                 )
                 .offset(y: -32)
             }
@@ -1002,11 +1002,11 @@ struct SceneThumbnailView: View {
 
             // 小树
             ZStack(alignment: .bottom) {
-                PixelRect(color: Color(hex: "#4A3020"))
+                PixelRect(color: Color(hex: 0x4A3020))
                     .frame(width: 3, height: 8)
                 IsometricBoxSimple(
                     width: 10, height: 6, depth: 3,
-                    baseColor: Color(hex: "#2D8B2D")
+                    baseColor: Color(hex: 0x2D8B2D)
                 )
                 .offset(y: -8)
             }
@@ -1014,20 +1014,20 @@ struct SceneThumbnailView: View {
 
             // 学习桌
             ZStack(alignment: .topLeading) {
-                PixelRect(color: Color(hex: "#6B4226"))
+                PixelRect(color: Color(hex: 0x6B4226))
                     .frame(width: 12, height: 6)
                     .offset(x: 0, y: 3)
-                PixelRect(color: Color(hex: "#5A3216"))
+                PixelRect(color: Color(hex: 0x5A3216))
                     .frame(width: 3, height: 6)
                     .offset(x: 12, y: 3)
-                PixelRect(color: Color(hex: "#8B5A3C"))
+                PixelRect(color: Color(hex: 0x8B5A3C))
                     .frame(width: 15, height: 3)
                     .offset(x: 0, y: 0)
                 // 小书架
-                PixelRect(color: Color(hex: "#4A3020"))
+                PixelRect(color: Color(hex: 0x4A3020))
                     .frame(width: 5, height: 5)
                     .offset(x: 2, y: -5)
-                PixelRect(color: Color(hex: "#FF6B6B"))
+                PixelRect(color: Color(hex: 0xFF6B6B))
                     .frame(width: 3, height: 3)
                     .offset(x: 3, y: -4)
             }
@@ -1035,12 +1035,12 @@ struct SceneThumbnailView: View {
 
             // 蘑菇
             ZStack {
-                PixelRect(color: Color(hex: "#D4A574"))
+                PixelRect(color: Color(hex: 0xD4A574))
                     .frame(width: 2, height: 4)
-                PixelRect(color: Color(hex: "#FF4444"))
+                PixelRect(color: Color(hex: 0xFF4444))
                     .frame(width: 6, height: 3)
                     .offset(y: -3)
-                PixelRect(color: Color(hex: "#FFFFFF"))
+                PixelRect(color: Color(hex: 0xFFFFFF))
                     .frame(width: 2, height: 1)
                     .offset(x: -1, y: -3)
             }
@@ -1118,7 +1118,7 @@ struct RainView: View {
         GeometryReader { proxy in
             ZStack {
                 ForEach(rainDrops) { drop in
-                    PixelRect(color: Color(hex: "#4682B4")).frame(width: 2, height: 15)
+                    PixelRect(color: Color(hex: 0x4682B4)).frame(width: 2, height: 15)
                         .position(
                             x: drop.position.x,
                             y: isAnimating ? proxy.size.height + 20 : drop.position.y
@@ -1242,7 +1242,7 @@ struct PixelFlowerView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             // 花茎
-            PixelRect(color: Color(hex: "#228B22"))
+            PixelRect(color: Color(hex: 0x228B22))
                 .frame(width: 2, height: 10)
 
             // 花瓣
@@ -1270,10 +1270,10 @@ struct PixelShellView: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(Color(hex: "#FFC0CB"))
+                .fill(Color(hex: 0xFFC0CB))
                 .frame(width: 10, height: 10)
             Circle()
-                .fill(Color(hex: "#FFB6C1"))
+                .fill(Color(hex: 0xFFB6C1))
                 .frame(width: 6, height: 6)
                 .offset(x: -2, y: -2)
         }
@@ -1319,7 +1319,7 @@ struct MushroomView: View {
                 width: stemW,
                 height: stemH,
                 depth: 3,
-                color: Color(hex: "#F5F5DC")
+                color: Color(hex: 0xF5F5DC)
             )
 
             // 菌盖
@@ -1327,9 +1327,9 @@ struct MushroomView: View {
                 width: capW,
                 height: capH,
                 depth: capD,
-                topColor: Color(hex: "#FF0000"),
-                frontColor: Color(hex: "#CC0000"),
-                sideColor: Color(hex: "#990000")
+                topColor: Color(hex: 0xFF0000),
+                frontColor: Color(hex: 0xCC0000),
+                sideColor: Color(hex: 0x990000)
             )
             .offset(y: -stemH)
 
@@ -1375,31 +1375,3 @@ struct WaveShape: Shape {
     }
 }
 
-// MARK: - Color 扩展
-
-extension Color {
-    init(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
-        let a, r, g, b: UInt64
-        switch hex.count {
-        case 3: // RGB (12-bit)
-            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-        case 6: // RGB (24-bit)
-            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-        case 8: // ARGB (32-bit)
-            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
-        default:
-            (a, r, g, b) = (1, 1, 1, 0)
-        }
-
-        self.init(
-            .sRGB,
-            red: Double(r) / 255,
-            green: Double(g) / 255,
-            blue:  Double(b) / 255,
-            opacity: Double(a) / 255
-        )
-    }
-}

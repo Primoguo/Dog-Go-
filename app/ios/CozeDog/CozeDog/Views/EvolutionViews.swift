@@ -154,32 +154,29 @@ struct EvolutionProgressBar: View {
                     .foregroundColor(.orange)
                 Text(currentEvolution.displayName)
                     .font(.headline)
-                    .foregroundColor(.primary)
+                    .foregroundColor(Color.dogTextPrimary)
                 Spacer()
                 if let nextStage = currentEvolution.nextStage {
                     Text("→ \(nextStage.displayName)")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(Color.dogTextSecondary)
                 }
             }
 
             // 进度条
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.gray.opacity(0.2))
+                    Rectangle()
+                        .fill(Color(hex: 0xE8E0D0))
                         .frame(height: 12)
 
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(
-                            LinearGradient(
-                                colors: [.orange, .yellow],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
+                    Rectangle()
+                        .fill(Color.dogSuccess)
                         .frame(width: geometry.size.width * progress, height: 12)
                         .animation(.easeInOut(duration: 0.5), value: progress)
+                }
+                .overlay {
+                    Rectangle().stroke(Color.dogBorder, lineWidth: 1)
                 }
             }
             .frame(height: 12)
@@ -188,7 +185,7 @@ struct EvolutionProgressBar: View {
             HStack {
                 Text("已完成 \(totalCheckIns) 次")
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dogTextSecondary)
                 Spacer()
                 if let nextRequired = currentEvolution.nextStageRequiredCheckIns {
                     let remaining = max(0, nextRequired - totalCheckIns)
@@ -203,11 +200,14 @@ struct EvolutionProgressBar: View {
             }
         }
         .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
-        )
+        .background {
+            ZStack {
+                Color.dogBgPanel
+                PixelTinyGrid(colorA: Color(hex: 0xF4E6C6, alpha: 0.34), colorB: .clear, tile: 14)
+            }
+        }
+        .overlay { Rectangle().stroke(Color.dogBorder, lineWidth: 2) }
+        .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 4, y: 4)
     }
 
     private var progress: CGFloat {
@@ -226,7 +226,7 @@ struct MoodDisplayView: View {
                 .font(.title2)
             Text(mood.displayName)
                 .font(.subheadline)
-                .foregroundColor(.primary)
+                .foregroundColor(Color.dogTextPrimary)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
@@ -288,13 +288,13 @@ struct DiaryViewerView: View {
         VStack(spacing: 16) {
             Image(systemName: "book.closed")
                 .font(.system(size: 60))
-                .foregroundColor(.secondary)
+                .foregroundColor(Color.dogTextTertiary)
             Text("还没有日记")
                 .font(.headline)
-                .foregroundColor(.primary)
+                .foregroundColor(Color.dogTextPrimary)
             Text("完成计划后，狗狗会自动写日记哦")
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .foregroundColor(Color.dogTextSecondary)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
@@ -311,7 +311,7 @@ struct DiaryEntryCard: View {
             HStack {
                 Text(entry.date, style: .date)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dogTextSecondary)
                 Spacer()
                 MoodDisplayView(mood: entry.mood)
             }
@@ -319,7 +319,7 @@ struct DiaryEntryCard: View {
             // 日记内容
             Text(entry.content)
                 .font(.body)
-                .foregroundColor(.primary)
+                .foregroundColor(Color.dogTextPrimary)
                 .fixedSize(horizontal: false, vertical: true)
 
             // 统计数据
@@ -342,15 +342,19 @@ struct DiaryEntryCard: View {
             }
         }
         .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
-        )
+        .background {
+            ZStack {
+                Color.dogBgPanel
+                PixelTinyGrid(colorA: Color(hex: 0xF4E6C6, alpha: 0.34), colorB: .clear, tile: 14)
+            }
+        }
+        .overlay { Rectangle().stroke(Color.dogBorder, lineWidth: 2) }
+        .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 4, y: 4)
     }
 }
 
 // MARK: - 进化动画弹窗
+// NOTE: 庆祝弹窗，保留圆角+渐变+发光阴影作为特殊视觉语言（符合风格指南 3.1）
 
 struct EvolutionPopupView: View {
     let oldEvolution: DogEvolution

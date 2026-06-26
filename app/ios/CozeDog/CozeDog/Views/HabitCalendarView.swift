@@ -14,9 +14,9 @@ struct HabitCalendarButton: View {
         }) {
             ZStack {
                 Circle()
-                    .fill(Color.white.opacity(0.9))
+                    .fill(Color.dogBgCard)
                     .frame(width: 44, height: 44)
-                    .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+                    .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 3, y: 3)
 
                 Image(systemName: "calendar")
                     .font(.system(size: 20, weight: .bold))
@@ -67,16 +67,15 @@ struct HabitCalendarView: View {
                     .padding(16)
                 }
             }
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(red: 1.0, green: 0.98, blue: 0.95))
-            )
+            .background {
+                ZStack {
+                    Color.dogBgPanel
+                    PixelTinyGrid(colorA: Color(hex: 0xF4E6C6, alpha: 0.34), colorB: .clear, tile: 14)
+                }
+            }
             .frame(width: 340, height: 580)
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color(red: 0.6, green: 0.5, blue: 0.4), lineWidth: 3)
-            )
-            .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
+            .overlay { Rectangle().stroke(Color.dogBorder, lineWidth: 3) }
+            .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 4, y: 4)
         }
         .sheet(isPresented: $showsMonthlyReport) {
             MonthlyReportView(month: selectedMonth)
@@ -107,7 +106,7 @@ struct HabitCalendarView: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
                 .background(
-                    RoundedRectangle(cornerRadius: 6)
+                    Rectangle()
                         .fill(Color.blue.opacity(0.8))
                 )
             }
@@ -124,7 +123,7 @@ struct HabitCalendarView: View {
         }
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            Rectangle()
                 .fill(Color.orange.opacity(0.3))
         )
     }
@@ -167,7 +166,7 @@ struct HabitCalendarView: View {
         }
         .padding(12)
         .background(
-            RoundedRectangle(cornerRadius: 8)
+            Rectangle()
                 .fill(Color.yellow.opacity(0.1))
         )
     }
@@ -243,10 +242,13 @@ struct HabitCalendarView: View {
             }
         }
         .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.white.opacity(0.6))
-        )
+        .background {
+            ZStack {
+                Color.dogBgPanel
+                PixelTinyGrid(colorA: Color(hex: 0xF4E6C6, alpha: 0.34), colorB: .clear, tile: 14)
+            }
+        }
+        .overlay { Rectangle().stroke(Color.dogBorder, lineWidth: 2) }
     }
 
     // MARK: - Achievement Section
@@ -268,7 +270,7 @@ struct HabitCalendarView: View {
         }
         .padding(12)
         .background(
-            RoundedRectangle(cornerRadius: 8)
+            Rectangle()
                 .fill(Color.purple.opacity(0.1))
         )
     }
@@ -289,7 +291,7 @@ struct HabitCalendarView: View {
         }
         .padding(12)
         .background(
-            RoundedRectangle(cornerRadius: 8)
+            Rectangle()
                 .fill(Color.green.opacity(0.1))
         )
     }
@@ -352,11 +354,11 @@ struct CalendarDayCell: View {
         .frame(maxWidth: .infinity)
         .frame(height: 40)
         .background(
-            RoundedRectangle(cornerRadius: 4)
+            Rectangle()
                 .fill(isToday ? Color.orange.opacity(0.3) : Color.clear)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 4)
+            Rectangle()
                 .stroke(isToday ? Color.orange : Color.clear, lineWidth: 2)
         )
     }
@@ -387,7 +389,7 @@ struct HabitStatItem: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
         .background(
-            RoundedRectangle(cornerRadius: 6)
+            Rectangle()
                 .fill(color.opacity(0.1))
         )
     }
@@ -467,7 +469,7 @@ struct MonthlyReportView: View {
                 }
                 .padding(16)
                 .background(
-                    RoundedRectangle(cornerRadius: 8)
+                    Rectangle()
                         .fill(Color.yellow.opacity(0.1))
                 )
 
@@ -482,10 +484,14 @@ struct MonthlyReportView: View {
 
             Spacer()
         }
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(red: 1.0, green: 0.98, blue: 0.95))
-        )
+        .background {
+            ZStack {
+                Color.dogBgPanel
+                PixelTinyGrid(colorA: Color(hex: 0xF4E6C6, alpha: 0.34), colorB: .clear, tile: 14)
+            }
+        }
+        .overlay { Rectangle().stroke(Color.dogBorder, lineWidth: 2) }
+        .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 4, y: 4)
         .frame(width: 320, height: 480)
     }
 

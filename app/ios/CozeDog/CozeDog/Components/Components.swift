@@ -214,12 +214,11 @@ struct DogWorldScene: View {
                 }
             }
             .background(Color(hex: 0xDCEBCB))
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             .overlay {
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                Rectangle()
                     .stroke(Color(hex: 0x7C9B64), lineWidth: 2)
             }
-            .shadow(color: .black.opacity(0.10), radius: 18, y: 10)
+            .shadow(color: Color(hex: 0x3E4F38).opacity(0.16), radius: 0, x: 4, y: 4)
             .onTapGesture {
                 showsDogStatus = false
             }
@@ -827,7 +826,7 @@ struct DogStatusTray: View {
                     Text(speech)
                         .font(.caption2.weight(.semibold))
                         .lineLimit(1)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.dogTextSecondary)
                 }
 
                 Spacer(minLength: 0)
@@ -985,7 +984,7 @@ struct PixelCelebrationPanel: View {
             Rectangle()
                 .stroke(Color(hex: 0x7C9B64), lineWidth: 3)
         }
-        .shadow(color: .black.opacity(0.10), radius: 16, y: 10)
+        .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 4, y: 4)
     }
 
     private var celebrationScale: CGFloat {
@@ -1087,7 +1086,7 @@ struct PixelMeter: View {
                 Spacer()
                 Text("\(value)/\(maxValue)")
                     .font(.caption2.weight(.heavy))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.dogTextSecondary)
             }
 
             HStack(spacing: 3) {
@@ -1852,13 +1851,13 @@ struct TodayActionPanel: View {
             if isLongBreak {
                 Text("目标可能有点重，今天先做更小的一步。")
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(Color(hex: 0x6A5B46))
+                    .foregroundStyle(Color.dogAccentLight)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 6)
-                    .background(Color(hex: 0xF5E5BF))
+                    .background(Color.dogAccentBright)
                     .overlay {
                         Rectangle()
-                            .stroke(Color(hex: 0xC7A76D), lineWidth: 1)
+                            .stroke(Color.dogAccentLight, lineWidth: 1)
                     }
             }
 
@@ -1883,20 +1882,20 @@ struct TodayActionPanel: View {
                     HStack(spacing: 4) {
                         Image(systemName: "star.fill")
                             .font(.system(size: 9, weight: .heavy))
-                            .foregroundStyle(Color(hex: 0xC69A3E))
+                            .foregroundStyle(Color.dogAccent)
                         Text("Lv.\(dogLevel)")
                             .font(.caption.weight(.heavy))
-                            .foregroundStyle(Color(hex: 0x356247))
+                            .foregroundStyle(Color.dogBrand)
                     }
-                    PixelProgressBar(value: intimacy, max: nextLevelNeed, height: 5, fillColor: Color(hex: 0x5D8B6A))
+                    PixelProgressBar(value: intimacy, max: nextLevelNeed, height: 5, fillColor: Color.dogSuccess)
                         .frame(width: 60)
                 }
                 .padding(.horizontal, 8)
                 .padding(.vertical, 6)
-                .background(Color(hex: 0xEAF1DA))
+                .background(Color.dogBgTexture)
                 .overlay {
                     Rectangle()
-                        .stroke(Color(hex: 0x9BB985), lineWidth: 1)
+                        .stroke(Color.dogBorderLight, lineWidth: 1)
                 }
             }
 
@@ -1904,16 +1903,16 @@ struct TodayActionPanel: View {
         .padding(12)
         .background {
             ZStack {
-                Color(hex: 0xFFF8E8)
-                PixelTinyGrid(colorA: Color(hex: 0xF4E6C6, alpha: 0.34), colorB: Color.clear, tile: 14)
+                Color.dogBgPanel
+                PixelTinyGrid(colorA: Color(hex: 0xF4E6C6, alpha: 0.34), colorB: .clear, tile: 14)
                     .opacity(0.78)
             }
         }
         .overlay {
             Rectangle()
-                .stroke(Color(hex: 0x7C9B64), lineWidth: 3)
+                .stroke(Color.dogBorder, lineWidth: 3)
         }
-        .shadow(color: Color(hex: 0x3E4F38, alpha: 0.16), radius: 0, x: 4, y: 4)
+        .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 4, y: 4)
         .onReceive(timer) { _ in
             if actionSession.phase == .running {
                 tickTimerAction()
@@ -2000,17 +1999,17 @@ struct TodayActionPanel: View {
             VStack(spacing: 4) {
                 Image(systemName: icon)
                     .font(.system(size: 14, weight: .heavy))
-                    .foregroundStyle(actionSession.plan == plan ? Color(hex: 0x356247) : Color(hex: 0x7C9B64))
+                    .foregroundStyle(actionSession.plan == plan ? Color.dogBrand : Color.dogBorder)
                 Text(plan.label)
                     .font(.caption.weight(.bold))
-                    .foregroundStyle(actionSession.plan == plan ? Color(hex: 0x356247) : Color(hex: 0x5D6B55))
+                    .foregroundStyle(actionSession.plan == plan ? Color.dogBrand : Color.dogTextTertiary)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 10)
-            .background(actionSession.plan == plan ? Color(hex: 0xDDEBCB) : Color(hex: 0xF4E6C6, alpha: 0.5))
+            .background(actionSession.plan == plan ? Color.dogBgTexture : Color(hex: 0xF4E6C6, alpha: 0.5))
             .overlay {
                 Rectangle()
-                    .stroke(actionSession.plan == plan ? Color(hex: 0x356247) : Color(hex: 0x9BB985), lineWidth: actionSession.plan == plan ? 2 : 1)
+                    .stroke(actionSession.plan == plan ? Color.dogBrand : Color.dogBorderLight, lineWidth: actionSession.plan == plan ? 2 : 1)
             }
         }
         .buttonStyle(.plain)
@@ -2023,17 +2022,17 @@ struct TodayActionPanel: View {
             VStack(spacing: 2) {
                 Text("\(minutes)")
                     .font(.system(size: minutes >= 20 ? 18 : 15, weight: .heavy, design: .monospaced))
-                    .foregroundStyle(Color(hex: 0x356247))
+                    .foregroundStyle(Color.dogBrand)
                 Text("min")
                     .font(.system(size: 9, weight: .bold))
-                    .foregroundStyle(.secondary)
+                    .tertiaryText()
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 8)
-            .background(Color(hex: 0xFFF8E8))
+            .background(Color.dogBgPanel)
             .overlay {
                 Rectangle()
-                    .stroke(Color(hex: 0x7C9B64), lineWidth: 1)
+                    .stroke(Color.dogBorder, lineWidth: 1)
             }
         }
         .buttonStyle(.plain)
@@ -2043,17 +2042,17 @@ struct TodayActionPanel: View {
         HStack(spacing: 4) {
             Image(systemName: "pawprint.fill")
                 .font(.system(size: 10, weight: .heavy))
-                .foregroundStyle(Color(hex: 0x5D8B6A))
+                .foregroundStyle(Color.dogSuccess)
             Text(actionSession.plan?.dogLine ?? "狗狗也在行动")
                 .font(.caption2.weight(.heavy))
-                .foregroundStyle(Color(hex: 0x356247))
+                .foregroundStyle(Color.dogBrand)
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 6)
-        .background(Color(hex: 0xEAF1DA))
+        .background(Color.dogBgTexture)
         .overlay {
             Rectangle()
-                .stroke(Color(hex: 0x9BB985), lineWidth: 1)
+                .stroke(Color.dogBorderLight, lineWidth: 1)
         }
     }
 
@@ -2064,14 +2063,14 @@ struct TodayActionPanel: View {
                 : 0
             ZStack(alignment: .leading) {
                 PixelRect(color: Color(hex: 0xE8E0D0))
-                PixelRect(color: Color(hex: 0x5D8B6A))
+                PixelRect(color: Color.dogSuccess)
                     .frame(width: geo.size.width * progress)
             }
         }
         .frame(height: 8)
         .overlay {
             Rectangle()
-                .stroke(Color(hex: 0x7C9B64), lineWidth: 1)
+                .stroke(Color.dogBorder, lineWidth: 1)
         }
     }
 
@@ -2122,14 +2121,14 @@ struct CompletedPlanBadges: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.72)
                 }
-                .foregroundStyle(Color(hex: 0x2F593D))
+                .foregroundStyle(Color.dogBrandDark)
                 .padding(.horizontal, 7)
                 .padding(.vertical, 5)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color(hex: 0xEAF1DA))
+                .background(Color.dogBgTexture)
                 .overlay {
                     Rectangle()
-                        .stroke(Color(hex: 0x9BB985), lineWidth: 1)
+                        .stroke(Color.dogBorderLight, lineWidth: 1)
                 }
             }
         }
@@ -2403,7 +2402,7 @@ struct Header: View {
             if let subtitle {
                 Text(subtitle)
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.dogTextSecondary)
                     .lineSpacing(4)
             }
         }
@@ -2417,13 +2416,17 @@ struct Panel<Content: View>: View {
         content
             .padding(18)
             .frame(maxWidth: .infinity)
-            .background(Color.white.opacity(0.72))
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .stroke(Color(hex: 0xECE0D0), lineWidth: 1)
+            .background {
+                ZStack {
+                    Color.dogBgPanel
+                    PixelTinyGrid(colorA: Color(hex: 0xF4E6C6, alpha: 0.34), colorB: .clear, tile: 14)
+                }
             }
-            .shadow(color: .black.opacity(0.08), radius: 22, y: 12)
+            .overlay {
+                Rectangle()
+                    .stroke(Color.dogBorder, lineWidth: 2)
+            }
+            .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 4, y: 4)
     }
 }
 
@@ -2481,14 +2484,18 @@ struct DogChoiceCard: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
         .padding(.horizontal, 6)
-        .background(Color.white.opacity(0.85))
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(isSelected ? Color(hex: 0x356247) : Color(hex: 0xECE0D0), lineWidth: isSelected ? 2.5 : 1)
+        .background {
+            ZStack {
+                Color.dogBgCard
+                PixelTinyGrid(colorA: Color(hex: 0xF4E6C6, alpha: 0.34), colorB: .clear, tile: 14)
+            }
         }
+        .overlay {
+            Rectangle()
+                .stroke(isSelected ? Color.dogBrand : Color.dogBorder, lineWidth: isSelected ? 2.5 : 1)
+        }
+        .shadow(color: Color.dogPixelShadow.opacity(isSelected ? 0.24 : 0.16), radius: 0, x: 4, y: 4)
         .scaleEffect(isSelected ? 1.02 : 1.0)
-        .shadow(color: isSelected ? Color(hex: 0x356247).opacity(0.15) : .clear, radius: 6, y: 2)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
     }
 }
@@ -2504,7 +2511,7 @@ struct FlowTags: View {
                     .foregroundStyle(Color(hex: 0x356247))
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(Color(hex: 0xE6F0E9))
+                    .background(Color.dogBgTexture)
                     .clipShape(Capsule())
             }
         }
@@ -2521,15 +2528,14 @@ struct TemplateRow: View {
                 .font(.headline)
             Text("恢复任务：\(template.recoveryTitle)")
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.dogTextSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
-        .background(selected ? Color(hex: 0xE6F0E9) : Color.white.opacity(0.58))
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .background(selected ? Color.dogBgTexture : Color.dogBgPanel)
         .overlay {
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .stroke(selected ? Color(hex: 0x356247) : Color(hex: 0xECE0D0), lineWidth: 1)
+            Rectangle()
+                .stroke(selected ? Color.dogBrand : Color.dogBorder, lineWidth: 1)
         }
     }
 }
@@ -2542,14 +2548,13 @@ struct MetricCard: View {
         VStack(alignment: .leading, spacing: 5) {
             Text(label)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.dogTextSecondary)
             Text(value)
                 .font(.title3.weight(.heavy))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
-        .background(Color.white.opacity(0.55))
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .background(Color.dogBgPanel)
     }
 }
 
@@ -2565,9 +2570,13 @@ struct PrimaryButton: View {
                 .frame(maxWidth: .infinity, minHeight: 50)
         }
         .buttonStyle(.plain)
-        .background(disabled ? Color(hex: 0xD7DED4) : Color(hex: 0x356247))
-        .foregroundStyle(disabled ? Color(hex: 0x657161) : .white)
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .background(disabled ? Color(hex: 0xD5D8C7) : Color.dogBrand)
+        .foregroundStyle(disabled ? Color.dogTextTertiary : .white)
+        .overlay {
+            Rectangle()
+                .stroke(disabled ? Color(hex: 0xA4AA96) : Color.dogBrandDark, lineWidth: 3)
+        }
+        .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 0, y: 4)
         .disabled(disabled)
     }
 }
@@ -2583,12 +2592,12 @@ struct SecondaryButton: View {
                 .frame(maxWidth: .infinity, minHeight: 48)
         }
         .buttonStyle(.plain)
-        .background(Color.white.opacity(0.68))
-        .foregroundStyle(Color(hex: 0x24211D))
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .background(Color.dogBgCard)
+        .foregroundStyle(Color.dogTextPrimary)
         .overlay {
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .stroke(Color(hex: 0xECE0D0), lineWidth: 1)
+            Rectangle()
+                .stroke(Color.dogAccentLight, lineWidth: 2)
         }
+        .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 0, y: 4)
     }
 }

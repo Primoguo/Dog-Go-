@@ -48,9 +48,8 @@ struct BallView: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(Color(hex: "#FF6B6B"))
+                .fill(Color(hex: 0xFF6B6B))
                 .frame(width: 24, height: 24)
-                .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
 
             // 高光
             Circle()
@@ -72,21 +71,20 @@ struct FoodBowlView: View {
         ZStack {
             // 碗
             Ellipse()
-                .fill(Color(hex: "#FFA500"))
+                .fill(Color(hex: 0xFFA500))
                 .frame(width: 30, height: 20)
-                .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
 
             // 食物
             Circle()
-                .fill(Color(hex: "#8B4513"))
+                .fill(Color(hex: 0x8B4513))
                 .frame(width: 6, height: 6)
                 .offset(x: -8, y: -5)
             Circle()
-                .fill(Color(hex: "#A0522D"))
+                .fill(Color(hex: 0xA0522D))
                 .frame(width: 6, height: 6)
                 .offset(x: 0, y: -7)
             Circle()
-                .fill(Color(hex: "#8B4513"))
+                .fill(Color(hex: 0x8B4513))
                 .frame(width: 6, height: 6)
                 .offset(x: 8, y: -5)
         }
@@ -98,9 +96,8 @@ struct ToyView: View {
         ZStack {
             // 星星
             StarShape()
-                .fill(Color(hex: "#FFD700"))
+                .fill(Color(hex: 0xFFD700))
                 .frame(width: 28, height: 28)
-                .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
 
             // 高光
             StarShape()
@@ -115,13 +112,12 @@ struct CushionView: View {
     var body: some View {
         ZStack {
             // 垫子
-            RoundedRectangle(cornerRadius: 4)
-                .fill(Color(hex: "#9370DB"))
+            Rectangle()
+                .fill(Color(hex: 0x9370DB))
                 .frame(width: 32, height: 24)
-                .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
 
             // 纹理
-            RoundedRectangle(cornerRadius: 2)
+            Rectangle()
                 .stroke(Color.white.opacity(0.3), lineWidth: 1)
                 .frame(width: 28, height: 20)
         }
@@ -134,7 +130,7 @@ struct FlowerView: View {
     var body: some View {
         ZStack {
             // 茎
-            PixelRect(color: Color(hex: "#228B22"))
+            PixelRect(color: Color(hex: 0x228B22))
                 .frame(width: 3, height: 20)
                 .offset(y: 10)
 
@@ -142,7 +138,7 @@ struct FlowerView: View {
             ZStack {
                 ForEach(0..<5) { index in
                     Circle()
-                        .fill(Color(hex: "#FF69B4"))
+                        .fill(Color(hex: 0xFF69B4))
                         .frame(width: 10, height: 10)
                         .offset(y: -8)
                         .rotationEffect(.degrees(Double(index) * 72))
@@ -258,6 +254,7 @@ struct SceneSelectorView: View {
                 .padding(.bottom, 20)
             }
             .frame(maxWidth: 400)
+            // NOTE: 场景选择弹窗，保留圆角+渐变作为特殊视觉语言（符合风格指南 3.1）
             .background(
                 RoundedRectangle(cornerRadius: 24)
                     .fill(
@@ -398,7 +395,7 @@ struct SceneSwitchButton: View {
                 Circle()
                     .fill(Color.white.opacity(0.9))
                     .frame(width: 44, height: 44)
-                    .shadow(color: .black.opacity(0.2), radius: 4, y: 2)
+                    .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 3, y: 3)
 
                 Image(systemName: "map.fill")
                     .font(.system(size: 20))
@@ -424,7 +421,7 @@ struct TaskSuggestionButton: View {
                 Circle()
                     .fill(Color.white.opacity(0.9))
                     .frame(width: 44, height: 44)
-                    .shadow(color: .black.opacity(0.2), radius: 4, y: 2)
+                    .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 3, y: 3)
 
                 Image(systemName: "checklist")
                     .font(.system(size: 20))
@@ -485,6 +482,7 @@ struct TaskSuggestionView: View {
                 bottomBar
             }
             .frame(maxWidth: 420)
+            // NOTE: 任务建议弹窗，保留圆角+渐变作为特殊视觉语言（符合风格指南 3.1）
             .background(
                 RoundedRectangle(cornerRadius: 24)
                     .fill(
@@ -513,11 +511,11 @@ struct TaskSuggestionView: View {
                         .foregroundColor(.orange)
                     Text("\(TaskTimeSlot.current.label)推荐")
                         .font(.headline)
-                        .foregroundColor(.primary)
+                        .foregroundColor(Color.dogTextPrimary)
                 }
                 Text("根据你的习惯，为你精选的任务")
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dogTextSecondary)
             }
 
             Spacer()
@@ -576,10 +574,14 @@ struct TaskSuggestionView: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 12)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.white.opacity(0.6))
-        )
+        .background {
+            ZStack {
+                Color.dogBgPanel
+                PixelTinyGrid(colorA: Color(hex: 0xF4E6C6, alpha: 0.34), colorB: .clear, tile: 14)
+            }
+        }
+        .overlay { Rectangle().stroke(Color.dogBorder, lineWidth: 2) }
+        .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 4, y: 4)
         .padding(.horizontal)
     }
 
@@ -591,11 +593,11 @@ struct TaskSuggestionView: View {
 
             Text("今日任务已全部完成！")
                 .font(.headline)
-                .foregroundColor(.primary)
+                .foregroundColor(Color.dogTextPrimary)
 
             Text("太棒了，休息一下吧～")
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .foregroundColor(Color.dogTextSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 40)
@@ -633,7 +635,7 @@ struct TaskSuggestionView: View {
                 Text("关闭")
                     .font(.subheadline)
                     .fontWeight(.medium)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dogTextSecondary)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
                     .background(
@@ -663,11 +665,11 @@ struct StatItem: View {
                 Text(value)
                     .font(.headline)
                     .fontWeight(.bold)
-                    .foregroundColor(.primary)
+                    .foregroundColor(Color.dogTextPrimary)
             }
             Text(label)
                 .font(.caption2)
-                .foregroundColor(.secondary)
+                .foregroundColor(Color.dogTextSecondary)
         }
         .frame(maxWidth: .infinity)
     }
@@ -690,7 +692,7 @@ struct TaskCardView: View {
             HStack(spacing: 12) {
                 // 目标类型图标
                 ZStack {
-                    RoundedRectangle(cornerRadius: 10)
+                    Rectangle()
                         .fill(goalTypeColor.opacity(0.2))
                         .frame(width: 44, height: 44)
 
@@ -704,7 +706,7 @@ struct TaskCardView: View {
                     Text(task.title)
                         .font(.subheadline)
                         .fontWeight(.medium)
-                        .foregroundColor(.primary)
+                        .foregroundColor(Color.dogTextPrimary)
                         .lineLimit(1)
 
                     HStack(spacing: 8) {
@@ -715,7 +717,7 @@ struct TaskCardView: View {
                             Text("\(task.estimatedMinutes)分钟")
                                 .font(.caption2)
                         }
-                        .foregroundColor(.secondary)
+                        .foregroundColor(Color.dogTextSecondary)
 
                         // 标签
                         if !task.tags.isEmpty {
@@ -746,11 +748,14 @@ struct TaskCardView: View {
                 }
             }
             .padding(12)
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.white)
-                    .shadow(color: .black.opacity(0.05), radius: 4, y: 2)
-            )
+            .background {
+                ZStack {
+                    Color.dogBgPanel
+                    PixelTinyGrid(colorA: Color(hex: 0xF4E6C6, alpha: 0.34), colorB: .clear, tile: 14)
+                }
+            }
+            .overlay { Rectangle().stroke(Color.dogBorder, lineWidth: 2) }
+            .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 4, y: 4)
             .scaleEffect(isPressed ? 0.98 : 1.0)
         }
         .buttonStyle(.plain)

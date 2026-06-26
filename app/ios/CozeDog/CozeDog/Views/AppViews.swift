@@ -8,7 +8,7 @@ struct RootView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: 0xF2F7EE), Color(hex: 0xFFF7EC), Color(hex: 0xEDF5FB)], startPoint: .topLeading, endPoint: .bottomTrailing)
+            LinearGradient(colors: [Color.dogBgPage, Color.dogBgWarm, Color.dogBgCool], startPoint: .topLeading, endPoint: .bottomTrailing)
                 .ignoresSafeArea()
 
             if !hasSeenOnboarding {
@@ -98,10 +98,10 @@ struct AdoptDogView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("选一只陪你自律的小狗")
                         .font(.title2.weight(.bold))
-                        .foregroundStyle(Color(hex: 0x2C2C2C))
+                        .foregroundStyle(Color.dogTextPrimary)
                     Text("先选品种，随机生成外貌。不满意可以换，直到遇到你的那只。")
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.dogTextSecondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.bottom, 12)
@@ -131,7 +131,7 @@ struct AdoptDogView: View {
                                         Spacer()
                                         Text(store.state.selectedDog.name)
                                             .font(.subheadline.weight(.bold))
-                                            .foregroundStyle(Color(hex: 0x356247))
+                                            .foregroundStyle(Color.dogBrand)
                                     }
 
                                     PixelDogSprite(breed: store.state.selectedDog, appearance: appearance, size: 100, pose: .idle)
@@ -141,7 +141,7 @@ struct AdoptDogView: View {
                                     Text(store.state.selectedDog.preview)
                                         .font(.subheadline.weight(.semibold))
                                         .multilineTextAlignment(.center)
-                                        .foregroundStyle(Color(hex: 0x4A4A4A))
+                                        .foregroundStyle(Color.dogTextTertiary)
 
                                     Button {
                                         store.randomizeAppearance()
@@ -152,8 +152,10 @@ struct AdoptDogView: View {
                                         }
                                         .frame(maxWidth: .infinity)
                                         .padding(.vertical, 8)
-                                        .background(Color(hex: 0xF2E8D9))
-                                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                                        .background(Color.dogBgCard)
+                                        .overlay {
+                                            Rectangle().stroke(Color.dogAccentLight, lineWidth: 2)
+                                        }
                                     }
                                     .buttonStyle(.plain)
                                 }
@@ -194,13 +196,13 @@ struct AdoptionView: View {
                         VStack(spacing: 12) {
                             Image(systemName: "checkmark.circle.fill")
                                 .font(.system(size: 48))
-                                .foregroundStyle(Color(hex: 0x356247))
+                                .foregroundStyle(Color.dogBrand)
                             Text("已收集所有品种！")
                                 .font(.headline)
-                                .foregroundStyle(Color(hex: 0x356247))
+                                .foregroundStyle(Color.dogBrand)
                             Text("你已经收集了所有品种的狗狗")
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.dogTextSecondary)
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 32)
@@ -227,7 +229,7 @@ struct AdoptionView: View {
                                     Spacer()
                                     Text(breed.name)
                                         .font(.subheadline.weight(.bold))
-                                        .foregroundStyle(Color(hex: 0x356247))
+                                        .foregroundStyle(Color.dogBrand)
                                 }
 
                                 PixelDogSprite(breed: breed, appearance: appearance, size: 140, pose: .idle)
@@ -248,8 +250,10 @@ struct AdoptionView: View {
                                     }
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 10)
-                                    .background(Color(hex: 0xF2E8D9))
-                                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                                    .background(Color.dogBgCard)
+                                    .overlay {
+                                        Rectangle().stroke(Color.dogAccentLight, lineWidth: 2)
+                                    }
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -294,11 +298,11 @@ struct CreateGoalView: View {
 
                     Text("\(store.state.selectedDog.name)说")
                         .font(.caption)
-                        .foregroundStyle(Color(hex: 0x8B8B8B))
+                        .foregroundStyle(Color.dogTextTertiary)
 
                     Text(store.state.selectedDog.preview)
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Color(hex: 0x4A4A4A))
+                        .foregroundStyle(Color.dogTextPrimary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 20)
                 }
@@ -312,7 +316,7 @@ struct CreateGoalView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("今天想做什么？")
                                 .font(.subheadline.weight(.bold))
-                                .foregroundStyle(Color(hex: 0x2C2C2C))
+                                .foregroundStyle(Color.dogTextPrimary)
 
                             HStack(spacing: 8) {
                                 ForEach(GoalType.allCases) { type in
@@ -330,7 +334,7 @@ struct CreateGoalView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("推荐模板")
                                 .font(.subheadline.weight(.bold))
-                                .foregroundStyle(Color(hex: 0x2C2C2C))
+                                .foregroundStyle(Color.dogTextPrimary)
 
                             VStack(spacing: 8) {
                                 ForEach(store.goalDraftType.templates) { template in
@@ -348,17 +352,16 @@ struct CreateGoalView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("目标名称")
                                 .font(.subheadline.weight(.bold))
-                                .foregroundStyle(Color(hex: 0x2C2C2C))
+                                .foregroundStyle(Color.dogTextPrimary)
 
                             TextField("给目标起个名字", text: $store.goalDraftTitle)
                                 .font(.subheadline)
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 12)
-                                .background(Color.white.opacity(0.8))
-                                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                .background(Color.dogBgPanel)
                                 .overlay {
-                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                        .stroke(Color(hex: 0xECE0D0), lineWidth: 1)
+                                    Rectangle()
+                                        .stroke(Color.dogBorder, lineWidth: 1)
                                 }
                         }
                     }
@@ -413,12 +416,11 @@ struct GoalTypeButton: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 10)
-            .background(isSelected ? Color(hex: 0x356247) : Color.white.opacity(0.7))
-            .foregroundStyle(isSelected ? .white : Color(hex: 0x4A4A4A))
-            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .background(isSelected ? Color.dogBrand : Color.dogBgPanel)
+            .foregroundStyle(isSelected ? .white : Color.dogTextTertiary)
             .overlay {
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(isSelected ? Color(hex: 0x356247) : Color(hex: 0xECE0D0), lineWidth: isSelected ? 0 : 1)
+                Rectangle()
+                    .stroke(isSelected ? Color.dogBrandDark : Color.dogBorder, lineWidth: isSelected ? 2 : 1)
             }
             .scaleEffect(isSelected ? 1.02 : 1.0)
             .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
@@ -453,17 +455,16 @@ struct TemplateCard: View {
             Text(icon)
                 .font(.title2)
                 .frame(width: 40, height: 40)
-                .background(selected ? Color(hex: 0xE6F0E9) : Color(hex: 0xF8F4EE))
-                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .background(selected ? Color.dogBgTexture : Color.dogBgPanel)
 
             // 文字
             VStack(alignment: .leading, spacing: 3) {
                 Text(template.title)
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color(hex: 0x2C2C2C))
+                    .foregroundStyle(Color.dogTextPrimary)
                 Text("恢复：\(template.recoveryTitle)")
                     .font(.caption)
-                    .foregroundStyle(Color(hex: 0x8B8B8B))
+                    .foregroundStyle(Color.dogTextTertiary)
             }
 
             Spacer()
@@ -471,7 +472,7 @@ struct TemplateCard: View {
             // 选中标记
             if selected {
                 Circle()
-                    .fill(Color(hex: 0x356247))
+                    .fill(Color.dogBrand)
                     .frame(width: 20, height: 20)
                     .overlay {
                         Image(systemName: "checkmark")
@@ -481,11 +482,10 @@ struct TemplateCard: View {
             }
         }
         .padding(12)
-        .background(selected ? Color(hex: 0xE6F0E9).opacity(0.5) : Color.white.opacity(0.6))
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .background(selected ? Color.dogBgTexture.opacity(0.5) : Color.dogBgPanel)
         .overlay {
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .stroke(selected ? Color(hex: 0x356247) : Color(hex: 0xECE0D0), lineWidth: selected ? 1.5 : 1)
+            Rectangle()
+                .stroke(selected ? Color.dogBrand : Color.dogBorder, lineWidth: selected ? 1.5 : 1)
         }
         .animation(.easeInOut(duration: 0.2), value: selected)
     }
@@ -644,10 +644,10 @@ struct ProgressScreen: View {
                                 Spacer()
                                 Text("亲密度 \(store.state.dogState.intimacy)/\(store.nextLevelNeed())")
                                     .font(.subheadline.weight(.semibold))
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Color.dogTextSecondary)
                             }
                             SwiftUI.ProgressView(value: Double(store.state.dogState.intimacy), total: Double(store.nextLevelNeed()))
-                                .tint(Color(hex: 0x5D8B6A))
+                                .tint(Color.dogSuccess)
                         }
 
                         VStack(alignment: .leading, spacing: 8) {
@@ -676,13 +676,13 @@ struct ProgressScreen: View {
                                 Image(systemName: "chevron.right")
                                     .font(.caption.weight(.bold))
                             }
-                            .foregroundStyle(Color(hex: 0x356247))
+                            .foregroundStyle(Color.dogBrand)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 10)
-                            .background(Color(hex: 0xE8F0E0))
+                            .background(Color.dogBgTexture)
                             .overlay {
                                 Rectangle()
-                                    .stroke(Color(hex: 0x9BB985), lineWidth: 1)
+                                    .stroke(Color.dogBorder, lineWidth: 1)
                             }
                         }
                         .buttonStyle(.plain)
@@ -700,13 +700,13 @@ struct ProgressScreen: View {
                                 Image(systemName: "chevron.right")
                                     .font(.caption.weight(.bold))
                             }
-                            .foregroundStyle(Color(hex: 0x356247))
+                            .foregroundStyle(Color.dogBrand)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 10)
-                            .background(Color(hex: 0xE8F0E0))
+                            .background(Color.dogBgTexture)
                             .overlay {
                                 Rectangle()
-                                    .stroke(Color(hex: 0x9BB985), lineWidth: 1)
+                                    .stroke(Color.dogBorder, lineWidth: 1)
                             }
                         }
                         .buttonStyle(.plain)
@@ -747,10 +747,10 @@ struct DogDogView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("可以领养新狗狗！")
                                     .font(.headline)
-                                    .foregroundStyle(Color(hex: 0x356247))
+                                    .foregroundStyle(Color.dogBrand)
                                 Text("完成 10 次计划，获得 1 次领养机会")
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Color.dogTextSecondary)
                             }
 
                             Spacer()
@@ -762,7 +762,7 @@ struct DogDogView: View {
                                     .font(.caption.weight(.bold))
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 10)
-                                    .background(Color(hex: 0x356247))
+                                    .background(Color.dogBrand)
                                     .foregroundStyle(.white)
                                     .clipShape(Capsule())
                             }
@@ -788,7 +788,7 @@ struct DogDogView: View {
                                             .font(.headline)
                                         Text("正在陪伴你")
                                             .font(.caption)
-                                            .foregroundStyle(Color(hex: 0x356247))
+                                            .foregroundStyle(Color.dogTextSecondary)
                                     }
 
                                     Spacer()
@@ -798,14 +798,14 @@ struct DogDogView: View {
                                     } label: {
                                         Image(systemName: "xmark.circle.fill")
                                             .font(.title3)
-                                            .foregroundStyle(Color(hex: 0x9AA3A0))
+                                            .foregroundStyle(Color.dogTextTertiary)
                                     }
                                     .buttonStyle(.plain)
                                 }
                             } else {
                                 Text("选择一只狗狗陪伴你完成计划")
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Color.dogTextSecondary)
                             }
                         }
                     }
@@ -817,13 +817,13 @@ struct DogDogView: View {
                         VStack(spacing: 12) {
                             Image(systemName: "pawprint")
                                 .font(.system(size: 48))
-                                .foregroundStyle(Color(hex: 0x9AA3A0))
+                                .foregroundStyle(Color.dogTextTertiary)
                             Text("还没有收集到狗狗")
                                 .font(.headline)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.dogTextSecondary)
                             Text("完成 10 次计划后可以获得领养机会")
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.dogTextSecondary)
                                 .multilineTextAlignment(.center)
                         }
                         .frame(maxWidth: .infinity)
@@ -848,7 +848,7 @@ struct DogDogView: View {
                                                     Image(systemName: "checkmark.circle.fill")
                                                         .font(.caption)
                                                         .foregroundStyle(.white)
-                                                        .background(Color(hex: 0x356247))
+                                                        .background(Color.dogBrand)
                                                         .clipShape(Circle())
                                                         .offset(x: 20, y: -20)
                                                 }
@@ -856,13 +856,12 @@ struct DogDogView: View {
 
                                             Text(dog.nickname)
                                                 .font(.caption.weight(.semibold))
-                                                .foregroundStyle(Color(hex: 0x356247))
+                                                .foregroundStyle(Color.dogTextSecondary)
                                                 .lineLimit(1)
                                         }
                                         .frame(maxWidth: .infinity)
                                         .padding(.vertical, 8)
-                                        .background(store.state.activeCompanionId == dog.id ? Color(hex: 0xEAF1DA) : Color.clear)
-                                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                                        .background(store.state.activeCompanionId == dog.id ? Color.dogBgTexture : Color.clear)
                                     }
                                     .buttonStyle(.plain)
                                 }
@@ -905,7 +904,7 @@ struct DogHomeView: View {
 
                         Text(currentScene.displayName)
                             .font(.title2.weight(.bold))
-                            .foregroundStyle(Color(hex: 0x356247))
+                            .foregroundStyle(Color.dogBrand)
 
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 8) {
@@ -934,20 +933,20 @@ struct DogHomeView: View {
                             Spacer()
                             Text("\(store.state.dogState.inventory.count) 件")
                                 .font(.caption.weight(.semibold))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.dogTextSecondary)
                         }
 
                         if store.state.dogState.inventory.isEmpty {
                             VStack(spacing: 8) {
                                 Image(systemName: "gift")
                                     .font(.system(size: 32))
-                                    .foregroundStyle(Color(hex: 0x9AA3A0))
+                                    .foregroundStyle(Color.dogTextTertiary)
                                 Text("还没有道具")
                                     .font(.headline)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Color.dogTextSecondary)
                                 Text("完成计划可以获得道具奖励")
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Color.dogTextSecondary)
                             }
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 20)
@@ -959,8 +958,7 @@ struct DogHomeView: View {
                                             .font(.title)
                                             .foregroundStyle(Color(hex: item.colorHex))
                                             .frame(width: 44, height: 44)
-                                            .background(Color(hex: 0xF5EFE0))
-                                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                                            .background(Color.dogBgCard)
 
                                         Text(item.label)
                                             .font(.caption2.weight(.semibold))
@@ -968,8 +966,7 @@ struct DogHomeView: View {
                                     }
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 8)
-                                    .background(Color.white.opacity(0.6))
-                                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                                    .background(Color.dogBgPanel)
                                     .onTapGesture {
                                         selectedItem = item
                                     }
@@ -985,12 +982,12 @@ struct DogHomeView: View {
                 if showUsedToast {
                     Text("✅ \(usedItemName)")
                         .font(.subheadline.weight(.bold))
-                        .foregroundStyle(Color(hex: 0x356247))
+                        .foregroundStyle(Color.dogBrand)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
-                        .background(Color.white.opacity(0.95))
+                        .background(Color.dogBgPanel)
                         .clipShape(Capsule())
-                        .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
+                        .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 4, y: 4)
                         .transition(.move(edge: .top).combined(with: .opacity))
                 }
             }
@@ -1041,7 +1038,7 @@ struct FocusModeView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: 0xF2F7EE), Color(hex: 0xE8F0E0)], startPoint: .top, endPoint: .bottom)
+            LinearGradient(colors: [Color.dogBgPage, Color.dogBgTexture], startPoint: .top, endPoint: .bottom)
                 .ignoresSafeArea()
 
             VStack(spacing: 24) {
@@ -1049,10 +1046,10 @@ struct FocusModeView: View {
                 HStack {
                     Image(systemName: "target")
                         .font(.title2.weight(.bold))
-                        .foregroundStyle(Color(hex: 0x5D8B6A))
+                        .foregroundStyle(Color.dogSuccess)
                     Text("专注模式")
                         .font(.title2.weight(.heavy))
-                        .foregroundStyle(Color(hex: 0x26382B))
+                        .foregroundStyle(Color.dogTextPrimary)
                     Spacer()
                 }
                 .padding(.horizontal, 20)
@@ -1080,17 +1077,17 @@ struct FocusModeView: View {
                 // 鼓励文字
                 Text("你和\(store.state.selectedDog.name)一起专注中...")
                     .font(.headline)
-                    .foregroundStyle(Color(hex: 0x356247))
+                    .foregroundStyle(Color.dogBrand)
 
                 // 倒计时
                 VStack(spacing: 8) {
                     Text(formattedTime(store.state.actionSession.remainingSeconds))
                         .font(.system(size: 56, weight: .heavy, design: .monospaced))
-                        .foregroundStyle(Color(hex: 0x26382B))
+                        .foregroundStyle(Color.dogTextPrimary)
 
                     // 进度条
                     ProgressView(value: Double(store.state.actionSession.durationSeconds - store.state.actionSession.remainingSeconds), total: Double(store.state.actionSession.durationSeconds))
-                        .tint(Color(hex: 0x5D8B6A))
+                        .tint(Color.dogSuccess)
                         .frame(width: 200)
                 }
 
@@ -1110,7 +1107,6 @@ struct FocusModeView: View {
                             Rectangle()
                                 .stroke(Color(hex: 0x8B6A5D), lineWidth: 2)
                         }
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
                 .padding(.bottom, 30)
             }
@@ -1196,24 +1192,23 @@ struct EncouragementBubble: View {
         VStack {
             Text(text)
                 .font(.headline)
-                .foregroundStyle(Color(hex: 0x26382B))
+                .foregroundStyle(Color.dogTextPrimary)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .background(Color.white)
+                .background(Color.dogBgPanel)
                 .overlay {
                     Rectangle()
-                        .stroke(Color(hex: 0x5D8B6A), lineWidth: 2)
+                        .stroke(Color.dogSuccess, lineWidth: 2)
                 }
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+                .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 4, y: 4)
 
             // 气泡尾巴
             BubbleTailShape()
-                .fill(Color.white)
+                .fill(Color.dogBgPanel)
                 .frame(width: 16, height: 12)
                 .overlay {
                     BubbleTailShape()
-                        .stroke(Color(hex: 0x5D8B6A), lineWidth: 2)
+                        .stroke(Color.dogSuccess, lineWidth: 2)
                         .frame(width: 16, height: 12)
                         .offset(y: 1)
                 }
@@ -1247,15 +1242,15 @@ struct RestReminderView: View {
             VStack(spacing: 20) {
                 Image(systemName: "cup.and.saucer.fill")
                     .font(.system(size: 48))
-                    .foregroundStyle(Color(hex: 0x5D8B6A))
+                    .foregroundStyle(Color.dogSuccess)
 
                 Text("休息一下？")
                     .font(.title2.weight(.bold))
-                    .foregroundStyle(Color(hex: 0x26382B))
+                    .foregroundStyle(Color.dogTextPrimary)
 
                 Text("你已经专注了 25 分钟，站起来活动活动吧！")
                     .font(.body)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.dogTextSecondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 20)
 
@@ -1268,8 +1263,7 @@ struct RestReminderView: View {
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
-                            .background(Color(hex: 0x5D8B6A))
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .background(Color.dogSuccess)
                     }
 
                     Button {
@@ -1277,18 +1271,18 @@ struct RestReminderView: View {
                     } label: {
                         Text("休息 5 分钟")
                             .font(.headline)
-                            .foregroundStyle(Color(hex: 0x5D8B6A))
+                            .foregroundStyle(Color.dogSuccess)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
-                            .background(Color(hex: 0xE8F0E0))
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .background(Color.dogBgTexture)
                     }
                 }
                 .padding(.horizontal, 20)
             }
             .padding(24)
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .background(Color.dogBgPanel)
+            .overlay { Rectangle().stroke(Color.dogBorder, lineWidth: 3) }
+            .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 4, y: 4)
             .padding(.horizontal, 40)
         }
     }
@@ -1305,17 +1299,17 @@ struct RestModeView: View {
 
     var body: some View {
         ZStack {
-            Color(hex: 0xF2F7EE).ignoresSafeArea()
+            Color.dogBgPage.ignoresSafeArea()
 
             VStack(spacing: 24) {
                 // 顶部标识
                 HStack {
                     Image(systemName: "cup.and.saucer.fill")
                         .font(.title2.weight(.bold))
-                        .foregroundStyle(Color(hex: 0x5D8B6A))
+                        .foregroundStyle(Color.dogSuccess)
                     Text("休息时间")
                         .font(.title2.weight(.heavy))
-                        .foregroundStyle(Color(hex: 0x26382B))
+                        .foregroundStyle(Color.dogTextPrimary)
                     Spacer()
                 }
                 .padding(.horizontal, 20)
@@ -1334,17 +1328,17 @@ struct RestModeView: View {
                 // 休息提示
                 Text("站起来活动活动，喝口水吧！")
                     .font(.headline)
-                    .foregroundStyle(Color(hex: 0x356247))
+                    .foregroundStyle(Color.dogBrand)
 
                 // 休息倒计时
                 VStack(spacing: 8) {
                     Text(formattedTime(restRemainingTime))
                         .font(.system(size: 56, weight: .heavy, design: .monospaced))
-                        .foregroundStyle(Color(hex: 0x26382B))
+                        .foregroundStyle(Color.dogTextPrimary)
 
                     // 进度条
                     ProgressView(value: Double(restDuration - restRemainingTime), total: Double(restDuration))
-                        .tint(Color(hex: 0x5D8B6A))
+                        .tint(Color.dogSuccess)
                         .frame(width: 200)
                 }
 
@@ -1359,8 +1353,7 @@ struct RestModeView: View {
                         .foregroundStyle(.white)
                         .padding(.horizontal, 32)
                         .padding(.vertical, 12)
-                        .background(Color(hex: 0x5D8B6A))
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .background(Color.dogSuccess)
                 }
                 .padding(.bottom, 30)
             }
@@ -1403,15 +1396,15 @@ struct AbandonConfirmView: View {
             VStack(spacing: 20) {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .font(.system(size: 48))
-                    .foregroundStyle(Color(hex: 0xC69A3E))
+                    .foregroundStyle(Color.dogAccent)
 
                 Text("确定要放弃吗？")
                     .font(.title2.weight(.bold))
-                    .foregroundStyle(Color(hex: 0x26382B))
+                    .foregroundStyle(Color.dogTextPrimary)
 
                 Text("放弃后不会记录这次专注")
                     .font(.body)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.dogTextSecondary)
                     .multilineTextAlignment(.center)
 
                 VStack(spacing: 12) {
@@ -1424,7 +1417,6 @@ struct AbandonConfirmView: View {
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
                             .background(Color(hex: 0x8B6A5D))
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
                     }
 
                     Button {
@@ -1432,17 +1424,17 @@ struct AbandonConfirmView: View {
                     } label: {
                         Text("继续专注")
                             .font(.headline)
-                            .foregroundStyle(Color(hex: 0x5D8B6A))
+                            .foregroundStyle(Color.dogSuccess)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
-                            .background(Color(hex: 0xE8F0E0))
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .background(Color.dogBgTexture)
                     }
                 }
             }
             .padding(24)
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .background(Color.dogBgPanel)
+            .overlay { Rectangle().stroke(Color.dogBorder, lineWidth: 3) }
+            .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 4, y: 4)
             .padding(.horizontal, 40)
         }
     }
@@ -1504,15 +1496,15 @@ struct FocusStatsView: View {
                         VStack(spacing: 12) {
                             Image(systemName: "clock.badge.questionmark")
                                 .font(.system(size: 48))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.dogTextTertiary)
 
                             Text("还没有专注记录")
                                 .font(.headline)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.dogTextSecondary)
 
                             Text("开始你的第一次专注吧！")
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.dogTextTertiary)
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 20)
@@ -1552,20 +1544,19 @@ struct FocusStatCard: View {
         VStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.title2)
-                .foregroundStyle(Color(hex: 0x5D8B6A))
+                .foregroundStyle(Color.dogSuccess)
 
             Text(value)
                 .font(.title3.weight(.heavy))
-                .foregroundStyle(Color(hex: 0x26382B))
+                .foregroundStyle(Color.dogTextPrimary)
 
             Text(label)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.dogTextSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
-        .background(Color(hex: 0xEAF1DA))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .background(Color.dogBgTexture)
     }
 }
 
@@ -1576,23 +1567,23 @@ struct FocusSessionRow: View {
         HStack(spacing: 12) {
             Image(systemName: session.completed ? "checkmark.circle.fill" : "xmark.circle.fill")
                 .font(.title3)
-                .foregroundStyle(session.completed ? Color(hex: 0x5D8B6A) : Color(hex: 0x8B6A5D))
+                .foregroundStyle(session.completed ? Color.dogSuccess : Color(hex: 0x8B6A5D))
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(session.plan.label)
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color(hex: 0x26382B))
+                    .foregroundStyle(Color.dogTextPrimary)
 
                 Text(formatDate(session.startedAt))
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.dogTextSecondary)
             }
 
             Spacer()
 
             Text(formatDuration(session.durationSeconds))
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(Color(hex: 0x5D8B6A))
+                .foregroundStyle(Color.dogSuccess)
         }
         .padding(.vertical, 4)
     }
