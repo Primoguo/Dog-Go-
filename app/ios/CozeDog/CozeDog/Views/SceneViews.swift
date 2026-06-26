@@ -141,7 +141,7 @@ struct YardSceneView: View {
                 // 花朵（等距：可见花茎）
                 if season != .winter {
                     ForEach(0..<5) { index in
-                        PixelFlowerView(color: "#FF69B4")
+                        PixelFlowerView(color: 0xFF69B4)
                             .position(
                                 x: w * (0.15 + CGFloat(index) * 0.15),
                                 y: groundTop + h * (0.4 + CGFloat(index % 2) * 0.1)
@@ -419,18 +419,18 @@ struct FlowerBedView: View {
                 .offset(x: 2, y: 2)
 
             // 花朵（等距：花茎可见）
-            let flowerColors = ["#FF69B4", "#FFD700", "#FF6347", "#9370DB", "#FFA500"]
+            let flowerColors: [UInt] = [0xFF69B4, 0xFFD700, 0xFF6347, 0x9370DB, 0xFFA500]
             ForEach(0..<5) { index in
                 let fx = CGFloat(index % 3) * 8 + 4
                 let fy = CGFloat(index / 3) * 6 - 4
                 // 花茎
                 PixelRect(color: Color(hex: 0x228B22))
-                    .frame(width: 2, height: 8)
-                    .offset(x: fx, y: -(bedH + bedD + 4))
+                    .frame(width: 2, height: 10)
+                    .offset(x: fx, y: -(bedH + bedD + 5))
                 // 花朵
                 PixelRect(color: Color(hex: flowerColors[index]))
                     .frame(width: 5, height: 5)
-                    .offset(x: fx - 1.5, y: -(bedH + bedD + 12))
+                    .offset(x: fx - 1.5, y: -(bedH + bedD + 12.5))
             }
         }
         .frame(width: bedW + bedD, height: bedH + bedD + 16)
@@ -597,12 +597,7 @@ struct ForestSceneView: View {
     let weather: Weather
     let season: Season
 
-    @State private var sparklePositions: [CGPoint] = (0..<15).map { _ in
-        CGPoint(
-            x: CGFloat.random(in: 0...390),
-            y: CGFloat.random(in: 0...844)
-        )
-    }
+    @State private var sparklePositions: [CGPoint] = []
     @State private var sparkleOpacities: [Double] = (0..<15).map { _ in
         Double.random(in: 0.3...0.8)
     }
@@ -668,6 +663,13 @@ struct ForestSceneView: View {
                     sideColor: Color(hex: 0x3F3328)
                 )
                 .position(x: w * 0.45, y: groundTop + h * 0.2)
+            }
+            .onAppear {
+                if sparklePositions.isEmpty {
+                    sparklePositions = (0..<15).map { _ in
+                        CGPoint(x: CGFloat.random(in: 0...w), y: CGFloat.random(in: 0...h))
+                    }
+                }
             }
         }
     }
@@ -1133,15 +1135,15 @@ struct RainView: View {
                             y: isAnimating ? proxy.size.height + 20 : drop.position.y
                         )
                         .opacity(0.6)
+                        .animation(
+                            .linear(duration: drop.duration)
+                            .repeatForever(autoreverses: false),
+                            value: isAnimating
+                        )
                 }
             }
             .onAppear {
-                withAnimation(
-                    .linear(duration: 1.5)
-                    .repeatForever(autoreverses: false)
-                ) {
-                    isAnimating = true
-                }
+                isAnimating = true
             }
         }
     }
@@ -1177,15 +1179,15 @@ struct SnowView: View {
                             y: isAnimating ? proxy.size.height + 20 : flake.position.y
                         )
                         .opacity(0.8)
+                        .animation(
+                            .easeInOut(duration: flake.duration)
+                            .repeatForever(autoreverses: false),
+                            value: isAnimating
+                        )
                 }
             }
             .onAppear {
-                withAnimation(
-                    .easeInOut(duration: 4)
-                    .repeatForever(autoreverses: false)
-                ) {
-                    isAnimating = true
-                }
+                isAnimating = true
             }
         }
     }
@@ -1246,7 +1248,7 @@ struct ScenePathStrip: View {
 
 /// 等距花朵：可见花茎
 struct PixelFlowerView: View {
-    let color: String
+    let color: UInt
 
     var body: some View {
         ZStack(alignment: .bottom) {

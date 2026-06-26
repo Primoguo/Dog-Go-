@@ -1027,7 +1027,7 @@ struct DogState: Codable {
     static let initial = DogState(
         intimacy: 0,
         level: 1,
-        mood: .neutral,
+        mood: DogMood.from(fullness: 60, cleanliness: 60, energy: 60),
         moodScore: 0,
         fullness: 60,
         cleanliness: 60,

@@ -153,10 +153,12 @@ struct FlowerView: View {
             }
             .offset(y: -5)
             .rotationEffect(.degrees(isSwaying ? 5 : -5))
+            .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: isSwaying)
             .onAppear {
-                withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
-                    isSwaying = true
-                }
+                isSwaying = true
+            }
+            .onDisappear {
+                isSwaying = false
             }
         }
     }
@@ -686,22 +688,8 @@ struct TaskCardView: View {
     let task: TaskTemplate
     let onAccept: () -> Void
 
-    @State private var isPressed = false
-    @State private var pressResetTask: Task<Void, Never>?
-
     var body: some View {
         Button(action: {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                isPressed = true
-            }
-            pressResetTask?.cancel()
-            pressResetTask = Task {
-                try? await Task.sleep(nanoseconds: 200_000_000)
-                guard !Task.isCancelled else { return }
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                    isPressed = false
-                }
-            }
             onAccept()
         }) {
             HStack(spacing: 12) {
@@ -766,12 +754,11 @@ struct TaskCardView: View {
             .background {
                 ZStack {
                     Color.dogBgPanel
-                    Color.dogTexturePattern
+                    View.dogTexturePattern
                 }
             }
             .overlay { Rectangle().stroke(Color.dogBorder, lineWidth: 2) }
             .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 4, y: 4)
-            .scaleEffect(isPressed ? 0.98 : 1.0)
         }
         .buttonStyle(.plain)
     }

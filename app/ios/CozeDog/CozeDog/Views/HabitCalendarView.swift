@@ -72,7 +72,7 @@ struct HabitCalendarView: View {
             .background {
                 ZStack {
                     Color.dogBgPanel
-                    Color.dogTexturePattern
+                    View.dogTexturePattern
                 }
             }
             .frame(width: 340, height: 580)
@@ -234,7 +234,7 @@ struct HabitCalendarView: View {
 
             // 日历网格
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 7), spacing: 4) {
-                ForEach(Array(generateCalendarDays().enumerated()), id: \.offset) { _, date in
+                ForEach(Array(cachedCalendarDays.enumerated()), id: \.offset) { index, date in
                     if let date = date {
                         CalendarDayCell(
                             date: date,
@@ -242,9 +242,11 @@ struct HabitCalendarView: View {
                             isToday: Calendar.current.isDateInToday(date),
                             isCurrentMonth: Calendar.current.isDate(date, equalTo: selectedMonth, toGranularity: .month)
                         )
+                        .id(date)
                     } else {
                         Color.clear
                             .frame(height: 40)
+                            .id("blank-\(index)")
                     }
                 }
             }
@@ -315,10 +317,6 @@ struct HabitCalendarView: View {
 
     private func monthYearString(from date: Date) -> String {
         Self.monthYearFormatter.string(from: date)
-    }
-
-    private func generateCalendarDays() -> [Date?] {
-        return cachedCalendarDays
     }
 
     private func updateCalendarDaysCache() {
@@ -511,15 +509,8 @@ struct MonthlyReportView: View {
         }
     }
 
-    private static let monthReportFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "yyyy年M月"
-        f.locale = Locale(identifier: "zh_CN")
-        return f
-    }()
-
     private func monthString(from date: Date) -> String {
-        Self.monthReportFormatter.string(from: date)
+        Self.monthYearFormatter.string(from: date)
     }
 
     private func encouragementMessage(for report: MonthlyReport) -> String {

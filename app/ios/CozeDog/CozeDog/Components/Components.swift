@@ -79,8 +79,7 @@ struct DogWorldScene: View {
 
                         // 进化特效
                         EvolutionEffectsView(
-                            evolution: store.state.dogEvolution,
-                            mood: store.state.dogMood
+                            evolution: store.state.dogEvolution
                         )
                         .frame(width: dogSize * 1.5, height: dogSize * 1.5)
 
@@ -90,7 +89,7 @@ struct DogWorldScene: View {
                             size: dogSize,
                             pose: store.state.dogState.pose,
                             evolution: store.state.dogEvolution,
-                            mood: store.state.dogMood
+                            mood: store.state.dogState.mood
                         )
                         .offset(y: isJumping ? -dogSize * 0.3 : 0)
                         .scaleEffect(x: isJumping ? 0.95 : 1.0, y: isJumping ? 1.1 : 1.0)
@@ -144,14 +143,15 @@ struct DogWorldScene: View {
                         size: companionSize,
                         pose: companionPose,
                         evolution: .adult,
-                        mood: store.state.dogMood
+                        mood: store.state.dogState.mood
                     )
                     .position(companionPosition)
+                    .animation(.easeInOut(duration: 3).repeatForever(autoreverses: true), value: companionWanderOffset)
                     .onAppear {
-                        // 陪伴狗狗独立漫游动画
-                        withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
-                            companionWanderOffset = CGSize(width: 30, height: 20)
-                        }
+                        companionWanderOffset = CGSize(width: 30, height: 20)
+                    }
+                    .onDisappear {
+                        companionWanderOffset = .zero
                     }
                     .task {
                         // 独立 pose 切换（.task 在视图消失时自动取消）
@@ -174,7 +174,7 @@ struct DogWorldScene: View {
                         speech: store.speechText(),
                         nextLevelNeed: store.nextLevelNeed(),
                         evolution: store.state.dogEvolution,
-                        mood: store.state.dogMood,
+                        mood: store.state.dogState.mood,
                         onClose: { showsDogStatus = false }
                     )
                     .padding(10)
@@ -232,10 +232,10 @@ struct DogWorldScene: View {
             .onTapGesture {
                 showsDogStatus = false
             }
-            .animation(.spring(response: 0.35, dampingFraction: 0.8), value: showsDogStatus)
-            .animation(.spring(response: 0.8, dampingFraction: 0.7), value: wanderOffset)
-            .animation(.spring(response: 0.35, dampingFraction: 0.7), value: activityIndex)
-            .animation(.spring(response: 0.6, dampingFraction: 0.5), value: dragOffset)
+            .animation(.spring(response: 0.5, dampingFraction: 0.7), value: showsDogStatus)
+            .animation(.spring(response: 0.5, dampingFraction: 0.7), value: wanderOffset)
+            .animation(.spring(response: 0.5, dampingFraction: 0.7), value: activityIndex)
+            .animation(.spring(response: 0.5, dampingFraction: 0.7), value: dragOffset)
             .task(id: dogWorldTaskID) {
                 await runDogWorldLoop(width: width, height: height)
             }
@@ -292,7 +292,7 @@ struct DogWorldScene: View {
 
             // 每次循环重新读取最新状态，避免捕获过期数据
             let config = store.state.sceneSettings.currentScene.movementConfig
-            let mood = store.state.dogMood
+            let mood = store.state.dogState.mood
             let moodModifiers = mood.movementModifiers
             let placedItems = store.state.sceneSettings.placedItems
 
@@ -2353,7 +2353,7 @@ struct Panel<Content: View>: View {
             .background {
                 ZStack {
                     Color.dogBgPanel
-                    Color.dogTexturePattern
+                    View.dogTexturePattern
                 }
             }
             .overlay {

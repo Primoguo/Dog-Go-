@@ -452,9 +452,6 @@ final class AppStore: ObservableObject {
         // 属性变化后重新派生心情
         updateDogMood()
 
-        // 生成日记（在属性更新后，确保日记记录最新心情）
-        generateDailyDiaryIfNeeded()
-
         state.dogState.pose = .happy
         state.rhythmState.status = type == .recovery ? .recovering : .stable
         if type == .main {
@@ -462,6 +459,10 @@ final class AppStore: ObservableObject {
         }
         state.rhythmState.missedDays = 0
         state.rhythmState.lastCompletedDate = assignedDate()
+
+        // 生成日记（在所有状态更新之后，确保日记记录最新的连续打卡和心情）
+        generateDailyDiaryIfNeeded()
+
         state.lastFeedback = FeedbackState(message: message, gains: gains, leveledUp: leveledUp, rewardItem: rewardItem, celebrationPose: randomCelebrationPose(), completedPlanTitle: completedPlanTitle)
         state.screen = .feedback
         speechMode = "done"
@@ -597,6 +598,15 @@ final class AppStore: ObservableObject {
             target = Calendar.current.date(byAdding: .day, value: -1, to: target) ?? target
         }
         return Self.assignedDateFormatter.string(from: target)
+    }
+
+    /// 返回"游戏日"的起始 Date（4AM  rollover：凌晨 0-3 点归属前一天）
+    private func gameDay(for date: Date) -> Date {
+        var target = date
+        if Calendar.current.component(.hour, from: target) < 4 {
+            target = Calendar.current.date(byAdding: .day, value: -1, to: target) ?? target
+        }
+        return Calendar.current.startOfDay(for: target)
     }
 
     private func clamp(_ value: Int) -> Int {
@@ -814,6 +824,8 @@ final class AppStore: ObservableObject {
         state.focusSessions = state.focusSessions.filter { $0.startedAt >= cutoff }
         state.diaryEntries = state.diaryEntries.filter { $0.date >= cutoff }
         state.taskHistory = state.taskHistory.filter { $0.acceptedDate >= cutoff }
+        // 同步计数器与实际数组长度
+        state.focusSessionsCount = state.focusSessions.count
         // 月报保留最近 12 个月
         if state.monthlyReports.count > 12 {
             state.monthlyReports = Array(state.monthlyReports.suffix(12))
@@ -829,6 +841,7 @@ final class AppStore: ObservableObject {
 
         if newEvolution != oldEvolution {
             state.dogEvolution = newEvolution
+            save()
             // 进化提示会在 UI 层通过观察 dogEvolution 变化来显示
         }
     }
@@ -888,12 +901,11 @@ final class AppStore: ObservableObject {
 
     /// 更新狗狗心情（基于三项属性均值派生）
     func updateDogMood() {
-        state.dogMood = DogMood.from(
+        state.dogState.mood = DogMood.from(
             fullness: state.dogState.fullness,
             cleanliness: state.dogState.cleanliness,
             energy: state.dogState.energy
         )
-        state.dogState.mood = state.dogMood
     }
 
     /// 获取最近 N 天的完成次数
@@ -928,7 +940,7 @@ final class AppStore: ObservableObject {
             .filter { assignedDate(for: $0.startedAt) == today && $0.completed }
             .reduce(0) { $0 + $1.durationSeconds / 60 }
         let streak = state.rhythmState.currentStreak
-        let mood = state.dogMood
+        let mood = state.dogState.mood
 
         // 生成日记内容
         let content = generateDiaryContent(
@@ -1183,9 +1195,9 @@ final class AppStore: ObservableObject {
         return (completed, todayTasks.count)
     }
 
-    /// 判断两个日期是否同一天
+    /// 判断两个日期是否同一天（尊重 4AM 界限）
     private func isSameDay(_ date1: Date, _ date2: Date) -> Bool {
-        Calendar.current.isDate(date1, inSameDayAs: date2)
+        Calendar.current.isDate(gameDay(for: date1), inSameDayAs: gameDay(for: date2))
     }
 
     /// 获取连续完成任务天数
@@ -1198,14 +1210,14 @@ final class AppStore: ObservableObject {
                 .filter(\.completed)
                 .compactMap { entry -> Date? in
                     let d = entry.completedDate ?? entry.acceptedDate
-                    return calendar.startOfDay(for: d)
+                    return gameDay(for: d)
                 }
         )
 
         guard let lastDay = completedDays.max() else { return 0 }
 
         // 如果最新完成不在今天也不在昨天，连续已断
-        let today = calendar.startOfDay(for: Date())
+        let today = gameDay(for: Date())
         let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
         guard lastDay == today || lastDay == yesterday else { return 0 }
 
@@ -1281,12 +1293,6 @@ final class AppStore: ObservableObject {
         return !getCheckIns(for: date).isEmpty
     }
 
-    /// 检查指定日期是否有主打卡（仅 mainCheckIn，用于连续打卡统计）
-    private func hasMainCheckIn(on date: Date) -> Bool {
-        let calendar = Calendar.current
-        return state.checkIns.contains { calendar.isDate($0.completedAt, inSameDayAs: date) && $0.type == .main }
-    }
-
     /// 计算当前连续打卡天数（仅统计主打卡）
     func calculateCurrentStreak() -> Int {
         let calendar = Calendar.current
@@ -1295,11 +1301,11 @@ final class AppStore: ObservableObject {
         let mainCheckInDates = Set(
             state.checkIns
                 .filter { $0.type == .main }
-                .map { calendar.startOfDay(for: $0.completedAt) }
+                .map { gameDay(for: $0.completedAt) }
         )
 
         var streak = 0
-        var currentDate = calendar.startOfDay(for: Date())
+        var currentDate = gameDay(for: Date())
 
         // 如果今天没有主打卡，从昨天开始计算
         if !mainCheckInDates.contains(currentDate) {
@@ -1335,8 +1341,8 @@ final class AppStore: ObservableObject {
         // 仅使用主打卡记录计算连续天数
         var uniqueDates: Set<Date> = []
         for record in state.checkIns where record.type == .main {
-            let startOfDay = calendar.startOfDay(for: record.completedAt)
-            uniqueDates.insert(startOfDay)
+            let gameDayDate = gameDay(for: record.completedAt)
+            uniqueDates.insert(gameDayDate)
         }
 
         let sortedDates = uniqueDates.sorted()
@@ -1391,7 +1397,7 @@ final class AppStore: ObservableObject {
         for record in records {
             let recordDate = record.date
             if recordDate >= startDate && recordDate < endDate {
-                let startOfDay = calendar.startOfDay(for: recordDate)
+                let startOfDay = gameDay(for: recordDate)
                 checkInDays.insert(startOfDay)
             }
         }
@@ -1412,7 +1418,7 @@ final class AppStore: ObservableObject {
 
         for record in records {
             if record.date >= monthInterval.start && record.date < monthInterval.end {
-                let startOfDay = calendar.startOfDay(for: record.date)
+                let startOfDay = gameDay(for: record.date)
                 checkInDays.insert(startOfDay)
             }
         }
@@ -1492,7 +1498,7 @@ final class AppStore: ObservableObject {
                 }
                 return false
             }
-            .reduce(0) { $0 + $1.durationSeconds }
+            .reduce(0) { $0 + $1.durationSeconds } / 60
 
         // 统计最多的目标类型
         let records = aggregateCheckInRecords()

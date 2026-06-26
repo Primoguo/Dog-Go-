@@ -4,7 +4,6 @@ import SwiftUI
 
 struct EvolutionEffectsView: View {
     let evolution: DogEvolution
-    let mood: DogMood
 
     var body: some View {
         ZStack {
@@ -203,7 +202,7 @@ struct EvolutionProgressBar: View {
         .background {
             ZStack {
                 Color.dogBgPanel
-                Color.dogTexturePattern
+                View.dogTexturePattern
             }
         }
         .overlay { Rectangle().stroke(Color.dogBorder, lineWidth: 2) }
@@ -345,7 +344,7 @@ struct DiaryEntryCard: View {
         .background {
             ZStack {
                 Color.dogBgPanel
-                Color.dogTexturePattern
+                View.dogTexturePattern
             }
         }
         .overlay { Rectangle().stroke(Color.dogBorder, lineWidth: 2) }

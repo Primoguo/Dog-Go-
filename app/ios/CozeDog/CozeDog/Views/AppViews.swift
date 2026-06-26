@@ -401,10 +401,10 @@ struct GoalTypeButton: View {
 
     private var icon: String {
         switch type {
-        case .fitness: return ""
-        case .study: return ""
-        case .work: return ""
-        case .sleep: return ""
+        case .fitness: return "figure.run"
+        case .study: return "book.fill"
+        case .work: return "briefcase.fill"
+        case .sleep: return "moon.fill"
         }
     }
 
@@ -484,7 +484,7 @@ struct TemplateCard: View {
             }
         }
         .padding(12)
-        .background(selected ? Color.dogBgTexture.opacity(0.5) : Color.dogBgPanel)
+        .background(selected ? Color.dogBgTexture : Color.dogBgPanel)
         .overlay {
             Rectangle()
                 .stroke(selected ? Color.dogBrand : Color.dogBorder, lineWidth: selected ? 1.5 : 1)
@@ -537,7 +537,8 @@ struct HomeView: View {
                     completeAction: {
                         if store.state.actionSession.phase == .finished {
                             store.completeActionSession()
-                        } else {
+                        } else if store.state.actionSession.phase != .idle {
+                            // 防止在 idle 状态下误触发目标完成
                             isRecovery ? store.completeRecoveryGoal() : store.completeMainGoal()
                         }
                     },
@@ -634,7 +635,7 @@ struct ProgressScreen: View {
                         Text("当前心情")
                             .font(.headline)
                         Spacer()
-                        MoodDisplayView(mood: store.state.dogMood)
+                        MoodDisplayView(mood: store.state.dogState.mood)
                     }
                 }
 
@@ -1041,6 +1042,7 @@ struct FocusModeView: View {
     @State private var showEncouragement = false
     @State private var encouragementText = ""
     @State private var showRestReminder = false
+    @State private var restReminderDismissedForSession = false
     @State private var showAbandonConfirm = false
     @State private var encouragementDismissTask: Task<Void, Never>?
 
@@ -1126,9 +1128,11 @@ struct FocusModeView: View {
                 RestReminderView(
                     onContinue: {
                         showRestReminder = false
+                        restReminderDismissedForSession = true
                     },
                     onRest: {
                         showRestReminder = false
+                        restReminderDismissedForSession = true
                         store.startRest()
                     }
                 )
@@ -1160,9 +1164,15 @@ struct FocusModeView: View {
                 store.tickActionTimer()
                 // 休息提醒（番茄时间：25分钟）
                 let elapsed = store.state.actionSession.durationSeconds - store.state.actionSession.remainingSeconds
-                if elapsed >= 25 * 60 && !showRestReminder {
+                if elapsed >= 25 * 60 && !showRestReminder && !restReminderDismissedForSession {
                     showRestReminder = true
                 }
+            }
+        }
+        .onChange(of: store.state.actionSession.phase) { oldPhase, newPhase in
+            // 新会话开始时重置休息提醒状态
+            if newPhase == .running && oldPhase != .running {
+                restReminderDismissedForSession = false
             }
         }
         .onChange(of: store.state.lastEncouragementProgress) { _, newProgress in
