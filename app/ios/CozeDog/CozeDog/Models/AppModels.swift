@@ -215,12 +215,12 @@ enum Season: String, Codable {
         }
     }
 
-    var leafColor: String {
+    var leafColor: UInt {
         switch self {
-        case .spring: return "#90EE90"
-        case .summer: return "#228B22"
-        case .autumn: return "#FF8C00"
-        case .winter: return "#FFFFFF"
+        case .spring: return 0x90EE90
+        case .summer: return 0x228B22
+        case .autumn: return 0xFF8C00
+        case .winter: return 0xFFFFFF
         }
     }
 }
