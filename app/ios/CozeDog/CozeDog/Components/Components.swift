@@ -2355,7 +2355,7 @@ struct Panel<Content: View>: View {
             .background {
                 ZStack {
                     Color.dogBgPanel
-                    View.dogTexturePattern
+                    PixelTinyGrid(colorA: Color(hex: 0xF4E6C6, alpha: 0.34), colorB: .clear, tile: 14)
                 }
             }
             .overlay {
