@@ -422,7 +422,6 @@ struct FlowerBedView: View {
             let flowerColors: [UInt] = [0xFF69B4, 0xFFD700, 0xFF6347, 0x9370DB, 0xFFA500]
             ForEach(0..<5) { index in
                 let fx = CGFloat(index % 3) * 8 + 4
-                let fy = CGFloat(index / 3) * 6 - 4
                 // 花茎
                 PixelRect(color: Color(hex: 0x228B22))
                     .frame(width: 2, height: 10)
@@ -1214,7 +1213,7 @@ struct SnowFlake: Identifiable {
 // MARK: - 辅助视图
 
 struct PixelTriangle: View {
-    let color: String
+    let color: UInt
     let size: CGFloat
 
     var body: some View {
@@ -1236,7 +1235,7 @@ struct Triangle: Shape {
 }
 
 struct ScenePathStrip: View {
-    let color: String
+    let color: UInt
     let width: CGFloat
 
     var body: some View {
