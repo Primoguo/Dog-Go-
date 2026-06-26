@@ -1,6 +1,6 @@
 # Dog Go 视觉风格优化手册
 
-> 版本：v1.0 | 更新日期：2026-06-26
+> 版本：v1.1 | 更新日期：2026-06-26
 > 定位：像素风 2.5D 等距宠物养成 × 自律工具
 
 ---
@@ -49,9 +49,10 @@
 | 名称 | 色值 | 用途 |
 |------|------|------|
 | 主文本 `textPrimary` | `#26382B` | 标题、重要数值、核心文案 |
-| 副文本 `textSecondary` | `#356247` | 副标题、选中项文本、按钮文本（与品牌绿同色） |
+| 副文本 `textSecondary` | `#356247` | 副标题、选中项文本（与品牌绿同色） |
 | 辅助文本 `textTertiary` | `#6B715F` | 说明文案、禁用态文本、次要信息 |
 | 弱文本 `textPlaceholder` | `#8B8B8B` | 占位符、最弱层级文本 |
+| 次按钮文本 `secondaryButtonText` | `#3E3323` | 次要按钮（SecondaryButton）专用文本色 |
 
 ### 2.5 点缀色
 
@@ -121,7 +122,7 @@
 ```swift
 //  eyebrow 小标签（已实现）
 Text("今日目标").eyebrowStyle()
-// → .font(.caption.weight(.bold)).foregroundStyle(.secondary).textCase(.none)
+// → .font(.caption.weight(.bold)).foregroundStyle(Color.dogTextTertiary).textCase(.none)
 
 // 数据展示（推荐用法）
 Text("25:00")
@@ -251,7 +252,7 @@ Text("习惯日历")
 
 | 属性 | 值 |
 |------|-----|
-| 背景 | `#FFF8E8` (bgPanel) + `#EAF1DA` 网格纹理 |
+| 背景 | `#FFF8E8` (bgPanel) 纯色 + `#EAF1DA` 网格纹理（无 opacity） |
 | 顶边框 | `#7C9B64`, 2px |
 | 选中项 | fg `#FFF8E8`, bg `#356247`, border `#1E3D2C` |
 | 未选中项 | fg `#41573E`, bg `#EAF1DA`, border `#9BB985` |
@@ -353,35 +354,32 @@ Text("习惯日历")
 
 ---
 
-## 八、待改造清单
+## 八、改造记录
 
-以下组件需要从当前样式改造为本手册规范：
+### ✅ 已完成（v1.0 → v1.1）
 
-### 高优先级
+以下组件已全部改造完成并提交（commit 52e0905 + aef27b3）：
 
-| 组件 | 当前问题 | 改造方向 |
-|------|----------|----------|
-| `Panel` | 圆角 8 + 柔阴影 radius 22 | 直角 + 像素硬阴影 + 网格纹理 |
-| `HabitCalendarView` | 独立配色体系 + 圆角 16 | 统一像素风面板 |
-| `MonthlyReportView` | 独立配色 + 圆角 | 统一像素风面板 |
-| `DiaryEntryCard` | 圆角 12 + 柔阴影 | 直角 + 像素硬阴影 |
-| `EvolutionProgressBar` | 系统 systemBackground + 柔阴影 | 像素进度条风格 |
+| 组件 | 原问题 | 改造结果 |
+|------|--------|----------|
+| `Panel` | 圆角 8 + 柔阴影 radius 22 | ✅ 直角 + 像素硬阴影 + 网格纹理 |
+| `HabitCalendarView` | 独立配色 + 圆角 16 | ✅ 统一像素风面板 |
+| `MonthlyReportView` | 独立配色 + 圆角 | ✅ 统一像素风面板 |
+| `DiaryEntryCard` | 圆角 12 + 柔阴影 | ✅ 直角 + 像素硬阴影 |
+| `EvolutionProgressBar` | systemBackground + 柔阴影 | ✅ 像素进度条风格 |
+| `PrimaryButton` / `SecondaryButton` | 无像素纹理 | ✅ 像素硬阴影 + 圆角 8pt |
+| `FocusModeView` 面板 | 圆角 16 + 柔阴影 | ✅ 直角 + 像素硬阴影 |
+| `OnboardingView` | 橙色主色 | ✅ 品牌绿 + 语义色 |
+| `DogChoiceCard` | 圆角 12 | ✅ 直角 + 像素边框 |
+| `Color(hex: String)` | 与 UInt 版本并存 | ✅ 全部统一为 UInt 版本，String 版已删除 |
+| 全局 `.secondary` | 38 处系统色 | ✅ 全部替换为语义色 |
+| 全局系统色 | systemBackground/systemGray 等 | ✅ 全部替换为语义色 |
 
-### 中优先级
+### 📋 待办
 
-| 组件 | 当前问题 | 改造方向 |
-|------|----------|----------|
-| `PrimaryButton` / `SecondaryButton` | 圆角 8 但无像素纹理 | 添加网格纹理 |
-| `FocusModeView` 面板 | 圆角 16 + 柔阴影 | 直角 + 像素硬阴影 |
-| `OnboardingView` | 橙色为主色，与主体绿色断裂 | 改为品牌绿 + 橙色 CTA |
-| `DogChoiceCard` | 圆角 12 | 直角 + 像素边框 |
-
-### 低优先级
-
-| 组件 | 当前问题 | 改造方向 |
-|------|----------|----------|
-| `Color(hex: String)` | 与 `Color(hex: UInt)` 并存 | 统一为 UInt 版本 |
-| 暗色模式 | 全部硬编码色值 | 定义 light/dark 语义色 |
+| 项目 | 说明 | 优先级 |
+|------|------|--------|
+| 暗色模式 | 全部硬编码色值，需定义 light/dark 语义色 | 低 |
 
 ---
 
@@ -435,7 +433,7 @@ Button(action: action) {
 }
 ```
 
-### 9.3 语义色常量（建议新增）
+### 9.3 语义色常量（已实现于 Style.swift）
 
 ```swift
 extension Color {
@@ -452,14 +450,18 @@ extension Color {
     static let dogBgPanel = Color(hex: 0xFFF8E8)
     static let dogBgTexture = Color(hex: 0xEAF1DA)
     static let dogBgCard = Color(hex: 0xF6E9C8)
+    static let dogBgScene = Color(hex: 0xDCEBCB)
 
     // 文本
     static let dogTextPrimary = Color(hex: 0x26382B)
     static let dogTextSecondary = Color(hex: 0x356247)
     static let dogTextTertiary = Color(hex: 0x6B715F)
+    static let dogTextPlaceholder = Color(hex: 0x8B8B8B)
+    static let dogSecondaryButtonText = Color(hex: 0x3E3323)
 
     // 点缀
     static let dogAccent = Color(hex: 0xC69A3E)
+    static let dogAccentLight = Color(hex: 0xC7A76D)
     static let dogAccentBright = Color(hex: 0xFFF1B8)
 
     // 阴影
