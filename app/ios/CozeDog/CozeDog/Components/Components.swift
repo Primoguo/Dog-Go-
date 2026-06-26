@@ -2166,7 +2166,7 @@ struct AppBottomBar: View {
         .frame(maxWidth: .infinity)
         .background {
             ZStack {
-                Color(hex: 0xFFF8E8).opacity(0.97)
+                Color.dogBgPanel
                 PixelTinyGrid(colorA: Color(hex: 0xEAF1DA, alpha: 0.4), colorB: Color.clear, tile: 10)
             }
             .ignoresSafeArea(edges: .bottom)
@@ -2577,6 +2577,7 @@ struct PrimaryButton: View {
                 .stroke(disabled ? Color(hex: 0xA4AA96) : Color.dogBrandDark, lineWidth: 3)
         }
         .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 0, y: 4)
+        .cornerRadius(8)
         .disabled(disabled)
     }
 }
@@ -2589,15 +2590,16 @@ struct SecondaryButton: View {
         Button(action: action) {
             Text(title)
                 .font(.headline.weight(.heavy))
-                .frame(maxWidth: .infinity, minHeight: 48)
+                .frame(maxWidth: .infinity, minHeight: 50)
         }
         .buttonStyle(.plain)
         .background(Color.dogBgCard)
-        .foregroundStyle(Color.dogTextPrimary)
+        .foregroundStyle(Color.dogSecondaryButtonText)
         .overlay {
             Rectangle()
                 .stroke(Color.dogAccentLight, lineWidth: 2)
         }
         .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 0, y: 4)
+        .cornerRadius(8)
     }
 }

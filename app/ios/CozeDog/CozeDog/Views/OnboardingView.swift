@@ -8,11 +8,11 @@ struct OnboardingView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // 页面指示器
+            // 页面指示器（像素方块）
             HStack(spacing: 8) {
                 ForEach(0..<4) { index in
-                    Circle()
-                        .fill(index == currentPage ? Color.orange : Color.gray.opacity(0.3))
+                    Rectangle()
+                        .fill(index == currentPage ? Color.dogBrand : Color.dogTextPlaceholder.opacity(0.3))
                         .frame(width: 8, height: 8)
                         .animation(.easeInOut(duration: 0.3), value: currentPage)
                 }
@@ -45,7 +45,7 @@ struct OnboardingView: View {
                             currentPage -= 1
                         }
                     }
-                    .foregroundColor(.orange)
+                    .foregroundColor(Color.dogBrand)
                     .padding(.horizontal, 20)
                 }
 
@@ -57,17 +57,19 @@ struct OnboardingView: View {
                             currentPage += 1
                         }
                     }
-                    .foregroundColor(.orange)
+                    .foregroundColor(Color.dogBrand)
                     .padding(.horizontal, 20)
                 } else {
                     Button("Dog Go！") {
                         hasSeenOnboarding = true
                     }
                     .font(.headline)
-                    .foregroundColor(.white)
+                    .foregroundColor(Color.dogBgPanel)
                     .padding(.horizontal, 30)
                     .padding(.vertical, 12)
-                    .background(Color.orange)
+                    .background(Color.dogBrand)
+                    .overlay(Rectangle().stroke(Color.dogBrandDark, lineWidth: 2))
+                    .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 4, y: 4)
                     .padding(.horizontal, 20)
                 }
             }
@@ -75,11 +77,10 @@ struct OnboardingView: View {
             .padding(.horizontal, 20)
         }
         .background(
-            LinearGradient(
-                gradient: Gradient(colors: [Color.orange.opacity(0.1), Color.yellow.opacity(0.05)]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
+            ZStack {
+                Color.dogBgPage
+                PixelTinyGrid(colorA: Color.dogAccentBright.opacity(0.15), colorB: .clear, tile: 14)
+            }
         )
     }
 
@@ -88,11 +89,13 @@ struct OnboardingView: View {
         VStack(spacing: 30) {
             Spacer()
 
-            // 像素狗头像
+            // 像素狗头像（像素风方块背景）
             ZStack {
-                Circle()
-                    .fill(Color.orange.opacity(0.2))
+                Rectangle()
+                    .fill(Color.dogBgTexture)
                     .frame(width: 200, height: 200)
+                    .overlay(Rectangle().stroke(Color.dogBorder, lineWidth: 2))
+                    .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 4, y: 4)
 
                 PixelDogSprite(
                     breed: .shiba,
@@ -207,16 +210,16 @@ struct OnboardingView: View {
                 .foregroundColor(Color.dogTextSecondary)
                 .multilineTextAlignment(.center)
 
-            // 小星星装饰
+            // 小星星装饰（像素风配色）
             HStack(spacing: 40) {
                 Image(systemName: "star.fill")
-                    .foregroundColor(.yellow)
+                    .foregroundColor(Color.dogAccent)
                     .font(.title2)
                 Image(systemName: "star.fill")
-                    .foregroundColor(.orange)
+                    .foregroundColor(Color.dogBrand)
                     .font(.title)
                 Image(systemName: "star.fill")
-                    .foregroundColor(.yellow)
+                    .foregroundColor(Color.dogAccent)
                     .font(.title2)
             }
             .padding(.top, 20)

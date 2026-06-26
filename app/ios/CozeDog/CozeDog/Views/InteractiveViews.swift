@@ -53,13 +53,13 @@ struct BallView: View {
 
             // 高光
             Circle()
-                .fill(Color.white.opacity(0.6))
+                .fill(Color.dogBgPanel.opacity(0.6))
                 .frame(width: 8, height: 8)
                 .offset(x: -6, y: -6)
 
             // 条纹
             Rectangle()
-                .fill(Color.white.opacity(0.3))
+                .fill(Color.dogBgPanel.opacity(0.3))
                 .frame(width: 24, height: 3)
                 .rotationEffect(.degrees(45))
         }
@@ -101,7 +101,7 @@ struct ToyView: View {
 
             // 高光
             StarShape()
-                .fill(Color.white.opacity(0.4))
+                .fill(Color.dogBgPanel.opacity(0.4))
                 .frame(width: 14, height: 14)
                 .offset(x: -4, y: -4)
         }
@@ -118,7 +118,7 @@ struct CushionView: View {
 
             // 纹理
             Rectangle()
-                .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                .stroke(Color.dogBgPanel.opacity(0.3), lineWidth: 1)
                 .frame(width: 28, height: 20)
         }
     }
@@ -145,7 +145,7 @@ struct FlowerView: View {
                 }
 
                 Circle()
-                    .fill(Color.yellow)
+                    .fill(Color.dogAccent)
                     .frame(width: 8, height: 8)
             }
             .offset(y: -5)
@@ -206,7 +206,7 @@ struct SceneSelectorView: View {
                 Text("选择场景")
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundColor(.white)
+                    .foregroundColor(Color.dogBgPanel)
                     .padding(.top, 20)
 
                 // 场景列表
@@ -243,12 +243,12 @@ struct SceneSelectorView: View {
                 }) {
                     Text("关闭")
                         .font(.headline)
-                        .foregroundColor(.orange)
+                        .foregroundColor(Color.dogBrand)
                         .padding(.horizontal, 32)
                         .padding(.vertical, 12)
                         .background(
                             Capsule()
-                                .fill(Color.white)
+                                .fill(Color.dogBgPanel)
                         )
                 }
                 .padding(.bottom, 20)
@@ -259,7 +259,7 @@ struct SceneSelectorView: View {
                 RoundedRectangle(cornerRadius: 24)
                     .fill(
                         LinearGradient(
-                            colors: [.orange.opacity(0.9), .yellow.opacity(0.9)],
+                            colors: [Color.dogAccent.opacity(0.9), Color.dogAccentBright.opacity(0.9)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -287,12 +287,12 @@ struct SceneCardView: View {
                 // 图标
                 ZStack {
                     Circle()
-                        .fill(isUnlocked ? Color.white.opacity(0.3) : Color.gray.opacity(0.3))
+                        .fill(isUnlocked ? Color.dogBgPanel.opacity(0.3) : Color.dogTextPlaceholder.opacity(0.3))
                         .frame(width: 60, height: 60)
 
                     Image(systemName: scene.icon)
                         .font(.system(size: 28))
-                        .foregroundColor(isUnlocked ? .white : .gray)
+                        .foregroundColor(isUnlocked ? Color.dogBgPanel : Color.dogTextPlaceholder)
                 }
 
                 // 信息
@@ -300,17 +300,17 @@ struct SceneCardView: View {
                     HStack {
                         Text(scene.displayName)
                             .font(.headline)
-                            .foregroundColor(isUnlocked ? .white : .gray)
+                            .foregroundColor(isUnlocked ? Color.dogBgPanel : Color.dogTextPlaceholder)
 
                         if isSelected {
                             Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.green)
+                                .foregroundColor(Color.dogSuccess)
                         }
                     }
 
                     Text(scene.description)
                         .font(.caption)
-                        .foregroundColor(isUnlocked ? .white.opacity(0.8) : .gray)
+                        .foregroundColor(isUnlocked ? Color.dogBgPanel.opacity(0.8) : Color.dogTextPlaceholder)
 
                     if !isUnlocked {
                         HStack(spacing: 4) {
@@ -319,7 +319,7 @@ struct SceneCardView: View {
                             Text("需要 \(scene.requiredEvolution.displayName)")
                                 .font(.caption2)
                         }
-                        .foregroundColor(.yellow)
+                        .foregroundColor(Color.dogAccent)
                     }
                 }
 
@@ -328,11 +328,11 @@ struct SceneCardView: View {
             .padding()
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(isSelected ? Color.white.opacity(0.3) : Color.white.opacity(0.1))
+                    .fill(isSelected ? Color.dogBgPanel.opacity(0.3) : Color.dogBgPanel.opacity(0.1))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
-                    .stroke(isSelected ? Color.white : Color.clear, lineWidth: 2)
+                    .stroke(isSelected ? Color.dogBgPanel : Color.clear, lineWidth: 2)
             )
         }
         .disabled(!isUnlocked)
@@ -346,35 +346,35 @@ struct EnvironmentInfoView: View {
                 // 时间
                 HStack(spacing: 4) {
                     Image(systemName: "clock.fill")
-                        .foregroundColor(.white)
+                        .foregroundColor(Color.dogBgPanel)
                     Text(TimeOfDay.current.displayName)
                         .font(.caption)
-                        .foregroundColor(.white)
+                        .foregroundColor(Color.dogBgPanel)
                 }
 
                 // 天气
                 HStack(spacing: 4) {
                     Image(systemName: Weather.current.icon)
-                        .foregroundColor(.white)
+                        .foregroundColor(Color.dogBgPanel)
                     Text(Weather.current.displayName)
                         .font(.caption)
-                        .foregroundColor(.white)
+                        .foregroundColor(Color.dogBgPanel)
                 }
 
                 // 季节
                 HStack(spacing: 4) {
                     Image(systemName: "leaf.fill")
-                        .foregroundColor(.white)
+                        .foregroundColor(Color.dogBgPanel)
                     Text(Season.current.displayName)
                         .font(.caption)
-                        .foregroundColor(.white)
+                        .foregroundColor(Color.dogBgPanel)
                 }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .background(
                 Capsule()
-                    .fill(Color.white.opacity(0.2))
+                    .fill(Color.dogBgPanel.opacity(0.2))
             )
         }
     }
@@ -393,13 +393,13 @@ struct SceneSwitchButton: View {
         }) {
             ZStack {
                 Circle()
-                    .fill(Color.white.opacity(0.9))
+                    .fill(Color.dogBgCard)
                     .frame(width: 44, height: 44)
                     .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 3, y: 3)
 
                 Image(systemName: "map.fill")
                     .font(.system(size: 20))
-                    .foregroundColor(.orange)
+                    .foregroundColor(Color.dogAccent)
             }
         }
     }
@@ -419,13 +419,13 @@ struct TaskSuggestionButton: View {
         }) {
             ZStack {
                 Circle()
-                    .fill(Color.white.opacity(0.9))
+                    .fill(Color.dogBgCard)
                     .frame(width: 44, height: 44)
                     .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 3, y: 3)
 
                 Image(systemName: "checklist")
                     .font(.system(size: 20))
-                    .foregroundColor(.green)
+                    .foregroundColor(Color.dogSuccess)
             }
         }
     }
@@ -508,7 +508,7 @@ struct TaskSuggestionView: View {
                     Image(systemName: TaskTimeSlot.current.emoji == "🌅" ? "sunrise.fill" :
                                     TaskTimeSlot.current.emoji == "☀️" ? "sun.max.fill" :
                                     TaskTimeSlot.current.emoji == "🌆" ? "sunset.fill" : "moon.fill")
-                        .foregroundColor(.orange)
+                        .foregroundColor(Color.dogAccent)
                     Text("\(TaskTimeSlot.current.label)推荐")
                         .font(.headline)
                         .foregroundColor(Color.dogTextPrimary)
@@ -525,17 +525,17 @@ struct TaskSuggestionView: View {
             if streak > 0 {
                 HStack(spacing: 4) {
                     Image(systemName: "flame.fill")
-                        .foregroundColor(.orange)
+                        .foregroundColor(Color.dogAccent)
                     Text("\(streak)天")
                         .font(.caption)
                         .fontWeight(.bold)
-                        .foregroundColor(.orange)
+                        .foregroundColor(Color.dogAccent)
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
                 .background(
                     Capsule()
-                        .fill(Color.orange.opacity(0.15))
+                        .fill(Color.dogAccentLight.opacity(0.15))
                 )
             }
         }
@@ -547,7 +547,7 @@ struct TaskSuggestionView: View {
         return HStack(spacing: 16) {
             StatItem(
                 icon: "checkmark.circle.fill",
-                iconColor: .green,
+                iconColor: Color.dogSuccess,
                 value: "\(stats.completed)",
                 label: "已完成"
             )
@@ -557,7 +557,7 @@ struct TaskSuggestionView: View {
 
             StatItem(
                 icon: "list.bullet",
-                iconColor: .blue,
+                iconColor: Color.dogBrand,
                 value: "\(stats.total)",
                 label: "今日任务"
             )
@@ -567,7 +567,7 @@ struct TaskSuggestionView: View {
 
             StatItem(
                 icon: "target",
-                iconColor: .purple,
+                iconColor: Color.dogAccent,
                 value: stats.total > 0 ? "\(Int(Double(stats.completed) / Double(stats.total) * 100))%" : "0%",
                 label: "完成率"
             )
@@ -589,7 +589,7 @@ struct TaskSuggestionView: View {
         VStack(spacing: 12) {
             Image(systemName: "checkmark.seal.fill")
                 .font(.system(size: 48))
-                .foregroundColor(.green.opacity(0.6))
+                .foregroundColor(Color.dogSuccess.opacity(0.6))
 
             Text("今日任务已全部完成！")
                 .font(.headline)
@@ -615,12 +615,12 @@ struct TaskSuggestionView: View {
                 }
                 .font(.subheadline)
                 .fontWeight(.medium)
-                .foregroundColor(.green)
+                .foregroundColor(Color.dogSuccess)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
                 .background(
                     Capsule()
-                        .fill(Color.green.opacity(0.15))
+                        .fill(Color.dogSuccess.opacity(0.15))
                 )
             }
 
@@ -640,7 +640,7 @@ struct TaskSuggestionView: View {
                     .padding(.vertical, 10)
                     .background(
                         Capsule()
-                            .fill(Color.gray.opacity(0.15))
+                            .fill(Color.dogTextTertiary.opacity(0.15))
                     )
             }
         }
@@ -744,7 +744,7 @@ struct TaskCardView: View {
 
                     Image(systemName: "checkmark")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundColor(Color.dogBgPanel)
                 }
             }
             .padding(12)
@@ -763,10 +763,10 @@ struct TaskCardView: View {
 
     private var goalTypeColor: Color {
         switch task.goalType {
-        case .fitness: return .orange
-        case .study: return .blue
-        case .work: return .green
-        case .sleep: return .purple
+        case .fitness: return Color.dogAccent
+        case .study: return Color.dogBrand
+        case .work: return Color.dogSuccess
+        case .sleep: return Color.dogAccent
         }
     }
 

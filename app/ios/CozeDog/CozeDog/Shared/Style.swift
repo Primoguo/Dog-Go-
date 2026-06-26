@@ -33,11 +33,14 @@ extension Color {
     static let dogBgPanel = Color(hex: 0xFFF8E8)
     static let dogBgTexture = Color(hex: 0xEAF1DA)
     static let dogBgCard = Color(hex: 0xF6E9C8)
+    static let dogBgScene = Color(hex: 0xDCEBCB)
 
     // Text
     static let dogTextPrimary = Color(hex: 0x26382B)
     static let dogTextSecondary = Color(hex: 0x356247)
     static let dogTextTertiary = Color(hex: 0x6B715F)
+    static let dogTextPlaceholder = Color(hex: 0x8B8B8B)
+    static let dogSecondaryButtonText = Color(hex: 0x3E3323)
 
     // Accent
     static let dogAccent = Color(hex: 0xC69A3E)

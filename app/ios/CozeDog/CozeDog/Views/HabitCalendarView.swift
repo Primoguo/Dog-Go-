@@ -20,7 +20,7 @@ struct HabitCalendarButton: View {
 
                 Image(systemName: "calendar")
                     .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.green)
+                    .foregroundColor(Color.dogSuccess)
             }
         }
     }
@@ -89,7 +89,7 @@ struct HabitCalendarView: View {
         HStack {
             Text("📅 习惯追踪")
                 .font(.system(size: 18, weight: .bold, design: .monospaced))
-                .foregroundColor(.black)
+                .foregroundColor(Color.dogTextPrimary)
 
             Spacer()
 
@@ -102,12 +102,12 @@ struct HabitCalendarView: View {
                     Text("月度报告")
                         .font(.system(size: 12, weight: .bold, design: .monospaced))
                 }
-                .foregroundColor(.white)
+                .foregroundColor(Color.dogBgPanel)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
                 .background(
                     Rectangle()
-                        .fill(Color.blue.opacity(0.8))
+                        .fill(Color.dogBrand)
                 )
             }
 
@@ -118,13 +118,13 @@ struct HabitCalendarView: View {
             }) {
                 Image(systemName: "xmark")
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(.gray)
+                    .foregroundColor(Color.dogTextTertiary)
             }
         }
         .padding(16)
         .background(
             Rectangle()
-                .fill(Color.orange.opacity(0.3))
+                .fill(Color.dogAccentLight.opacity(0.3))
         )
     }
 
@@ -135,14 +135,14 @@ struct HabitCalendarView: View {
             HStack(spacing: 16) {
                 StatItem(
                     icon: "flame.fill",
-                    iconColor: .orange,
+                    iconColor: Color.dogAccent,
                     value: "\(store.calculateCurrentStreak())",
                     label: "连续打卡"
                 )
 
                 StatItem(
                     icon: "checkmark.circle.fill",
-                    iconColor: .green,
+                    iconColor: Color.dogSuccess,
                     value: "\(Int(store.calculateMonthlyCompletionRate() * 100))%",
                     label: "本月完成率"
                 )
@@ -151,14 +151,14 @@ struct HabitCalendarView: View {
             HStack(spacing: 16) {
                 StatItem(
                     icon: "trophy.fill",
-                    iconColor: .purple,
+                    iconColor: Color.dogAccent,
                     value: "\(store.calculateLongestStreak())",
                     label: "最长连续"
                 )
 
                 StatItem(
                     icon: "calendar.badge.checkmark",
-                    iconColor: .blue,
+                    iconColor: Color.dogBrand,
                     value: "\(store.getMonthlyCheckInCount())",
                     label: "本月打卡"
                 )
@@ -167,7 +167,7 @@ struct HabitCalendarView: View {
         .padding(12)
         .background(
             Rectangle()
-                .fill(Color.yellow.opacity(0.1))
+                .fill(Color.dogAccentBright.opacity(0.1))
         )
     }
 
@@ -184,12 +184,12 @@ struct HabitCalendarView: View {
                 }) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(.blue)
+                        .foregroundColor(Color.dogBrand)
                 }
 
                 Text(monthYearString(from: selectedMonth))
                     .font(.system(size: 16, weight: .bold, design: .monospaced))
-                    .foregroundColor(.black)
+                    .foregroundColor(Color.dogTextPrimary)
 
                 Spacer()
 
@@ -199,7 +199,7 @@ struct HabitCalendarView: View {
                     }) {
                         Text("今天")
                             .font(.system(size: 12, weight: .bold, design: .monospaced))
-                            .foregroundColor(.blue)
+                            .foregroundColor(Color.dogBrand)
                     }
                 }
 
@@ -210,7 +210,7 @@ struct HabitCalendarView: View {
                 }) {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(.blue)
+                        .foregroundColor(Color.dogBrand)
                 }
             }
 
@@ -219,7 +219,7 @@ struct HabitCalendarView: View {
                 ForEach(["日", "一", "二", "三", "四", "五", "六"], id: \.self) { day in
                     Text(day)
                         .font(.system(size: 12, weight: .bold, design: .monospaced))
-                        .foregroundColor(.gray)
+                        .foregroundColor(Color.dogTextTertiary)
                         .frame(maxWidth: .infinity)
                 }
             }
@@ -257,7 +257,7 @@ struct HabitCalendarView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("🏆 成就徽章")
                 .font(.system(size: 14, weight: .bold, design: .monospaced))
-                .foregroundColor(.black)
+                .foregroundColor(Color.dogTextPrimary)
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4), spacing: 8) {
                 ForEach(AchievementType.allCases, id: \.self) { type in
@@ -271,7 +271,7 @@ struct HabitCalendarView: View {
         .padding(12)
         .background(
             Rectangle()
-                .fill(Color.purple.opacity(0.1))
+                .fill(Color.dogAccentBright.opacity(0.1))
         )
     }
 
@@ -281,18 +281,18 @@ struct HabitCalendarView: View {
         VStack(spacing: 8) {
             Text("📊 断签恢复激励")
                 .font(.system(size: 14, weight: .bold, design: .monospaced))
-                .foregroundColor(.black)
+                .foregroundColor(Color.dogTextPrimary)
 
             Text(store.getStreakRecoveryMessage())
                 .font(.system(size: 13, weight: .medium, design: .monospaced))
-                .foregroundColor(.gray)
+                .foregroundColor(Color.dogTextTertiary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 8)
         }
         .padding(12)
         .background(
             Rectangle()
-                .fill(Color.green.opacity(0.1))
+                .fill(Color.dogSuccess.opacity(0.1))
         )
     }
 
@@ -339,11 +339,11 @@ struct CalendarDayCell: View {
         VStack(spacing: 2) {
             Text("\(Calendar.current.component(.day, from: date))")
                 .font(.system(size: 12, weight: isToday ? .bold : .regular, design: .monospaced))
-                .foregroundColor(isCurrentMonth ? .black : .gray.opacity(0.5))
+                .foregroundColor(isCurrentMonth ? Color.dogTextPrimary : Color.dogTextPlaceholder.opacity(0.5))
 
             if hasCheckIn {
                 Circle()
-                    .fill(Color.green)
+                    .fill(Color.dogSuccess)
                     .frame(width: 6, height: 6)
             } else {
                 Circle()
@@ -355,11 +355,11 @@ struct CalendarDayCell: View {
         .frame(height: 40)
         .background(
             Rectangle()
-                .fill(isToday ? Color.orange.opacity(0.3) : Color.clear)
+                .fill(isToday ? Color.dogAccentLight.opacity(0.3) : Color.clear)
         )
         .overlay(
             Rectangle()
-                .stroke(isToday ? Color.orange : Color.clear, lineWidth: 2)
+                .stroke(isToday ? Color.dogAccent : Color.clear, lineWidth: 2)
         )
     }
 }
@@ -380,11 +380,11 @@ struct HabitStatItem: View {
 
             Text(value)
                 .font(.system(size: 18, weight: .bold, design: .monospaced))
-                .foregroundColor(.black)
+                .foregroundColor(Color.dogTextPrimary)
 
             Text(label)
                 .font(.system(size: 10, weight: .medium, design: .monospaced))
-                .foregroundColor(.gray)
+                .foregroundColor(Color.dogTextTertiary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
@@ -405,17 +405,17 @@ struct AchievementBadgeView: View {
         VStack(spacing: 4) {
             ZStack {
                 Circle()
-                    .fill(isUnlocked ? Color.yellow : Color.gray.opacity(0.3))
+                    .fill(isUnlocked ? Color.dogAccent : Color.dogTextPlaceholder.opacity(0.3))
                     .frame(width: 36, height: 36)
 
                 Image(systemName: type.icon)
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(isUnlocked ? .white : .gray)
+                    .foregroundColor(isUnlocked ? Color.dogBgPanel : Color.dogTextTertiary)
             }
 
             Text(type.title)
                 .font(.system(size: 9, weight: .medium, design: .monospaced))
-                .foregroundColor(isUnlocked ? .black : .gray)
+                .foregroundColor(isUnlocked ? Color.dogTextPrimary : Color.dogTextTertiary)
                 .lineLimit(1)
         }
     }
@@ -434,14 +434,14 @@ struct MonthlyReportView: View {
             HStack {
                 Text("📊 月度报告")
                     .font(.system(size: 18, weight: .bold, design: .monospaced))
-                    .foregroundColor(.black)
+                    .foregroundColor(Color.dogTextPrimary)
 
                 Spacer()
 
                 Button(action: { dismiss() }) {
                     Image(systemName: "xmark")
                         .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(.gray)
+                        .foregroundColor(Color.dogTextTertiary)
                 }
             }
             .padding(.horizontal, 16)
@@ -454,7 +454,7 @@ struct MonthlyReportView: View {
                 // 月份标题
                 Text(monthString(from: month))
                     .font(.system(size: 16, weight: .bold, design: .monospaced))
-                    .foregroundColor(.blue)
+                    .foregroundColor(Color.dogBrand)
 
                 // 统计数据
                 VStack(spacing: 12) {
@@ -470,13 +470,13 @@ struct MonthlyReportView: View {
                 .padding(16)
                 .background(
                     Rectangle()
-                        .fill(Color.yellow.opacity(0.1))
+                        .fill(Color.dogAccentBright.opacity(0.1))
                 )
 
                 // 鼓励文案
                 Text(encouragementMessage(for: report))
                     .font(.system(size: 14, weight: .medium, design: .monospaced))
-                    .foregroundColor(.gray)
+                    .foregroundColor(Color.dogTextTertiary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 16)
             }
@@ -499,18 +499,18 @@ struct MonthlyReportView: View {
         HStack {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .bold))
-                .foregroundColor(.blue)
+                .foregroundColor(Color.dogBrand)
                 .frame(width: 24)
 
             Text(label)
                 .font(.system(size: 14, weight: .medium, design: .monospaced))
-                .foregroundColor(.black)
+                .foregroundColor(Color.dogTextPrimary)
 
             Spacer()
 
             Text(value)
                 .font(.system(size: 14, weight: .bold, design: .monospaced))
-                .foregroundColor(.blue)
+                .foregroundColor(Color.dogBrand)
         }
     }
 
