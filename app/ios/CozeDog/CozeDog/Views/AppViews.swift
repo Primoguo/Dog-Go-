@@ -889,7 +889,7 @@ struct DogHomeView: View {
 
     private var isSceneUnlocked: (SceneType) -> Bool {
         { scene in
-            store.state.dogEvolution.rawValue >= scene.requiredEvolution.rawValue
+            store.state.dogEvolution.order >= scene.requiredEvolution.order
         }
     }
 

@@ -458,12 +458,12 @@ enum DogMood: String, Codable, CaseIterable {
     }
 
     static func from(fullness: Int, cleanliness: Int, energy: Int) -> DogMood {
-        // 基于三项属性均值派生心情（方案 B）
-        let avg = (fullness + cleanliness + energy) / 3
-        if avg >= 75 { return .ecstatic }
-        if avg >= 55 { return .excited }
-        if avg >= 35 { return .happy }
-        if avg >= 20 { return .neutral }
+        // 基于三项属性总和派生心情（避免整数除法截断偏差）
+        let sum = fullness + cleanliness + energy
+        if sum >= 225 { return .ecstatic }    // avg >= 75
+        if sum >= 165 { return .excited }    // avg >= 55
+        if sum >= 105 { return .happy }      // avg >= 35
+        if sum >= 60 { return .neutral }     // avg >= 20
         return .sad
     }
 

@@ -392,7 +392,7 @@ final class AppStore: ObservableObject {
             return assignedDate(for: date)
         }
         return dates.map { date in
-            state.checkIns.contains { $0.assignedDate == date && $0.type == .mainCheckIn }
+            state.checkIns.contains { $0.assignedDate == date && $0.type == .main }
         }
     }
 
@@ -803,8 +803,8 @@ final class AppStore: ObservableObject {
     private func pruneOldData() {
         let cutoff = Calendar.current.date(byAdding: .day, value: -90, to: Date()) ?? Date()
 
-        state.checkIns = state.checkIns.filter { $0.date >= cutoff }
-        state.focusSessions = state.focusSessions.filter { $0.startTime >= cutoff }
+        state.checkIns = state.checkIns.filter { $0.completedAt >= cutoff }
+        state.focusSessions = state.focusSessions.filter { $0.startedAt >= cutoff }
         state.diaryEntries = state.diaryEntries.filter { $0.date >= cutoff }
         state.taskHistory = state.taskHistory.filter { $0.date >= cutoff }
         // 月报保留最近 12 个月
@@ -1229,7 +1229,7 @@ final class AppStore: ObservableObject {
         for checkIn in state.checkIns {
             records.append(CheckInRecord(
                 date: checkIn.completedAt,
-                type: .mainCheckIn,
+                type: .main,
                 goalType: state.goal?.type
             ))
         }
@@ -1275,7 +1275,7 @@ final class AppStore: ObservableObject {
     /// 检查指定日期是否有主打卡（仅 mainCheckIn，用于连续打卡统计）
     private func hasMainCheckIn(on date: Date) -> Bool {
         let calendar = Calendar.current
-        return state.checkIns.contains { calendar.isDate($0.date, inSameDayAs: date) && $0.type == .mainCheckIn }
+        return state.checkIns.contains { calendar.isDate($0.completedAt, inSameDayAs: date) && $0.type == .main }
     }
 
     /// 计算当前连续打卡天数（仅统计主打卡）
@@ -1317,8 +1317,8 @@ final class AppStore: ObservableObject {
 
         // 仅使用主打卡记录计算连续天数
         var uniqueDates: Set<Date> = []
-        for record in state.checkIns where record.type == .mainCheckIn {
-            let startOfDay = calendar.startOfDay(for: record.date)
+        for record in state.checkIns where record.type == .main {
+            let startOfDay = calendar.startOfDay(for: record.completedAt)
             uniqueDates.insert(startOfDay)
         }
 
