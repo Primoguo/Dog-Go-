@@ -395,7 +395,6 @@ struct DogWorldScene: View {
             case .study: return "学习角"
             case .work: return "工作台"
             case .sleep: return "休闲窝"
-            case .none: break
             }
         }
         return "狗狗小院"
@@ -415,8 +414,6 @@ struct DogWorldScene: View {
                 return CGPoint(x: width * 0.30, y: height * 0.26)
             case .sleep:
                 return CGPoint(x: width * 0.78, y: height * 0.34)
-            case .none:
-                break
             }
         }
         return CGPoint(x: width * 0.20, y: height * 0.14)
@@ -604,7 +601,7 @@ struct PixelProps: View {
                         PixelRect(color: Color(hex: 0xF2DFA8))
                             .frame(width: width * 0.30, height: height * 0.18)
                             .position(x: width * 0.34, y: height * 0.40)
-                    case .none:
+                    case nil:
                         PixelRect(color: Color(hex: 0xD6B47E))
                             .frame(width: width * 0.38, height: height * 0.32)
                             .position(x: width * 0.48, y: height * 0.54)
@@ -654,7 +651,7 @@ struct PixelDogActivityCue: View {
         case .study: return ["book.fill", "pencil", "lightbulb.fill"][idx]
         case .work: return ["briefcase.fill", "laptopcomputer", "hammer.fill"][idx]
         case .sleep: return ["moon.fill", "play.rectangle.fill", "cloud.fill"][idx]
-        case .none: return ["pawprint.fill", "music.note", "leaf.fill"][idx]
+        case nil: return ["pawprint.fill", "music.note", "leaf.fill"][idx]
         }
     }
 
