@@ -47,6 +47,19 @@ extension Color {
     static let dogDanger = Color(hex: 0x8B6A5D) // 放弃按钮文本/边框、未完成指示
     static let dogDangerBg = Color(hex: 0xF5E5E0) // 放弃按钮背景
 
+    // Status (状态色 — §2.6)
+    static let dogError = Color(hex: 0xC65B44) // 错误/健康红
+    static let dogInfo = Color(hex: 0x4C7FA6) // 信息/精力蓝
+
+    // Disabled (禁用态 — §5.2)
+    static let dogDisabledBg = Color(hex: 0xD5D8C7) // 禁用按钮背景
+    static let dogDisabledBorder = Color(hex: 0xA4AA96) // 禁用按钮边框
+
+    // Progress & Meter (进度条/计量条 — §5.4/§5.5/§5.8)
+    static let dogProgressBarTrack = Color(hex: 0xE8E0D0) // 进度条轨道
+    static let dogRhythmEmpty = Color(hex: 0xD9CFB9) // 节奏/计量空白块填充
+    static let dogRhythmEmptyBorder = Color(hex: 0xBCA98B) // 节奏/计量空白块边框
+
     // Overlay
     static let dogScrim = Color(hex: 0x26382B) // 遮罩/半透明覆盖层
 

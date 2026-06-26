@@ -38,6 +38,8 @@ final class AppStore: ObservableObject {
     private func checkStreakOnLaunch() {
         guard let lastDateStr = state.rhythmState.lastCompletedDate else { return }
         let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd"
         guard let lastDate = formatter.date(from: lastDateStr) else { return }
 
@@ -184,6 +186,7 @@ final class AppStore: ObservableObject {
     /// 进入专注模式（用户手动点击按钮后调用）
     func enterFocusMode() {
         state.isFocusMode = true
+        save()
     }
 
     func tickActionTimer() {
@@ -338,7 +341,10 @@ final class AppStore: ObservableObject {
         goal.title = recoveryTitle()
         goal.updatedAt = Date()
         state.goal = goal
-        state.rhythmState = .initial
+        // 只重置连续打卡计数，保留 lastCompletedDate 以便后续追踪
+        state.rhythmState.currentStreak = 0
+        state.rhythmState.missedDays = 0
+        state.rhythmState.status = .stable
         state.dogState.mood = .happy
         state.dogState.pose = .idle
         save()
@@ -433,7 +439,9 @@ final class AppStore: ObservableObject {
         updateDogMood()
         state.dogState.pose = .happy
         state.rhythmState.status = type == .recovery ? .recovering : .stable
-        state.rhythmState.currentStreak += 1
+        if type == .main {
+            state.rhythmState.currentStreak += 1
+        }
         state.rhythmState.missedDays = 0
         state.rhythmState.lastCompletedDate = assignedDate()
         state.lastFeedback = FeedbackState(message: message, gains: gains, leveledUp: leveledUp, rewardItem: rewardItem, celebrationPose: randomCelebrationPose(), completedPlanTitle: completedPlanTitle)
@@ -661,6 +669,7 @@ final class AppStore: ObservableObject {
 
         // 取消通知
         cancelFocusNotifications()
+        save()
     }
 
     func abandonFocusSession() {
@@ -688,6 +697,7 @@ final class AppStore: ObservableObject {
 
         // 取消通知
         cancelFocusNotifications()
+        save()
     }
 
     func scheduleFocusNotifications(durationSeconds: Int) {
@@ -824,6 +834,8 @@ final class AppStore: ObservableObject {
         }
 
         let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd"
         guard let lastDate = formatter.date(from: lastActive) else { return }
 
@@ -906,6 +918,7 @@ final class AppStore: ObservableObject {
 
         state.diaryEntries.append(entry)
         state.lastDiaryDate = Date()
+        save()
     }
 
     /// 生成日记内容（模板 + 品种性格）

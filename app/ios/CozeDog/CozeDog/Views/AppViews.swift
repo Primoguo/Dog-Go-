@@ -379,7 +379,7 @@ struct CreateGoalView: View {
                     } label: {
                         Text("返回选狗")
                             .font(.subheadline.weight(.medium))
-                            .foregroundStyle(Color(hex: 0x8B8B8B))
+                            .foregroundStyle(Color.dogTextPlaceholder)
                             .frame(maxWidth: .infinity, minHeight: 44)
                     }
                     .buttonStyle(.plain)
@@ -742,7 +742,7 @@ struct DogDogView: View {
                         HStack(spacing: 12) {
                             Image(systemName: "pawprint.fill")
                                 .font(.title2)
-                                .foregroundStyle(Color(hex: 0xC65B44))
+                                .foregroundStyle(Color.dogError)
 
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("可以领养新狗狗！")

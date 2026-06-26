@@ -167,7 +167,7 @@ struct EvolutionProgressBar: View {
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
                     Rectangle()
-                        .fill(Color(hex: 0xE8E0D0))
+                        .fill(Color.dogProgressBarTrack)
                         .frame(height: 12)
 
                     Rectangle()

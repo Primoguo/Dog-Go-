@@ -728,7 +728,7 @@ struct SceneThumbnailView: View {
 
             // 选中边框
             Rectangle()
-                .strokeBorder(isSelected ? Color(hex: 0x356247) : Color.clear, lineWidth: 2)
+                .strokeBorder(isSelected ? Color.dogBrand : Color.clear, lineWidth: 2)
         }
         .frame(width: 80, height: 56)
     }

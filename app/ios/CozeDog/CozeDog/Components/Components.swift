@@ -213,10 +213,10 @@ struct DogWorldScene: View {
                         .zIndex(100)
                 }
             }
-            .background(Color(hex: 0xDCEBCB))
+            .background(Color.dogBgScene)
             .overlay {
                 Rectangle()
-                    .stroke(Color(hex: 0x7C9B64), lineWidth: 2)
+                    .stroke(Color.dogBorder, lineWidth: 2)
             }
             .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 4, y: 4)
             .onTapGesture {
@@ -630,7 +630,7 @@ struct PixelProps: View {
                             .frame(width: width * 0.76, height: height * 0.34)
                             .position(x: width * 0.50, y: height * 0.62)
                         Circle()
-                            .fill(isDone ? Color(hex: 0xF7C95C) : Color(hex: 0xC65B44))
+                            .fill(isDone ? Color(hex: 0xF7C95C) : Color.dogError)
                             .frame(width: width * 0.26, height: width * 0.26)
                             .position(x: width * 0.24, y: height * 0.30)
                     case .study:
@@ -718,19 +718,19 @@ struct PixelDogActivityCue: View {
     private var background: Color {
         if isDone { return Color(hex: 0xF7D66F) }
         if isRecovery { return Color(hex: 0xE8D9BC) }
-        return Color(hex: 0xFFF8E8)
+        return Color.dogBgPanel
     }
 
     private var foreground: Color {
-        if isDone { return Color(hex: 0x6E4F15) }
+        if isDone { return Color.dogSecondaryButtonText }
         if isRecovery { return Color(hex: 0x6D6557) }
-        return Color(hex: 0x356247)
+        return Color.dogBrand
     }
 
     private var border: Color {
-        if isDone { return Color(hex: 0xC69A3E) }
+        if isDone { return Color.dogAccent }
         if isRecovery { return Color(hex: 0xB8A98F) }
-        return Color(hex: 0x7C9B64)
+        return Color.dogBorder
     }
 }
 
@@ -745,7 +745,7 @@ struct PixelDogCountdownBadge: View {
             Text(formattedTime)
                 .font(.system(size: 16, weight: .heavy, design: .monospaced))
         }
-        .foregroundStyle(Color(hex: 0x26382B))
+        .foregroundStyle(Color.dogTextPrimary)
         .padding(.horizontal, 8)
         .padding(.vertical, 5)
         .background {
@@ -756,7 +756,7 @@ struct PixelDogCountdownBadge: View {
         }
         .overlay {
             Rectangle()
-                .stroke(Color(hex: 0xC69A3E), lineWidth: 2)
+                .stroke(Color.dogAccent, lineWidth: 2)
         }
         .shadow(color: Color.dogPixelShadow.opacity(0.14), radius: 0, x: 3, y: 3)
     }
@@ -801,10 +801,10 @@ struct DogStatusTray: View {
             HStack(spacing: 8) {
                 PixelDogSprite(breed: breed, appearance: appearance, size: 44, pose: dogState.pose)
                     .frame(width: 50, height: 46)
-                    .background(Color(hex: 0xEAF1DA))
+                    .background(Color.dogBgTexture)
                     .overlay {
                         Rectangle()
-                            .stroke(Color(hex: 0x7C9B64), lineWidth: 2)
+                            .stroke(Color.dogBorder, lineWidth: 2)
                     }
 
                 VStack(alignment: .leading, spacing: 3) {
@@ -814,7 +814,7 @@ struct DogStatusTray: View {
                             .lineLimit(1)
                         Text(moodLabel)
                             .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(Color(hex: 0x356247))
+                            .foregroundStyle(Color.dogTextSecondary)
                             .padding(.horizontal, 5)
                             .padding(.vertical, 2)
                             .background(Color(hex: 0xDDEBCB))
@@ -835,11 +835,11 @@ struct DogStatusTray: View {
                     Button(action: onClose) {
                         Image(systemName: "xmark")
                             .font(.system(size: 10, weight: .heavy))
-                            .foregroundStyle(Color(hex: 0x7C9B64))
+                            .foregroundStyle(Color.dogBorder)
                             .frame(width: 22, height: 22)
-                            .background(Color(hex: 0xEAF1DA))
+                            .background(Color.dogBgTexture)
                             .overlay {
-                                Rectangle().stroke(Color(hex: 0x7C9B64), lineWidth: 1)
+                                Rectangle().stroke(Color.dogBorder, lineWidth: 1)
                             }
                     }
                     .buttonStyle(.plain)
@@ -847,16 +847,16 @@ struct DogStatusTray: View {
             }
 
             HStack(spacing: 6) {
-                PixelStatBar(icon: "fork.knife", label: "饱", value: dogState.fullness, max: 100, color: Color(hex: 0xC65B44))
-                PixelStatBar(icon: "drop.fill", label: "洁", value: dogState.cleanliness, max: 100, color: Color(hex: 0x4C7FA6))
-                PixelStatBar(icon: "bolt.fill", label: "力", value: dogState.energy, max: 100, color: Color(hex: 0xC69A3E))
+                PixelStatBar(icon: "fork.knife", label: "饱", value: dogState.fullness, max: 100, color: Color.dogError)
+                PixelStatBar(icon: "drop.fill", label: "洁", value: dogState.cleanliness, max: 100, color: Color.dogInfo)
+                PixelStatBar(icon: "bolt.fill", label: "力", value: dogState.energy, max: 100, color: Color.dogAccent)
             }
 
             HStack(spacing: 4) {
                 Text("亲密度")
                     .font(.system(size: 9, weight: .bold))
                     .foregroundStyle(Color(hex: 0x5D6B55))
-                PixelProgressBar(value: dogState.intimacy, max: nextLevelNeed, height: 6, fillColor: Color(hex: 0x5D8B6A))
+                PixelProgressBar(value: dogState.intimacy, max: nextLevelNeed, height: 6, fillColor: Color.dogSuccess)
                 Text("\(dogState.intimacy)/\(nextLevelNeed)")
                     .font(.system(size: 9, weight: .bold))
                     .foregroundStyle(Color(hex: 0x5D6B55))
@@ -864,10 +864,10 @@ struct DogStatusTray: View {
         }
         .padding(8)
         .frame(maxWidth: .infinity)
-        .background(Color(hex: 0xFFF8E8, alpha: 0.96))
+        .background(Color.dogBgPanel.opacity(0.96))
         .overlay {
             Rectangle()
-                .stroke(Color(hex: 0x7C9B64), lineWidth: 2)
+                .stroke(Color.dogBorder, lineWidth: 2)
         }
     }
 
@@ -911,7 +911,7 @@ struct PixelProgressBar: View {
 
         GeometryReader { geo in
             ZStack(alignment: .leading) {
-                PixelRect(color: Color(hex: 0xE8E0D0))
+                PixelRect(color: Color.dogProgressBarTrack)
                 PixelRect(color: fillColor)
                     .frame(width: geo.size.width * ratio)
             }
@@ -919,7 +919,7 @@ struct PixelProgressBar: View {
         .frame(height: height)
         .overlay {
             Rectangle()
-                .stroke(Color(hex: 0x7C9B64), lineWidth: 1)
+                .stroke(Color.dogBorder, lineWidth: 1)
         }
     }
 }
@@ -938,11 +938,11 @@ struct PixelCelebrationPanel: View {
             VStack(spacing: 8) {
                 Text("Dog done!")
                     .font(.system(size: 34, weight: .heavy, design: .rounded))
-                    .foregroundStyle(Color(hex: 0x26382B))
+                    .foregroundStyle(Color.dogTextPrimary)
                 Text(feedback?.message ?? "今天的节奏接住了。")
                     .font(.headline.weight(.heavy))
                     .multilineTextAlignment(.center)
-                    .foregroundStyle(Color(hex: 0x356247))
+                    .foregroundStyle(Color.dogTextSecondary)
             }
 
             ZStack {
@@ -957,10 +957,10 @@ struct PixelCelebrationPanel: View {
                     .offset(x: isAnimating ? celebrationX : -celebrationX, y: isAnimating ? celebrationY : 0)
             }
             .frame(height: 178)
-            .background(Color(hex: 0xEAF1DA))
+            .background(Color.dogBgTexture)
             .overlay {
                 Rectangle()
-                    .stroke(Color(hex: 0x7C9B64), lineWidth: 3)
+                    .stroke(Color.dogBorder, lineWidth: 3)
             }
 
             VStack(spacing: 8) {
@@ -979,10 +979,10 @@ struct PixelCelebrationPanel: View {
             }
         }
         .padding(14)
-        .background(Color(hex: 0xFFF8E8))
+        .background(Color.dogBgPanel)
         .overlay {
             Rectangle()
-                .stroke(Color(hex: 0x7C9B64), lineWidth: 3)
+                .stroke(Color.dogBorder, lineWidth: 3)
         }
         .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 4, y: 4)
     }
@@ -1060,11 +1060,11 @@ struct PixelGainRow: View {
             Spacer()
             Text("+\(gain.amount)")
                 .font(.title3.weight(.heavy))
-                .foregroundStyle(Color(hex: 0x356247))
+                .foregroundStyle(Color.dogBrand)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
-        .background(Color(hex: 0xF6E9C8))
+        .background(Color.dogBgCard)
         .overlay {
             Rectangle()
                 .stroke(Color(hex: 0xC7A76D), lineWidth: 2)
@@ -1082,7 +1082,7 @@ struct PixelMeter: View {
             HStack {
                 Text(label)
                     .font(.caption.weight(.heavy))
-                    .foregroundStyle(Color(hex: 0x356247))
+                    .foregroundStyle(Color.dogBrand)
                 Spacer()
                 Text("\(value)/\(maxValue)")
                     .font(.caption2.weight(.heavy))
@@ -1091,20 +1091,20 @@ struct PixelMeter: View {
 
             HStack(spacing: 3) {
                 ForEach(0..<maxValue, id: \.self) { index in
-                    PixelRect(color: index < value ? Color(hex: 0x5D8B6A) : Color(hex: 0xD9CFB9))
+                    PixelRect(color: index < value ? Color.dogSuccess : Color.dogRhythmEmpty)
                         .frame(height: 10)
                         .overlay {
                             Rectangle()
-                                .stroke(index < value ? Color(hex: 0x356247) : Color(hex: 0xBCA98B), lineWidth: 1)
+                                .stroke(index < value ? Color.dogBrand : Color.dogDisabledBorder, lineWidth: 1)
                         }
                 }
             }
         }
         .padding(8)
-        .background(Color(hex: 0xEAF1DA))
+        .background(Color.dogBgTexture)
         .overlay {
             Rectangle()
-                .stroke(Color(hex: 0x9BB985), lineWidth: 1)
+                .stroke(Color.dogBorderLight, lineWidth: 1)
         }
     }
 }
@@ -1123,15 +1123,15 @@ struct PixelLevelUpReward: View {
                     .foregroundStyle(Color(hex: 0x6A4B14))
                 Text(item?.label ?? "神秘像素道具")
                     .font(.headline.weight(.heavy))
-                    .foregroundStyle(Color(hex: 0x26382B))
+                    .foregroundStyle(Color.dogTextPrimary)
             }
             Spacer()
         }
         .padding(10)
-        .background(Color(hex: 0xFFF1B8))
+        .background(Color.dogAccentBright)
         .overlay {
             Rectangle()
-                .stroke(Color(hex: 0xC69A3E), lineWidth: 2)
+                .stroke(Color.dogAccent, lineWidth: 2)
         }
     }
 }
@@ -1144,7 +1144,7 @@ struct PixelRewardItemIcon: View {
             PixelRect(color: Color(hex: item.colorHex))
             Image(systemName: item.symbolName)
                 .font(.system(size: 18, weight: .heavy))
-                .foregroundStyle(Color(hex: 0xFFF8E8))
+                .foregroundStyle(Color.dogBgPanel)
         }
         .frame(width: 42, height: 42)
         .overlay {
@@ -1246,18 +1246,18 @@ struct PixelDogSprite: View {
             // Eyes - pose takes priority, then mood
             if pose == .focused {
                 // Focused: half-closed eyes
-                PixelRect(color: Color(hex: 0x2A241F))
+                PixelRect(color: Color.dogScrim)
                     .frame(width: size * eyeSize * 1.2, height: size * eyeSize * 0.3)
                     .offset(x: size * -0.10, y: size * -0.14)
-                PixelRect(color: Color(hex: 0x2A241F))
+                PixelRect(color: Color.dogScrim)
                     .frame(width: size * eyeSize * 1.2, height: size * eyeSize * 0.3)
                     .offset(x: size * 0.10, y: size * -0.14)
             } else if pose == .resting {
                 // Resting: closed eyes
-                PixelRect(color: Color(hex: 0x2A241F))
+                PixelRect(color: Color.dogScrim)
                     .frame(width: size * eyeSize * 1.0, height: size * eyeSize * 0.2)
                     .offset(x: size * -0.10, y: size * -0.14)
-                PixelRect(color: Color(hex: 0x2A241F))
+                PixelRect(color: Color.dogScrim)
                     .frame(width: size * eyeSize * 1.0, height: size * eyeSize * 0.2)
                     .offset(x: size * 0.10, y: size * -0.14)
             } else {
@@ -1265,7 +1265,7 @@ struct PixelDogSprite: View {
                 moodEyes
             }
 
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * 0.07, height: size * 0.04)
                 .offset(y: size * -0.05)
 
@@ -1273,7 +1273,7 @@ struct PixelDogSprite: View {
                 .frame(width: size * 0.18, height: size * 0.10)
                 .offset(y: size * -0.01)
 
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * 0.07, height: size * 0.04)
                 .offset(y: size * -0.03)
 
@@ -1581,37 +1581,37 @@ struct PixelDogSprite: View {
     private var moodEyes: some View {
         switch mood.eyeStyle {
         case .normal:
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * eyeSize, height: size * eyeSize)
                 .offset(x: size * -0.10, y: size * -0.14)
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * eyeSize, height: size * eyeSize)
                 .offset(x: size * 0.10, y: size * -0.14)
         case .droopy:
             // Sad droopy eyes - tilted outward
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * eyeSize, height: size * eyeSize * 0.8)
                 .offset(x: size * -0.10, y: size * -0.13)
                 .rotationEffect(.degrees(-8))
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * eyeSize, height: size * eyeSize * 0.8)
                 .offset(x: size * 0.10, y: size * -0.13)
                 .rotationEffect(.degrees(8))
         case .squint:
             // Happy squint - shorter, wider
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * eyeSize * 1.1, height: size * eyeSize * 0.5)
                 .offset(x: size * -0.10, y: size * -0.14)
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * eyeSize * 1.1, height: size * eyeSize * 0.5)
                 .offset(x: size * 0.10, y: size * -0.14)
         case .sparkle:
             // Excited sparkle - diamond shape (rotated square)
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * eyeSize * 0.8, height: size * eyeSize * 0.8)
                 .offset(x: size * -0.10, y: size * -0.14)
                 .rotationEffect(.degrees(45))
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * eyeSize * 0.8, height: size * eyeSize * 0.8)
                 .offset(x: size * 0.10, y: size * -0.14)
                 .rotationEffect(.degrees(45))
@@ -1641,17 +1641,17 @@ struct PixelDogSprite: View {
                 .offset(x: size * 0.12, y: size * -0.15)
                 .rotationEffect(.degrees(20))
         case .halfClosed:
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * eyeSize * 1.1, height: size * eyeSize * 0.4)
                 .offset(x: size * -0.10, y: size * -0.14)
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * eyeSize * 1.1, height: size * eyeSize * 0.4)
                 .offset(x: size * 0.10, y: size * -0.14)
         case .closed:
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * eyeSize * 1.0, height: size * eyeSize * 0.15)
                 .offset(x: size * -0.10, y: size * -0.14)
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * eyeSize * 1.0, height: size * eyeSize * 0.15)
                 .offset(x: size * 0.10, y: size * -0.14)
         }
@@ -1664,52 +1664,52 @@ struct PixelDogSprite: View {
         switch mood.mouthStyle {
         case .downturn:
             // Sad mouth - angled down
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * 0.08, height: size * 0.02)
                 .offset(x: size * -0.02, y: size * 0.015)
                 .rotationEffect(.degrees(10))
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * 0.08, height: size * 0.02)
                 .offset(x: size * 0.02, y: size * 0.015)
                 .rotationEffect(.degrees(-10))
         case .straight:
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * 0.08, height: size * 0.02)
                 .offset(y: size * 0.01)
         case .slightSmile:
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * 0.10, height: size * 0.02)
                 .offset(y: size * 0.01)
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * 0.03, height: size * 0.02)
                 .offset(x: size * -0.05, y: size * 0.005)
                 .rotationEffect(.degrees(-15))
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * 0.03, height: size * 0.02)
                 .offset(x: size * 0.05, y: size * 0.005)
                 .rotationEffect(.degrees(15))
         case .wideSmile:
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * 0.12, height: size * 0.02)
                 .offset(y: size * 0.01)
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * 0.03, height: size * 0.025)
                 .offset(x: size * -0.06, y: size * 0.0)
                 .rotationEffect(.degrees(-20))
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * 0.03, height: size * 0.025)
                 .offset(x: size * 0.06, y: size * 0.0)
                 .rotationEffect(.degrees(20))
         case .bigSmile:
             // Big open smile with tongue hint
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * 0.14, height: size * 0.02)
                 .offset(y: size * 0.01)
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * 0.04, height: size * 0.03)
                 .offset(x: size * -0.07, y: size * -0.005)
                 .rotationEffect(.degrees(-25))
-            PixelRect(color: Color(hex: 0x2A241F))
+            PixelRect(color: Color.dogScrim)
                 .frame(width: size * 0.04, height: size * 0.03)
                 .offset(x: size * 0.07, y: size * -0.005)
                 .rotationEffect(.degrees(25))
@@ -1738,13 +1738,13 @@ struct PixelMapLabel: View {
             .font(.caption2.weight(.heavy))
             .lineLimit(1)
             .minimumScaleFactor(0.75)
-            .foregroundStyle(Color(hex: 0x3E4F38))
+            .foregroundStyle(Color.dogPixelShadow)
             .padding(.horizontal, 7)
             .padding(.vertical, 5)
-            .background(Color(hex: 0xFFF8E8, alpha: 0.88))
+            .background(Color.dogBgPanel.opacity(0.88))
             .overlay {
                 Rectangle()
-                    .stroke(Color(hex: 0x7C9B64), lineWidth: 1)
+                    .stroke(Color.dogBorder, lineWidth: 1)
             }
     }
 }
@@ -1826,7 +1826,7 @@ struct TodayActionPanel: View {
                     .eyebrowStyle()
                 Text(headline)
                     .font((isDone && actionSession.phase == .idle ? Font.caption : Font.headline).weight(.heavy))
-                    .foregroundStyle(Color(hex: 0x26382B))
+                    .foregroundStyle(Color.dogTextPrimary)
             }
 
             if isDone && !completedPlans.isEmpty && actionSession.phase == .idle {
@@ -1963,7 +1963,7 @@ struct TodayActionPanel: View {
                             .eyebrowStyle()
                         Text(formattedTime(actionSession.remainingSeconds))
                             .font(.system(size: 36, weight: .heavy, design: .monospaced))
-                            .foregroundStyle(Color(hex: 0x26382B))
+                            .foregroundStyle(Color.dogTextPrimary)
                     }
                     Spacer()
                     runningDogCompanion
@@ -1981,7 +1981,7 @@ struct TodayActionPanel: View {
                 HStack(spacing: 6) {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.caption.weight(.heavy))
-                        .foregroundStyle(Color(hex: 0x5D8B6A))
+                        .foregroundStyle(Color.dogSuccess)
                     Text("时间到了！")
                         .eyebrowStyle()
                 }
@@ -2062,7 +2062,7 @@ struct TodayActionPanel: View {
                 ? CGFloat(actionSession.durationSeconds - actionSession.remainingSeconds) / CGFloat(actionSession.durationSeconds)
                 : 0
             ZStack(alignment: .leading) {
-                PixelRect(color: Color(hex: 0xE8E0D0))
+                PixelRect(color: Color.dogProgressBarTrack)
                 PixelRect(color: Color.dogSuccess)
                     .frame(width: geo.size.width * progress)
             }
@@ -2167,13 +2167,13 @@ struct AppBottomBar: View {
         .background {
             ZStack {
                 Color.dogBgPanel
-                PixelTinyGrid(colorA: Color(hex: 0xEAF1DA, alpha: 0.4), colorB: Color.clear, tile: 10)
+                PixelTinyGrid(colorA: Color.dogBgTexture.opacity(0.4), colorB: Color.clear, tile: 10)
             }
             .ignoresSafeArea(edges: .bottom)
         }
         .overlay(alignment: .top) {
             Rectangle()
-                .fill(Color(hex: 0x7C9B64))
+                .fill(Color.dogBorder)
                 .frame(height: 2)
         }
     }
@@ -2199,7 +2199,7 @@ struct BottomBarItem: View {
             .background {
                 ZStack {
                     background
-                    PixelTinyGrid(colorA: Color(hex: 0xFFF8E8, alpha: isSelected ? 0.06 : 0.18), colorB: Color.clear, tile: 8)
+                    PixelTinyGrid(colorA: Color.dogBgPanel.opacity(isSelected ? 0.06 : 0.18), colorB: Color.clear, tile: 8)
                 }
             }
             .overlay {
@@ -2212,18 +2212,18 @@ struct BottomBarItem: View {
     }
 
     private var foreground: Color {
-        if isSelected { return Color(hex: 0xFFF8E8) }
+        if isSelected { return Color.dogBgPanel }
         return Color(hex: 0x41573E)
     }
 
     private var background: Color {
-        if isSelected { return Color(hex: 0x356247) }
-        return Color(hex: 0xEAF1DA)
+        if isSelected { return Color.dogTextSecondary }
+        return Color.dogBgTexture
     }
 
     private var border: Color {
-        if isSelected { return Color(hex: 0x1E3D2C) }
-        return Color(hex: 0x9BB985)
+        if isSelected { return Color.dogBrandDark }
+        return Color.dogBorderLight
     }
 }
 
@@ -2232,11 +2232,11 @@ struct PixelRhythmCell: View {
 
     var body: some View {
         Rectangle()
-            .fill(done ? Color(hex: 0x5D8B6A) : Color(hex: 0xD9CFB9))
+            .fill(done ? Color.dogSuccess : Color.dogRhythmEmpty)
             .frame(width: 22, height: 12)
             .overlay {
                 Rectangle()
-                    .stroke(done ? Color(hex: 0x356247) : Color(hex: 0xBCA98B), lineWidth: 1)
+                    .stroke(done ? Color.dogTextSecondary : Color.dogRhythmEmptyBorder, lineWidth: 1)
             }
     }
 }
@@ -2268,25 +2268,25 @@ struct PixelStatusBadge: View {
 
     private var foreground: Color {
         switch tone {
-        case .pending: return Color(hex: 0x3E4F38)
-        case .recovery: return Color(hex: 0x514830)
-        case .done: return Color(hex: 0x2F593D)
+        case .pending: return Color.dogSecondaryButtonText
+        case .recovery: return Color(hex: 0x6D6557)
+        case .done: return Color.dogTextSecondary
         }
     }
 
     private var background: Color {
         switch tone {
-        case .pending: return Color(hex: 0xE8F0D9)
-        case .recovery: return Color(hex: 0xF2DFA8)
-        case .done: return Color(hex: 0xDDEBCB)
+        case .pending: return Color.dogAccentBright
+        case .recovery: return Color(hex: 0xE8D9BC)
+        case .done: return Color.dogBgTexture
         }
     }
 
     private var border: Color {
         switch tone {
-        case .pending: return Color(hex: 0x9BB985)
-        case .recovery: return Color(hex: 0xC7A76D)
-        case .done: return Color(hex: 0x5D8B6A)
+        case .pending: return Color.dogAccent
+        case .recovery: return Color(hex: 0xB8A98F)
+        case .done: return Color.dogBorder
         }
     }
 }
@@ -2305,14 +2305,14 @@ struct PixelPrimaryButton: View {
         .buttonStyle(.plain)
         .background {
             ZStack {
-                disabled ? Color(hex: 0xD5D8C7) : Color(hex: 0x356247)
-                PixelTinyGrid(colorA: Color(hex: 0xFFF8E8, alpha: disabled ? 0.08 : 0.10), colorB: Color.clear, tile: 9)
+                disabled ? Color.dogDisabledBg : Color.dogBrand
+                PixelTinyGrid(colorA: Color.dogBgPanel.opacity(disabled ? 0.08 : 0.10), colorB: Color.clear, tile: 9)
             }
         }
-        .foregroundStyle(disabled ? Color(hex: 0x6B715F) : Color.dogTextOnDark)
+        .foregroundStyle(disabled ? Color.dogTextTertiary : Color.dogTextOnDark)
         .overlay {
             Rectangle()
-                .stroke(disabled ? Color(hex: 0xA4AA96) : Color(hex: 0x1E3D2C), lineWidth: 3)
+                .stroke(disabled ? Color.dogDisabledBorder : Color.dogBrandDark, lineWidth: 3)
         }
         .shadow(color: disabled ? Color.clear : Color.dogBrandDark.opacity(0.25), radius: 0, x: 3, y: 3)
         .disabled(disabled)
@@ -2332,8 +2332,8 @@ struct PixelSecondaryButton: View {
         .buttonStyle(.plain)
         .background {
             ZStack {
-                Color(hex: 0xF6E9C8)
-                PixelTinyGrid(colorA: Color(hex: 0xFFF8E8, alpha: 0.34), colorB: Color.clear, tile: 8)
+                Color.dogBgCard
+                PixelTinyGrid(colorA: Color.dogBgPanel.opacity(0.34), colorB: Color.clear, tile: 8)
             }
         }
         .foregroundStyle(Color(hex: 0x3E3323))
@@ -2361,14 +2361,14 @@ struct PixelChoiceButton: View {
         .buttonStyle(.plain)
         .background {
             ZStack {
-                isSelected ? Color(hex: 0x356247) : Color(hex: 0xEAF1DA)
-                PixelTinyGrid(colorA: Color(hex: 0xFFF8E8, alpha: isSelected ? 0.08 : 0.22), colorB: Color.clear, tile: 7)
+                isSelected ? Color.dogTextSecondary : Color.dogBgTexture
+                PixelTinyGrid(colorA: Color.dogBgPanel.opacity(isSelected ? 0.08 : 0.22), colorB: Color.clear, tile: 7)
             }
         }
-        .foregroundStyle(isSelected ? Color(hex: 0xFFF8E8) : Color(hex: 0x356247))
+        .foregroundStyle(isSelected ? Color.dogTextOnDark : Color.dogTextSecondary)
         .overlay {
             Rectangle()
-                .stroke(isSelected ? Color(hex: 0x1E3D2C) : Color(hex: 0x9BB985), lineWidth: isSelected ? 2 : 1)
+                .stroke(isSelected ? Color.dogBrandDark : Color.dogBorderLight, lineWidth: isSelected ? 2 : 1)
         }
         .shadow(color: isSelected ? Color.dogBrandDark.opacity(0.20) : Color.clear, radius: 0, x: 2, y: 2)
     }
@@ -2475,7 +2475,7 @@ struct DogChoiceCard: View {
                         .foregroundStyle(Color(hex: 0x6B6B6B))
                         .padding(.horizontal, 4)
                         .padding(.vertical, 1.5)
-                        .background(Color(hex: 0xF5F0E8))
+                        .background(Color.dogBgWarm)
                         .clipShape(Capsule())
                 }
             }
@@ -2508,7 +2508,7 @@ struct FlowTags: View {
             ForEach(tags, id: \.self) { tag in
                 Text(tag)
                     .font(.caption.weight(.bold))
-                    .foregroundStyle(Color(hex: 0x356247))
+                    .foregroundStyle(Color.dogTextSecondary)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(Color.dogBgTexture)
@@ -2570,11 +2570,11 @@ struct PrimaryButton: View {
                 .frame(maxWidth: .infinity, minHeight: 50)
         }
         .buttonStyle(.plain)
-        .background(disabled ? Color(hex: 0xD5D8C7) : Color.dogBrand)
+        .background(disabled ? Color.dogDisabledBg : Color.dogBrand)
         .foregroundStyle(disabled ? Color.dogTextTertiary : Color.dogTextOnDark)
         .overlay {
             Rectangle()
-                .stroke(disabled ? Color(hex: 0xA4AA96) : Color.dogBrandDark, lineWidth: 3)
+                .stroke(disabled ? Color.dogDisabledBorder : Color.dogBrandDark, lineWidth: 3)
         }
         .shadow(color: Color.dogPixelShadow.opacity(0.16), radius: 0, x: 0, y: 4)
         .cornerRadius(8)

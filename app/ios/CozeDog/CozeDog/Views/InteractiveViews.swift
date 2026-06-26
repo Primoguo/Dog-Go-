@@ -488,7 +488,7 @@ struct TaskSuggestionView: View {
                 RoundedRectangle(cornerRadius: 24)
                     .fill(
                         LinearGradient(
-                            colors: [Color(hex: 0xF2F7EE), Color(hex: 0xFFF7EC)],
+                            colors: [Color.dogBgPage, Color.dogBgWarm],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
